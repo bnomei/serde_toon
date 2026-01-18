@@ -1,0 +1,109 @@
+/// Controls whether key folding is applied during encoding.
+///
+/// # Examples
+/// ```
+/// use serde_toon::KeyFoldingMode;
+///
+/// let mode = KeyFoldingMode::Safe;
+/// let _ = mode;
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum KeyFoldingMode {
+    /// No folding performed. All objects use standard nesting.
+    #[default]
+    Off,
+    /// Fold eligible chains according to safety rules.
+    Safe,
+}
+
+/// Controls whether dotted keys are expanded during decoding.
+///
+/// # Examples
+/// ```
+/// use serde_toon::PathExpansionMode;
+///
+/// let mode = PathExpansionMode::Off;
+/// let _ = mode;
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum PathExpansionMode {
+    /// Dotted keys are treated as literal keys. No expansion.
+    #[default]
+    Off,
+    /// Expand eligible dotted keys according to safety rules.
+    Safe,
+}
+
+/// Check if a key segment is a valid IdentifierSegment (stricter than unquoted keys).
+///
+/// # Examples
+/// ```
+/// use serde_toon::is_identifier_segment;
+///
+/// assert!(is_identifier_segment("user_name"));
+/// assert!(!is_identifier_segment("user.name"));
+/// ```
+pub fn is_identifier_segment(s: &str) -> bool {
+    let bytes = s.as_bytes();
+    if bytes.is_empty() {
+        return false;
+    }
+
+    // First character must be letter or underscore
+    let first = bytes[0];
+    if !first.is_ascii_alphabetic() && first != b'_' {
+        return false;
+    }
+
+    // Remaining characters: letters, digits, or underscore (NO dots)
+    bytes[1..]
+        .iter()
+        .all(|b| b.is_ascii_alphanumeric() || *b == b'_')
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[rstest::rstest]
+    fn test_key_folding_mode_default() {
+        assert_eq!(KeyFoldingMode::default(), KeyFoldingMode::Off);
+    }
+
+    #[rstest::rstest]
+    fn test_path_expansion_mode_default() {
+        assert_eq!(PathExpansionMode::default(), PathExpansionMode::Off);
+    }
+
+    #[rstest::rstest]
+    fn test_is_identifier_segment() {
+        // Valid segments
+        assert!(is_identifier_segment("a"));
+        assert!(is_identifier_segment("_private"));
+        assert!(is_identifier_segment("userName"));
+        assert!(is_identifier_segment("user_name"));
+        assert!(is_identifier_segment("user123"));
+        assert!(is_identifier_segment("_123"));
+
+        // Invalid segments
+        assert!(!is_identifier_segment(""));
+        assert!(!is_identifier_segment("123"));
+        assert!(!is_identifier_segment("user-name"));
+        assert!(!is_identifier_segment("user.name")); // Contains dot
+        assert!(!is_identifier_segment("user name")); // Contains space
+        assert!(!is_identifier_segment("user:name")); // Contains colon
+        assert!(!is_identifier_segment(".name")); // Starts with dot
+    }
+
+    #[rstest::rstest]
+    fn test_identifier_segment_vs_general_key() {
+        // These are valid unquoted keys but NOT IdentifierSegments
+        assert!(!is_identifier_segment("a.b")); // Contains dot
+        assert!(!is_identifier_segment("a.b.c")); // Contains dots
+
+        // These are valid for both
+        assert!(is_identifier_segment("abc"));
+        assert!(is_identifier_segment("_private"));
+        assert!(is_identifier_segment("key123"));
+    }
+}

@@ -1,0 +1,1352 @@
+function,samples,percent,x,y,width,height
+core::ptr::drop_in_place<serde_toon::canonical::encode::CanonicalString>,1,0.04,0.0000%,517,0.0356%,15
+core::ptr::drop_in_place<smol_str::SmolStr>,1,0.04,0.0000%,501,0.0356%,15
+core::ptr::drop_in_place<smol_str::SmolStr>,1,0.04,0.0000%,485,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,0.0000%,469,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,0.0000%,453,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,0.0000%,437,0.0356%,15
+core::ptr::drop_in_place<serde_toon::canonical::encode::CanonicalValue>,2,0.07,0.0000%,629,0.0713%,15
+<serde_toon::canonical::encode::CanonicalValue as core::ops::drop::Drop>::drop,2,0.07,0.0000%,613,0.0713%,15
+serde_toon::canonical::encode::recycle_array,2,0.07,0.0000%,597,0.0713%,15
+serde_toon::canonical::encode::recycle_value_vec,2,0.07,0.0000%,581,0.0713%,15
+"alloc::vec::Vec<T,A>::clear",2,0.07,0.0000%,565,0.0713%,15
+core::ptr::drop_in_place<[serde_toon::canonical::encode::CanonicalValue]>,2,0.07,0.0000%,549,0.0713%,15
+core::ptr::drop_in_place<serde_toon::canonical::encode::CanonicalValue>,2,0.07,0.0000%,533,0.0713%,15
+core::ptr::drop_in_place<serde_toon::canonical::encode::CanonicalValue>,1,0.04,0.0356%,517,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,0.0356%,501,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,0.0356%,485,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,0.0356%,469,0.0356%,15
+"<alloc::vec::Vec<T,A> as core::ops::index::IndexMut<I>>::index_mut",1,0.04,0.0713%,501,0.0356%,15
+"<alloc::vec::Vec<T,A> as core::ops::deref::DerefMut>::deref_mut",1,0.04,0.0713%,485,0.0356%,15
+"alloc::vec::Vec<T,A>::as_mut_slice",1,0.04,0.0713%,469,0.0356%,15
+core::slice::raw::from_raw_parts_mut,1,0.04,0.0713%,453,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,0.0713%,437,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,0.0713%,421,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,0.0713%,405,0.0356%,15
+"<alloc::vec::Vec<T,A> as core::ops::index::IndexMut<I>>::index_mut",2,0.07,0.0713%,565,0.0713%,15
+"<alloc::vec::Vec<T,A> as core::ops::deref::DerefMut>::deref_mut",2,0.07,0.0713%,549,0.0713%,15
+"alloc::vec::Vec<T,A>::as_mut_slice",2,0.07,0.0713%,533,0.0713%,15
+core::slice::raw::from_raw_parts_mut,2,0.07,0.0713%,517,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,0.1069%,501,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,0.1069%,485,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,0.1069%,469,0.0356%,15
+"<alloc::vec::into_iter::IntoIter<T,A> as core::iter::traits::iterator::Iterator>::next",1,0.04,0.1426%,565,0.0356%,15
+core::ptr::non_null::NonNull<T>::read,1,0.04,0.1426%,549,0.0356%,15
+core::ptr::read,1,0.04,0.1426%,533,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,0.1426%,517,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,0.1426%,501,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,0.1426%,485,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,0.1782%,565,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,0.1782%,549,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,0.1782%,533,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,0.2495%,533,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,0.2495%,517,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,0.2495%,501,0.0356%,15
+"alloc::vec::Vec<T,A>::push",3,0.11,0.2495%,565,0.1069%,15
+"alloc::vec::Vec<T,A>::push_mut",3,0.11,0.2495%,549,0.1069%,15
+core::ptr::write,2,0.07,0.2851%,533,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,0.2851%,517,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,0.2851%,501,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,0.2851%,485,0.0713%,15
+<T as alloc::vec::spec_from_elem::SpecFromElem>::from_elem,1,0.04,0.3564%,533,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,0.3564%,517,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,0.3564%,501,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,0.3564%,485,0.0356%,15
+"alloc::vec::Vec<T,A>::extend_with",1,0.04,0.3920%,533,0.0356%,15
+"alloc::vec::Vec<T,A>::extend_with",1,0.04,0.3920%,517,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,0.3920%,501,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,0.3920%,485,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,0.3920%,469,0.0356%,15
+alloc::vec::from_elem,3,0.11,0.3564%,565,0.1069%,15
+<T as alloc::vec::spec_from_elem::SpecFromElem>::from_elem,3,0.11,0.3564%,549,0.1069%,15
+"alloc::vec::Vec<T,A>::with_capacity_in",1,0.04,0.4277%,533,0.0356%,15
+"alloc::raw_vec::RawVec<T,A>::with_capacity_in",1,0.04,0.4277%,517,0.0356%,15
+alloc::raw_vec::RawVecInner<A>::with_capacity_in,1,0.04,0.4277%,501,0.0356%,15
+alloc::raw_vec::RawVecInner<A>::try_allocate_in,1,0.04,0.4277%,485,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,0.4277%,469,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,0.4277%,453,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,0.4277%,437,0.0356%,15
+core::option::Option<T>::expect,1,0.04,0.4633%,565,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,0.4633%,549,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,0.4633%,533,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,0.4633%,517,0.0356%,15
+core::ptr::drop_in_place<alloc::vec::into_iter::IntoIter<serde_toon::canonical::encode::CanonicalValue>>,198,7.06,0.4989%,565,7.0563%,15
+"<alloc::vec::into_iter::IntoIter<T,A> as core::ops::drop::Drop>::drop",198,7.06,0.4989%,549,7.0563%,15
+"core::ptr::drop_in_place<<alloc::vec::into_iter::IntoIter<T,A> as core::ops::drop::Drop>::drop::DropGuard<serde_toon::canonical::encode::CanonicalValue,alloc::alloc::Global>>",198,7.06,0.4989%,533,7.0563%,15
+"<<alloc::vec::into_iter::IntoIter<T,A> as core::ops::drop::Drop>::drop::DropGuard<T,A> as core::ops::drop::Drop>::drop",198,7.06,0.4989%,517,7.0563%,15
+core::ptr::drop_in_place<alloc::raw_vec::RawVec<serde_toon::canonical::encode::CanonicalValue>>,198,7.06,0.4989%,501,7.0563%,15
+"<alloc::raw_vec::RawVec<T,A> as core::ops::drop::Drop>::drop",198,7.06,0.4989%,485,7.0563%,15
+_open$NOCANCEL,198,7.06,0.4989%,469,7.0563%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,198,7.06,0.4989%,453,7.0563%,15
+backtrace::backtrace::trace_unsynchronized,198,7.06,0.4989%,437,7.0563%,15
+backtrace::backtrace::libunwind::trace,198,7.06,0.4989%,421,7.0563%,15
+serde_toon::canonical::encode::canonicalize_array,1,0.04,7.5552%,565,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,7.5552%,549,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,7.5552%,533,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,7.5552%,517,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,15,0.53,7.5909%,549,0.5346%,15
+backtrace::backtrace::trace_unsynchronized,15,0.53,7.5909%,533,0.5346%,15
+backtrace::backtrace::libunwind::trace,15,0.53,7.5909%,517,0.5346%,15
+<alloc::alloc::Global as core::alloc::Allocator>::deallocate,1,0.04,8.1254%,437,0.0356%,15
+alloc::alloc::dealloc,1,0.04,8.1254%,421,0.0356%,15
+<alloc::alloc::Global as core::alloc::Allocator>::deallocate,1,0.04,8.1254%,405,0.0356%,15
+alloc::alloc::dealloc,1,0.04,8.1254%,389,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,8.1254%,373,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,8.1254%,357,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,8.1254%,341,0.0356%,15
+core::ptr::drop_in_place<std::collections::hash::set::HashSet<&str>>,2,0.07,8.1254%,549,0.0713%,15
+"core::ptr::drop_in_place<hashbrown::set::HashSet<&str,std::hash::random::RandomState>>",2,0.07,8.1254%,533,0.0713%,15
+"core::ptr::drop_in_place<hashbrown::map::HashMap<&str,(),std::hash::random::RandomState>>",2,0.07,8.1254%,517,0.0713%,15
+"core::ptr::drop_in_place<hashbrown::raw::RawTable<(&str,())>>",2,0.07,8.1254%,501,0.0713%,15
+"<hashbrown::raw::RawTable<T,A> as core::ops::drop::Drop>::drop",2,0.07,8.1254%,485,0.0713%,15
+hashbrown::raw::RawTableInner::drop_inner_table,2,0.07,8.1254%,469,0.0713%,15
+hashbrown::raw::RawTableInner::free_buckets,2,0.07,8.1254%,453,0.0713%,15
+hashbrown::raw::RawTableInner::allocation_info,1,0.04,8.1611%,437,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,8.1611%,421,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,8.1611%,405,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,8.1611%,389,0.0356%,15
+serde_toon::canonical::encode::CanonicalField::new,1,0.04,8.1967%,549,0.0356%,15
+serde_toon::canonical::encode::analyze_string_cached,1,0.04,8.1967%,533,0.0356%,15
+std::thread::local::LocalKey<T>::with,1,0.04,8.1967%,517,0.0356%,15
+std::thread::local::LocalKey<T>::try_with,1,0.04,8.1967%,501,0.0356%,15
+serde_toon::canonical::encode::analyze_string_cached::{{closure}},1,0.04,8.1967%,485,0.0356%,15
+"std::collections::hash::map::HashMap<K,V,S>::get",1,0.04,8.1967%,469,0.0356%,15
+"hashbrown::map::HashMap<K,V,S,A>::get",1,0.04,8.1967%,453,0.0356%,15
+"hashbrown::map::HashMap<K,V,S,A>::get_inner",1,0.04,8.1967%,437,0.0356%,15
+hashbrown::map::make_hash,1,0.04,8.1967%,421,0.0356%,15
+core::hash::BuildHasher::hash_one,1,0.04,8.1967%,405,0.0356%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::finish,1,0.04,8.1967%,389,0.0356%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::finish,1,0.04,8.1967%,373,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::finish,1,0.04,8.1967%,357,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,8.1967%,341,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,8.1967%,325,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,8.1967%,309,0.0356%,15
+serde_toon::canonical::encode::detect_tabular_fields,1,0.04,8.2324%,549,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,8.2324%,533,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,8.2324%,517,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,8.2324%,501,0.0356%,15
+smol_str::SmolStr::as_str,2,0.07,8.2680%,549,0.0713%,15
+serde_toon::canonical::encode::detect_tabular_fields,2,0.07,8.2680%,533,0.0713%,15
+smol_str::SmolStr::as_str,2,0.07,8.2680%,517,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,8.2680%,501,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,8.2680%,485,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,8.2680%,469,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,8.3393%,501,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,8.3393%,485,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,8.3393%,469,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,8.3749%,469,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,8.3749%,453,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,8.3749%,437,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::finish,29,1.03,8.4105%,421,1.0335%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,29,1.03,8.4105%,405,1.0335%,15
+backtrace::backtrace::trace_unsynchronized,29,1.03,8.4105%,389,1.0335%,15
+backtrace::backtrace::libunwind::trace,29,1.03,8.4105%,373,1.0335%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::finish,30,1.07,8.4105%,453,1.0691%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::finish,30,1.07,8.4105%,437,1.0691%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,9.4440%,421,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,9.4440%,405,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,9.4440%,389,0.0356%,15
+<std::hash::random::RandomState as core::hash::BuildHasher>::build_hasher,1,0.04,9.4797%,453,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,9.4797%,437,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,9.4797%,421,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,9.4797%,405,0.0356%,15
+core::hash::BuildHasher::hash_one,1,0.04,9.5153%,453,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,9.5153%,437,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,9.5153%,421,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,9.5153%,405,0.0356%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,2,0.07,9.5510%,437,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,9.5510%,421,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,9.5510%,405,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,9.5510%,389,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,9.6222%,421,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,9.6222%,405,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,9.6222%,389,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,3,0.11,9.6579%,357,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,9.6579%,341,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,9.6579%,325,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,9.6579%,309,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,9.7648%,357,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,9.7648%,341,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,9.7648%,325,0.1426%,15
+core::hash::sip::u8to64_le,6,0.21,9.9073%,325,0.2138%,15
+core::ptr::copy_nonoverlapping,6,0.21,9.9073%,309,0.2138%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,6,0.21,9.9073%,293,0.2138%,15
+backtrace::backtrace::trace_unsynchronized,6,0.21,9.9073%,277,0.2138%,15
+backtrace::backtrace::libunwind::trace,6,0.21,9.9073%,261,0.2138%,15
+core::ptr::copy_nonoverlapping,7,0.25,9.9073%,341,0.2495%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,10.1212%,325,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,10.1212%,309,0.0356%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,10.1212%,293,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,10.1212%,277,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,10.1212%,261,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,10.1212%,245,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,10.1212%,229,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,10.1568%,309,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,10.1568%,293,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,10.1568%,277,0.0356%,15
+core::hash::sip::u8to64_le,9,0.32,9.9073%,357,0.3207%,15
+core::slice::<impl [T]>::get_unchecked,2,0.07,10.1568%,341,0.0713%,15
+<usize as core::slice::index::SliceIndex<[T]>>::get_unchecked,2,0.07,10.1568%,325,0.0713%,15
+core::hash::sip::u8to64_le,1,0.04,10.1924%,309,0.0356%,15
+core::slice::<impl [T]>::get_unchecked,1,0.04,10.1924%,293,0.0356%,15
+<usize as core::slice::index::SliceIndex<[T]>>::get_unchecked,1,0.04,10.1924%,277,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,10.1924%,261,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,10.1924%,245,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,10.1924%,229,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,1,0.04,10.2281%,341,0.0356%,15
+core::ptr::copy_nonoverlapping,1,0.04,10.2281%,325,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,10.2281%,309,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,10.2281%,293,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,10.2281%,277,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,18,0.64,9.6579%,373,0.6415%,15
+core::ptr::copy_nonoverlapping,2,0.07,10.2281%,357,0.0713%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,10.2637%,341,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,10.2637%,325,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,10.2637%,309,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,10.2637%,293,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,10.2637%,277,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,12,0.43,10.2994%,373,0.4277%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,12,0.43,10.2994%,357,0.4277%,15
+backtrace::backtrace::trace_unsynchronized,12,0.43,10.2994%,341,0.4277%,15
+backtrace::backtrace::libunwind::trace,12,0.43,10.2994%,325,0.4277%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,7,0.25,10.7270%,341,0.2495%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,7,0.25,10.7270%,325,0.2495%,15
+backtrace::backtrace::trace_unsynchronized,7,0.25,10.7270%,309,0.2495%,15
+backtrace::backtrace::libunwind::trace,7,0.25,10.7270%,293,0.2495%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,9,0.32,10.7270%,357,0.3207%,15
+core::cmp::min,2,0.07,10.9765%,341,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,10.9765%,325,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,10.9765%,309,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,10.9765%,293,0.0713%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,3,0.11,11.0478%,357,0.1069%,15
+core::hash::Hasher::write_u8,3,0.11,11.0478%,341,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,11.0478%,325,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,11.0478%,309,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,11.0478%,293,0.1069%,15
+hashbrown::map::make_hash,79,2.82,8.3749%,485,2.8154%,15
+core::hash::BuildHasher::hash_one,78,2.78,8.4105%,469,2.7798%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,46,1.64,9.5510%,453,1.6393%,15
+core::hash::impls::<impl core::hash::Hash for str>::hash,44,1.57,9.6222%,437,1.5681%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::write_str,43,1.53,9.6579%,421,1.5324%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::write_str,43,1.53,9.6579%,405,1.5324%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,43,1.53,9.6579%,389,1.5324%,15
+core::hash::Hasher::write_u8,13,0.46,10.7270%,373,0.4633%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,11.1547%,357,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,11.1547%,341,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,11.1547%,325,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,11.1903%,469,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,11.1903%,453,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,11.1903%,437,0.1426%,15
+"hashbrown::map::HashMap<K,V,S,A>::get_inner",4,0.14,11.3329%,469,0.1426%,15
+"hashbrown::raw::RawTable<T,A>::get",4,0.14,11.3329%,453,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,11.3329%,437,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,11.3329%,421,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,11.3329%,405,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,11.4754%,437,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,11.4754%,421,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,11.4754%,405,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,11.6180%,421,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,11.6180%,405,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,11.6180%,389,0.0356%,15
+core::core_arch::aarch64::neon::generated::vld1_u8,1,0.04,11.6536%,405,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,11.6536%,389,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,11.6536%,373,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,11.6536%,357,0.0356%,15
+core::ptr::copy_nonoverlapping::precondition_check,5,0.18,11.6892%,373,0.1782%,15
+core::ub_checks::maybe_is_nonoverlapping,5,0.18,11.6892%,357,0.1782%,15
+core::ptr::copy_nonoverlapping::precondition_check,5,0.18,11.6892%,341,0.1782%,15
+core::ub_checks::maybe_is_nonoverlapping,5,0.18,11.6892%,325,0.1782%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,5,0.18,11.6892%,309,0.1782%,15
+backtrace::backtrace::trace_unsynchronized,5,0.18,11.6892%,293,0.1782%,15
+backtrace::backtrace::libunwind::trace,5,0.18,11.6892%,277,0.1782%,15
+core::core_arch::aarch64::neon::generated::vld1_u8,18,0.64,11.6536%,421,0.6415%,15
+core::ptr::read_unaligned,17,0.61,11.6892%,405,0.6058%,15
+core::ptr::copy_nonoverlapping,17,0.61,11.6892%,389,0.6058%,15
+core::ptr::read_unaligned,12,0.43,11.8674%,373,0.4277%,15
+core::ptr::copy_nonoverlapping,12,0.43,11.8674%,357,0.4277%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,12,0.43,11.8674%,341,0.4277%,15
+backtrace::backtrace::trace_unsynchronized,12,0.43,11.8674%,325,0.4277%,15
+backtrace::backtrace::libunwind::trace,12,0.43,11.8674%,309,0.4277%,15
+hashbrown::control::group::neon::Group::load,20,0.71,11.6180%,437,0.7128%,15
+"hashbrown::raw::RawTable<T,A>::find",1,0.04,12.2951%,421,0.0356%,15
+hashbrown::raw::RawTableInner::find_inner,1,0.04,12.2951%,405,0.0356%,15
+hashbrown::control::group::neon::Group::load,1,0.04,12.2951%,389,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,12.2951%,373,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,12.2951%,357,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,12.2951%,341,0.0356%,15
+hashbrown::control::group::neon::Group::match_tag,4,0.14,12.3307%,437,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,12.3307%,421,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,12.3307%,405,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,12.3307%,389,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,12.4733%,389,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,12.4733%,373,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,12.4733%,357,0.0713%,15
+<Q as hashbrown::Equivalent<K>>::equivalent,4,0.14,12.5445%,373,0.1426%,15
+core::cmp::impls::<impl core::cmp::PartialEq<&B> for &A>::eq,4,0.14,12.5445%,357,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,12.5445%,341,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,12.5445%,325,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,12.5445%,309,0.1426%,15
+<Q as hashbrown::Equivalent<K>>::equivalent,12,0.43,12.4733%,405,0.4277%,15
+core::cmp::impls::<impl core::cmp::PartialEq<&B> for &A>::eq,10,0.36,12.5445%,389,0.3564%,15
+core::str::traits::<impl core::cmp::PartialEq for str>::eq,6,0.21,12.6871%,373,0.2138%,15
+core::cmp::impls::<impl core::cmp::PartialEq<&B> for &A>::eq,6,0.21,12.6871%,357,0.2138%,15
+core::slice::cmp::<impl core::cmp::PartialEq<[U]> for [T]>::eq,6,0.21,12.6871%,341,0.2138%,15
+<[A] as core::slice::cmp::SlicePartialEq<B>>::equal,6,0.21,12.6871%,325,0.2138%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,6,0.21,12.6871%,309,0.2138%,15
+backtrace::backtrace::trace_unsynchronized,6,0.21,12.6871%,293,0.2138%,15
+backtrace::backtrace::libunwind::trace,6,0.21,12.6871%,277,0.2138%,15
+hashbrown::map::equivalent_key::{{closure}},13,0.46,12.4733%,421,0.4633%,15
+hashbrown::map::equivalent_key::{{closure}},1,0.04,12.9009%,405,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,12.9009%,389,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,12.9009%,373,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,12.9009%,357,0.0356%,15
+"hashbrown::raw::RawTable<T,A>::find::{{closure}}",14,0.50,12.4733%,437,0.4989%,15
+"hashbrown::raw::RawTable<T,A>::find::{{closure}}",1,0.04,12.9366%,421,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,12.9366%,405,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,12.9366%,389,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,12.9366%,373,0.0356%,15
+"std::collections::hash::set::HashSet<T,S>::contains",134,4.78,8.3393%,549,4.7755%,15
+"hashbrown::set::HashSet<T,S,A>::contains",134,4.78,8.3393%,533,4.7755%,15
+"hashbrown::map::HashMap<K,V,S,A>::contains_key",134,4.78,8.3393%,517,4.7755%,15
+"hashbrown::map::HashMap<K,V,S,A>::get_inner",133,4.74,8.3749%,501,4.7398%,15
+"hashbrown::raw::RawTable<T,A>::get",54,1.92,11.1903%,485,1.9244%,15
+"hashbrown::raw::RawTable<T,A>::find",46,1.64,11.4754%,469,1.6393%,15
+hashbrown::raw::RawTableInner::find_inner,46,1.64,11.4754%,453,1.6393%,15
+"hashbrown::raw::RawTable<T,A>::find",4,0.14,12.9722%,437,0.1426%,15
+hashbrown::raw::RawTableInner::find_inner,4,0.14,12.9722%,421,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,12.9722%,405,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,12.9722%,389,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,12.9722%,373,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,13.1148%,517,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,13.1148%,501,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,13.1148%,485,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,12,0.43,13.1860%,501,0.4277%,15
+backtrace::backtrace::trace_unsynchronized,12,0.43,13.1860%,485,0.4277%,15
+backtrace::backtrace::libunwind::trace,12,0.43,13.1860%,469,0.4277%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,13.6137%,485,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,13.6137%,469,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,13.6137%,453,0.0713%,15
+"hashbrown::map::HashMap<K,V,S,A>::insert",1,0.04,13.6850%,485,0.0356%,15
+"hashbrown::map::HashMap<K,V,S,A>::find_or_find_insert_slot",1,0.04,13.6850%,469,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,13.6850%,453,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,13.6850%,437,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,13.6850%,421,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,13.7206%,469,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,13.7206%,453,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,13.7206%,437,0.0713%,15
+"hashbrown::raw::RawTable<T,A>::find_or_find_insert_slot",5,0.18,13.7919%,469,0.1782%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,5,0.18,13.7919%,453,0.1782%,15
+backtrace::backtrace::trace_unsynchronized,5,0.18,13.7919%,437,0.1782%,15
+backtrace::backtrace::libunwind::trace,5,0.18,13.7919%,421,0.1782%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,8,0.29,13.9701%,453,0.2851%,15
+backtrace::backtrace::trace_unsynchronized,8,0.29,13.9701%,437,0.2851%,15
+backtrace::backtrace::libunwind::trace,8,0.29,13.9701%,421,0.2851%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,14.2552%,389,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,14.2552%,373,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,14.2552%,357,0.0356%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,14.2908%,389,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,14.2908%,373,0.0356%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,14.2908%,357,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,14.2908%,341,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,14.2908%,325,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,14.2908%,309,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,14.2908%,293,0.0356%,15
+hashbrown::control::group::neon::Group::load,10,0.36,14.2552%,453,0.3564%,15
+core::core_arch::aarch64::neon::generated::vld1_u8,10,0.36,14.2552%,437,0.3564%,15
+core::ptr::read_unaligned,10,0.36,14.2552%,421,0.3564%,15
+core::ptr::copy_nonoverlapping,10,0.36,14.2552%,405,0.3564%,15
+core::ptr::read_unaligned,8,0.29,14.3264%,389,0.2851%,15
+core::ptr::copy_nonoverlapping,8,0.29,14.3264%,373,0.2851%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,8,0.29,14.3264%,357,0.2851%,15
+backtrace::backtrace::trace_unsynchronized,8,0.29,14.3264%,341,0.2851%,15
+backtrace::backtrace::libunwind::trace,8,0.29,14.3264%,325,0.2851%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,14.6115%,437,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,14.6115%,421,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,14.6115%,405,0.0356%,15
+hashbrown::control::group::neon::Group::match_tag,3,0.11,14.6472%,437,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,14.6472%,421,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,14.6472%,405,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,14.6472%,389,0.1069%,15
+hashbrown::control::group::neon::Group::match_empty,7,0.25,14.6115%,453,0.2495%,15
+hashbrown::raw::RawTableInner::find_or_find_insert_slot_inner,3,0.11,14.7541%,437,0.1069%,15
+hashbrown::control::group::neon::Group::match_empty,3,0.11,14.7541%,421,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,14.7541%,405,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,14.7541%,389,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,14.7541%,373,0.1069%,15
+hashbrown::control::group::neon::Group::match_tag,4,0.14,14.8610%,453,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,14.8610%,437,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,14.8610%,421,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,14.8610%,405,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,5,0.18,15.0036%,437,0.1782%,15
+backtrace::backtrace::trace_unsynchronized,5,0.18,15.0036%,421,0.1782%,15
+backtrace::backtrace::libunwind::trace,5,0.18,15.0036%,405,0.1782%,15
+hashbrown::raw::RawTableInner::find_insert_slot_in_group,12,0.43,15.0036%,453,0.4277%,15
+hashbrown::control::group::neon::Group::match_empty_or_deleted,7,0.25,15.1818%,437,0.2495%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,7,0.25,15.1818%,421,0.2495%,15
+backtrace::backtrace::trace_unsynchronized,7,0.25,15.1818%,405,0.2495%,15
+backtrace::backtrace::libunwind::trace,7,0.25,15.1818%,389,0.2495%,15
+"hashbrown::map::HashMap<K,V,S,A>::find_or_find_insert_slot",56,2.00,13.6137%,501,1.9957%,15
+"hashbrown::raw::RawTable<T,A>::find_or_find_insert_slot",53,1.89,13.7206%,485,1.8888%,15
+hashbrown::raw::RawTableInner::find_or_find_insert_slot_inner,46,1.64,13.9701%,469,1.6393%,15
+hashbrown::raw::RawTableInner::find_or_find_insert_slot_inner,5,0.18,15.4312%,453,0.1782%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,5,0.18,15.4312%,437,0.1782%,15
+backtrace::backtrace::trace_unsynchronized,5,0.18,15.4312%,421,0.1782%,15
+backtrace::backtrace::libunwind::trace,5,0.18,15.4312%,405,0.1782%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,15.6094%,485,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,15.6094%,469,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,15.6094%,453,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::finish,41,1.46,15.6450%,437,1.4612%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,41,1.46,15.6450%,421,1.4612%,15
+backtrace::backtrace::trace_unsynchronized,41,1.46,15.6450%,405,1.4612%,15
+backtrace::backtrace::libunwind::trace,41,1.46,15.6450%,389,1.4612%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,17.1062%,437,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,17.1062%,421,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,17.1062%,405,0.0713%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::finish,44,1.57,15.6450%,469,1.5681%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::finish,44,1.57,15.6450%,453,1.5681%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::finish,1,0.04,17.1775%,437,0.0356%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::finish,1,0.04,17.1775%,421,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,17.1775%,405,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,17.1775%,389,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,17.1775%,373,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,17.2131%,453,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,17.2131%,437,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,17.2131%,421,0.0356%,15
+<std::hash::random::RandomState as core::hash::BuildHasher>::build_hasher,6,0.21,17.2131%,469,0.2138%,15
+core::hash::sip::SipHasher13::new_with_keys,5,0.18,17.2488%,453,0.1782%,15
+core::hash::sip::Hasher<S>::new_with_keys,5,0.18,17.2488%,437,0.1782%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,5,0.18,17.2488%,421,0.1782%,15
+backtrace::backtrace::trace_unsynchronized,5,0.18,17.2488%,405,0.1782%,15
+backtrace::backtrace::libunwind::trace,5,0.18,17.2488%,389,0.1782%,15
+core::hash::BuildHasher::hash_one,3,0.11,17.4269%,469,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,17.4269%,453,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,17.4269%,437,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,17.4269%,421,0.1069%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,1,0.04,17.5339%,437,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,17.5339%,421,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,17.5339%,405,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,17.5339%,389,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,3,0.11,17.5695%,357,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,17.5695%,341,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,17.5695%,325,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,17.5695%,309,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,17.6764%,357,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,17.6764%,341,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,17.6764%,325,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,17.7477%,325,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,17.7477%,309,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,17.7477%,293,0.0713%,15
+core::hash::sip::u8to64_le,2,0.07,17.8190%,325,0.0713%,15
+core::ptr::copy_nonoverlapping,2,0.07,17.8190%,309,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,17.8190%,293,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,17.8190%,277,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,17.8190%,261,0.0713%,15
+core::hash::sip::u8to64_le,6,0.21,17.7477%,357,0.2138%,15
+core::ptr::copy_nonoverlapping,6,0.21,17.7477%,341,0.2138%,15
+core::ptr::copy_nonoverlapping::precondition_check,2,0.07,17.8902%,325,0.0713%,15
+core::ub_checks::maybe_is_nonoverlapping,2,0.07,17.8902%,309,0.0713%,15
+core::ptr::copy_nonoverlapping::precondition_check,2,0.07,17.8902%,293,0.0713%,15
+core::ub_checks::maybe_is_nonoverlapping,2,0.07,17.8902%,277,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,17.8902%,261,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,17.8902%,245,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,17.8902%,229,0.0713%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,2,0.07,17.9615%,341,0.0713%,15
+core::ptr::copy_nonoverlapping,2,0.07,17.9615%,325,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,17.9615%,309,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,17.9615%,293,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,17.9615%,277,0.0713%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,14,0.50,17.5695%,373,0.4989%,15
+core::ptr::copy_nonoverlapping,3,0.11,17.9615%,357,0.1069%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,18.0328%,341,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,18.0328%,325,0.0356%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,18.0328%,309,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,18.0328%,293,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,18.0328%,277,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,18.0328%,261,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,18.0328%,245,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,3,0.11,18.0684%,373,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,18.0684%,357,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,18.0684%,341,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,18.0684%,325,0.1069%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,4,0.14,18.1753%,341,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,18.1753%,325,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,18.1753%,309,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,18.1753%,293,0.1426%,15
+core::cmp::min,3,0.11,18.3179%,341,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,18.3179%,325,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,18.3179%,309,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,18.3179%,293,0.1069%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,10,0.36,18.1753%,357,0.3564%,15
+core::hash::sip::u8to64_le,3,0.11,18.4248%,341,0.1069%,15
+core::slice::<impl [T]>::get_unchecked,3,0.11,18.4248%,325,0.1069%,15
+<usize as core::slice::index::SliceIndex<[T]>>::get_unchecked,3,0.11,18.4248%,309,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,18.4248%,293,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,18.4248%,277,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,18.4248%,261,0.1069%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,30,1.07,17.5695%,389,1.0691%,15
+core::hash::Hasher::write_u8,13,0.46,18.1753%,373,0.4633%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,3,0.11,18.5317%,357,0.1069%,15
+core::hash::Hasher::write_u8,3,0.11,18.5317%,341,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,18.5317%,325,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,18.5317%,309,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,18.5317%,293,0.1069%,15
+"std::collections::hash::set::HashSet<T,S>::insert",156,5.56,13.1148%,549,5.5595%,15
+"hashbrown::set::HashSet<T,S,A>::insert",156,5.56,13.1148%,533,5.5595%,15
+"hashbrown::map::HashMap<K,V,S,A>::insert",154,5.49,13.1860%,517,5.4882%,15
+hashbrown::map::make_hash,86,3.06,15.6094%,501,3.0649%,15
+core::hash::BuildHasher::hash_one,85,3.03,15.6450%,485,3.0292%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,32,1.14,17.5339%,469,1.1404%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,32,1.14,17.5339%,453,1.1404%,15
+core::hash::impls::<impl core::hash::Hash for str>::hash,31,1.10,17.5695%,437,1.1048%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::write_str,31,1.10,17.5695%,421,1.1048%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::write_str,31,1.10,17.5695%,405,1.1048%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,18.6386%,389,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,18.6386%,373,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,18.6386%,357,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,18.6743%,437,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,18.6743%,421,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,18.6743%,405,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,18.7099%,405,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,18.7099%,389,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,18.7099%,373,0.0356%,15
+<alloc::alloc::Global as core::alloc::Allocator>::allocate,1,0.04,18.7455%,389,0.0356%,15
+alloc::alloc::Global::alloc_impl,1,0.04,18.7455%,373,0.0356%,15
+alloc::alloc::alloc,1,0.04,18.7455%,357,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,18.7455%,341,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,18.7455%,325,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,18.7455%,309,0.0356%,15
+hashbrown::raw::RawTableInner::new_uninitialized,3,0.11,18.7099%,421,0.1069%,15
+hashbrown::raw::alloc::inner::do_alloc,2,0.07,18.7455%,405,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,18.7812%,389,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,18.7812%,373,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,18.7812%,357,0.0356%,15
+serde_toon::canonical::encode::detect_tabular_fields,316,11.26,7.5909%,565,11.2616%,15
+std::collections::hash::set::HashSet<T>::with_capacity,5,0.18,18.6743%,549,0.1782%,15
+"std::collections::hash::set::HashSet<T,S>::with_capacity_and_hasher",5,0.18,18.6743%,533,0.1782%,15
+"hashbrown::set::HashSet<T,S>::with_capacity_and_hasher",5,0.18,18.6743%,517,0.1782%,15
+"hashbrown::map::HashMap<K,V,S>::with_capacity_and_hasher",5,0.18,18.6743%,501,0.1782%,15
+hashbrown::raw::RawTable<T>::with_capacity,5,0.18,18.6743%,485,0.1782%,15
+"hashbrown::raw::RawTable<T,A>::with_capacity_in",5,0.18,18.6743%,469,0.1782%,15
+hashbrown::raw::RawTableInner::with_capacity,5,0.18,18.6743%,453,0.1782%,15
+hashbrown::raw::RawTableInner::fallible_with_capacity,4,0.14,18.7099%,437,0.1426%,15
+hashbrown::raw::capacity_to_buckets,1,0.04,18.8168%,421,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,18.8168%,405,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,18.8168%,389,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,18.8168%,373,0.0356%,15
+smol_str::SmolStr::as_str,2,0.07,89.2730%,565,0.0713%,15
+serde_toon::canonical::encode::canonicalize_array,2,0.07,89.2730%,549,0.0713%,15
+smol_str::SmolStr::as_str,2,0.07,89.2730%,533,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,89.2730%,517,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,89.2730%,501,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,89.2730%,485,0.0713%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::finish,4,0.14,89.3443%,485,0.1426%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::finish,4,0.14,89.3443%,469,0.1426%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::finish,4,0.14,89.3443%,453,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,89.3443%,437,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,89.3443%,421,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,89.3443%,405,0.1426%,15
+<std::hash::random::RandomState as core::hash::BuildHasher>::build_hasher,1,0.04,89.4868%,485,0.0356%,15
+core::hash::sip::SipHasher13::new_with_keys,1,0.04,89.4868%,469,0.0356%,15
+core::hash::sip::Hasher<S>::new_with_keys,1,0.04,89.4868%,453,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,89.4868%,437,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,89.4868%,421,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,89.4868%,405,0.0356%,15
+core::hash::BuildHasher::hash_one,2,0.07,89.5225%,485,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,89.5225%,469,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,89.5225%,453,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,89.5225%,437,0.0713%,15
+core::hash::sip::u8to64_le,1,0.04,89.5937%,389,0.0356%,15
+core::ptr::copy_nonoverlapping,1,0.04,89.5937%,373,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,89.5937%,357,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,89.5937%,341,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,89.5937%,325,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,2,0.07,89.5937%,405,0.0713%,15
+core::ptr::copy_nonoverlapping,1,0.04,89.6294%,389,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,89.6294%,373,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,89.6294%,357,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,89.6294%,341,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,2,0.07,89.6650%,405,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,89.6650%,389,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,89.6650%,373,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,89.6650%,357,0.0713%,15
+hashbrown::map::make_hash,12,0.43,89.3443%,517,0.4277%,15
+core::hash::BuildHasher::hash_one,12,0.43,89.3443%,501,0.4277%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,5,0.18,89.5937%,485,0.1782%,15
+core::hash::impls::<impl core::hash::Hash for str>::hash,5,0.18,89.5937%,469,0.1782%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::write_str,5,0.18,89.5937%,453,0.1782%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::write_str,5,0.18,89.5937%,437,0.1782%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,5,0.18,89.5937%,421,0.1782%,15
+core::hash::Hasher::write_u8,1,0.04,89.7363%,405,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,1,0.04,89.7363%,389,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,1,0.04,89.7363%,373,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,89.7363%,357,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,89.7363%,341,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,89.7363%,325,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,89.7719%,501,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,89.7719%,485,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,89.7719%,469,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,89.8076%,405,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,89.8076%,389,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,89.8076%,373,0.0356%,15
+hashbrown::control::group::neon::Group::load,3,0.11,89.8076%,469,0.1069%,15
+core::core_arch::aarch64::neon::generated::vld1_u8,3,0.11,89.8076%,453,0.1069%,15
+core::ptr::read_unaligned,3,0.11,89.8076%,437,0.1069%,15
+core::ptr::copy_nonoverlapping,3,0.11,89.8076%,421,0.1069%,15
+core::ptr::read_unaligned,2,0.07,89.8432%,405,0.0713%,15
+core::ptr::copy_nonoverlapping,2,0.07,89.8432%,389,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,89.8432%,373,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,89.8432%,357,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,89.8432%,341,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,89.9145%,421,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,89.9145%,405,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,89.9145%,389,0.0356%,15
+<Q as hashbrown::Equivalent<K>>::equivalent,1,0.04,89.9501%,405,0.0356%,15
+core::cmp::impls::<impl core::cmp::PartialEq<&B> for &A>::eq,1,0.04,89.9501%,389,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,89.9501%,373,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,89.9501%,357,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,89.9501%,341,0.0356%,15
+"std::collections::hash::map::HashMap<K,V,S>::get",19,0.68,89.3443%,565,0.6771%,15
+"hashbrown::map::HashMap<K,V,S,A>::get",19,0.68,89.3443%,549,0.6771%,15
+"hashbrown::map::HashMap<K,V,S,A>::get_inner",19,0.68,89.3443%,533,0.6771%,15
+"hashbrown::raw::RawTable<T,A>::get",7,0.25,89.7719%,517,0.2495%,15
+"hashbrown::raw::RawTable<T,A>::find",6,0.21,89.8076%,501,0.2138%,15
+hashbrown::raw::RawTableInner::find_inner,6,0.21,89.8076%,485,0.2138%,15
+"hashbrown::raw::RawTable<T,A>::find::{{closure}}",3,0.11,89.9145%,469,0.1069%,15
+hashbrown::map::equivalent_key::{{closure}},3,0.11,89.9145%,453,0.1069%,15
+<Q as hashbrown::Equivalent<K>>::equivalent,3,0.11,89.9145%,437,0.1069%,15
+core::cmp::impls::<impl core::cmp::PartialEq<&B> for &A>::eq,2,0.07,89.9501%,421,0.0713%,15
+core::str::traits::<impl core::cmp::PartialEq for str>::eq,1,0.04,89.9857%,405,0.0356%,15
+core::cmp::impls::<impl core::cmp::PartialEq<&B> for &A>::eq,1,0.04,89.9857%,389,0.0356%,15
+core::slice::cmp::<impl core::cmp::PartialEq<[U]> for [T]>::eq,1,0.04,89.9857%,373,0.0356%,15
+<[A] as core::slice::cmp::SlicePartialEq<B>>::equal,1,0.04,89.9857%,357,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,89.9857%,341,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,89.9857%,325,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,89.9857%,309,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,90.0214%,469,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,90.0214%,453,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,90.0214%,437,0.0356%,15
+<serde_toon::canonical::encode::CanonicalSerializer as serde_core::ser::Serializer>::serialize_struct,2,0.07,90.0214%,485,0.0713%,15
+serde_toon::canonical::encode::take_entry_vec,1,0.04,90.0570%,469,0.0356%,15
+std::thread::local::LocalKey<T>::with,1,0.04,90.0570%,453,0.0356%,15
+std::thread::local::LocalKey<T>::try_with,1,0.04,90.0570%,437,0.0356%,15
+serde_toon::canonical::encode::take_entry_vec::{{closure}},1,0.04,90.0570%,421,0.0356%,15
+alloc::vec::Vec<T>::with_capacity,1,0.04,90.0570%,405,0.0356%,15
+"alloc::vec::Vec<T,A>::with_capacity_in",1,0.04,90.0570%,389,0.0356%,15
+"alloc::raw_vec::RawVec<T,A>::with_capacity_in",1,0.04,90.0570%,373,0.0356%,15
+alloc::raw_vec::RawVecInner<A>::with_capacity_in,1,0.04,90.0570%,357,0.0356%,15
+alloc::raw_vec::RawVecInner<A>::try_allocate_in,1,0.04,90.0570%,341,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,90.0570%,325,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,90.0570%,309,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,90.0570%,293,0.0356%,15
+core::ptr::drop_in_place<serde_toon::canonical::encode::CanonicalStructSerializer>,1,0.04,90.0927%,469,0.0356%,15
+<serde_toon::canonical::encode::CanonicalStructSerializer as core::ops::drop::Drop>::drop,1,0.04,90.0927%,453,0.0356%,15
+serde_toon::canonical::encode::recycle_entry_vec,1,0.04,90.0927%,437,0.0356%,15
+serde_toon::canonical::encode::recycle_entry_vec,1,0.04,90.0927%,421,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,90.0927%,405,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,90.0927%,389,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,90.0927%,373,0.0356%,15
+"<&alloc::vec::Vec<T,A> as core::iter::traits::collect::IntoIterator>::into_iter",1,0.04,90.1283%,453,0.0356%,15
+"<alloc::vec::Vec<T,A> as core::ops::deref::Deref>::deref",1,0.04,90.1283%,437,0.0356%,15
+"alloc::vec::Vec<T,A>::as_slice",1,0.04,90.1283%,421,0.0356%,15
+core::slice::raw::from_raw_parts,1,0.04,90.1283%,405,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,90.1283%,389,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,90.1283%,373,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,90.1283%,357,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,8,0.29,90.1639%,453,0.2851%,15
+backtrace::backtrace::trace_unsynchronized,8,0.29,90.1639%,437,0.2851%,15
+backtrace::backtrace::libunwind::trace,8,0.29,90.1639%,421,0.2851%,15
+core::ptr::drop_in_place<std::collections::hash::set::HashSet<&str>>,1,0.04,90.4490%,453,0.0356%,15
+"core::ptr::drop_in_place<hashbrown::set::HashSet<&str,std::hash::random::RandomState>>",1,0.04,90.4490%,437,0.0356%,15
+"core::ptr::drop_in_place<hashbrown::map::HashMap<&str,(),std::hash::random::RandomState>>",1,0.04,90.4490%,421,0.0356%,15
+"core::ptr::drop_in_place<hashbrown::raw::RawTable<(&str,())>>",1,0.04,90.4490%,405,0.0356%,15
+"<hashbrown::raw::RawTable<T,A> as core::ops::drop::Drop>::drop",1,0.04,90.4490%,389,0.0356%,15
+hashbrown::raw::RawTableInner::drop_inner_table,1,0.04,90.4490%,373,0.0356%,15
+hashbrown::raw::RawTableInner::free_buckets,1,0.04,90.4490%,357,0.0356%,15
+<alloc::alloc::Global as core::alloc::Allocator>::deallocate,1,0.04,90.4490%,341,0.0356%,15
+alloc::alloc::dealloc,1,0.04,90.4490%,325,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,90.4490%,309,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,90.4490%,293,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,90.4490%,277,0.0356%,15
+serde_toon::canonical::encode::finish_object,1,0.04,90.4847%,453,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,90.4847%,437,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,90.4847%,421,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,90.4847%,405,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,6,0.21,90.5203%,405,0.2138%,15
+backtrace::backtrace::trace_unsynchronized,6,0.21,90.5203%,389,0.2138%,15
+backtrace::backtrace::libunwind::trace,6,0.21,90.5203%,373,0.2138%,15
+"hashbrown::raw::RawTable<T,A>::find_or_find_insert_slot",6,0.21,90.7341%,373,0.2138%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,6,0.21,90.7341%,357,0.2138%,15
+backtrace::backtrace::trace_unsynchronized,6,0.21,90.7341%,341,0.2138%,15
+backtrace::backtrace::libunwind::trace,6,0.21,90.7341%,325,0.2138%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,90.9480%,357,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,90.9480%,341,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,90.9480%,325,0.1069%,15
+core::core_arch::aarch64::neon::generated::vld1_u8,1,0.04,91.0549%,325,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,91.0549%,309,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,91.0549%,293,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,91.0549%,277,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,91.0905%,293,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,91.0905%,277,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,91.0905%,261,0.0356%,15
+core::core_arch::aarch64::neon::generated::vld1_u8,11,0.39,91.0549%,341,0.3920%,15
+core::ptr::read_unaligned,10,0.36,91.0905%,325,0.3564%,15
+core::ptr::copy_nonoverlapping,10,0.36,91.0905%,309,0.3564%,15
+core::ptr::read_unaligned,9,0.32,91.1262%,293,0.3207%,15
+core::ptr::copy_nonoverlapping,9,0.32,91.1262%,277,0.3207%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,9,0.32,91.1262%,261,0.3207%,15
+backtrace::backtrace::trace_unsynchronized,9,0.32,91.1262%,245,0.3207%,15
+backtrace::backtrace::libunwind::trace,9,0.32,91.1262%,229,0.3207%,15
+hashbrown::control::group::neon::Group::load,12,0.43,91.0549%,357,0.4277%,15
+hashbrown::raw::RawTableInner::find_or_find_insert_slot_inner,1,0.04,91.4469%,341,0.0356%,15
+hashbrown::control::group::neon::Group::load,1,0.04,91.4469%,325,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,91.4469%,309,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,91.4469%,293,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,91.4469%,277,0.0356%,15
+hashbrown::control::group::neon::Group::match_tag,2,0.07,91.4825%,341,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,91.4825%,325,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,91.4825%,309,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,91.4825%,293,0.0713%,15
+hashbrown::control::group::neon::Group::match_empty,5,0.18,91.4825%,357,0.1782%,15
+hashbrown::raw::RawTableInner::find_or_find_insert_slot_inner,3,0.11,91.5538%,341,0.1069%,15
+hashbrown::control::group::neon::Group::match_empty,3,0.11,91.5538%,325,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,91.5538%,309,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,91.5538%,293,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,91.5538%,277,0.1069%,15
+hashbrown::control::group::neon::Group::match_tag,1,0.04,91.6607%,357,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,91.6607%,341,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,91.6607%,325,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,91.6607%,309,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,91.6964%,341,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,91.6964%,325,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,91.6964%,309,0.0356%,15
+hashbrown::raw::RawTableInner::find_insert_slot_in_group,3,0.11,91.6964%,357,0.1069%,15
+hashbrown::control::group::neon::Group::match_empty_or_deleted,2,0.07,91.7320%,341,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,91.7320%,325,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,91.7320%,309,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,91.7320%,293,0.0713%,15
+"hashbrown::map::HashMap<K,V,S,A>::find_or_find_insert_slot",32,1.14,90.7341%,405,1.1404%,15
+"hashbrown::raw::RawTable<T,A>::find_or_find_insert_slot",32,1.14,90.7341%,389,1.1404%,15
+hashbrown::raw::RawTableInner::find_or_find_insert_slot_inner,26,0.93,90.9480%,373,0.9266%,15
+hashbrown::raw::RawTableInner::find_or_find_insert_slot_inner,2,0.07,91.8033%,357,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,91.8033%,341,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,91.8033%,325,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,91.8033%,309,0.0713%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::finish,15,0.53,91.8746%,341,0.5346%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,15,0.53,91.8746%,325,0.5346%,15
+backtrace::backtrace::trace_unsynchronized,15,0.53,91.8746%,309,0.5346%,15
+backtrace::backtrace::libunwind::trace,15,0.53,91.8746%,293,0.5346%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::finish,17,0.61,91.8746%,373,0.6058%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::finish,17,0.61,91.8746%,357,0.6058%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::finish,2,0.07,92.4091%,341,0.0713%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::finish,2,0.07,92.4091%,325,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,92.4091%,309,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,92.4091%,293,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,92.4091%,277,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,92.4804%,341,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,92.4804%,325,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,92.4804%,309,0.0356%,15
+<std::hash::random::RandomState as core::hash::BuildHasher>::build_hasher,4,0.14,92.4804%,373,0.1426%,15
+core::hash::sip::SipHasher13::new_with_keys,4,0.14,92.4804%,357,0.1426%,15
+core::hash::sip::Hasher<S>::new_with_keys,3,0.11,92.5160%,341,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,92.5160%,325,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,92.5160%,309,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,92.5160%,293,0.1069%,15
+core::hash::BuildHasher::hash_one,1,0.04,92.6230%,373,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,92.6230%,357,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,92.6230%,341,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,92.6230%,325,0.0356%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,1,0.04,92.6586%,341,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,92.6586%,325,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,92.6586%,309,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,92.6586%,293,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,2,0.07,92.6942%,261,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,92.6942%,245,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,92.6942%,229,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,92.6942%,213,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,92.7655%,261,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,92.7655%,245,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,92.7655%,229,0.0356%,15
+core::ptr::copy_nonoverlapping,6,0.21,92.8011%,245,0.2138%,15
+core::hash::sip::u8to64_le,6,0.21,92.8011%,229,0.2138%,15
+core::ptr::copy_nonoverlapping,6,0.21,92.8011%,213,0.2138%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,6,0.21,92.8011%,197,0.2138%,15
+backtrace::backtrace::trace_unsynchronized,6,0.21,92.8011%,181,0.2138%,15
+backtrace::backtrace::libunwind::trace,6,0.21,92.8011%,165,0.2138%,15
+core::hash::sip::u8to64_le,7,0.25,92.8011%,261,0.2495%,15
+core::slice::<impl [T]>::get_unchecked,1,0.04,93.0150%,245,0.0356%,15
+<usize as core::slice::index::SliceIndex<[T]>>::get_unchecked,1,0.04,93.0150%,229,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.0150%,213,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.0150%,197,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.0150%,181,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,1,0.04,93.0506%,245,0.0356%,15
+core::ptr::copy_nonoverlapping,1,0.04,93.0506%,229,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.0506%,213,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.0506%,197,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.0506%,181,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.0862%,213,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.0862%,197,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.0862%,181,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,13,0.46,92.6942%,277,0.4633%,15
+core::ptr::copy_nonoverlapping,3,0.11,93.0506%,261,0.1069%,15
+core::ptr::copy_nonoverlapping::precondition_check,2,0.07,93.0862%,245,0.0713%,15
+core::ub_checks::maybe_is_nonoverlapping,2,0.07,93.0862%,229,0.0713%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,93.1219%,213,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,93.1219%,197,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.1219%,181,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.1219%,165,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.1219%,149,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,3,0.11,93.1575%,277,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,93.1575%,261,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,93.1575%,245,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,93.1575%,229,0.1069%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,4,0.14,93.2644%,245,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,93.2644%,229,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,93.2644%,213,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,93.2644%,197,0.1426%,15
+"hashbrown::map::HashMap<K,V,S,A>::insert",82,2.92,90.5203%,421,2.9223%,15
+hashbrown::map::make_hash,44,1.57,91.8746%,405,1.5681%,15
+core::hash::BuildHasher::hash_one,44,1.57,91.8746%,389,1.5681%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,22,0.78,92.6586%,373,0.7840%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,22,0.78,92.6586%,357,0.7840%,15
+core::hash::impls::<impl core::hash::Hash for str>::hash,21,0.75,92.6942%,341,0.7484%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::write_str,21,0.75,92.6942%,325,0.7484%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::write_str,21,0.75,92.6942%,309,0.7484%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,21,0.75,92.6942%,293,0.7484%,15
+core::hash::Hasher::write_u8,5,0.18,93.2644%,277,0.1782%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,5,0.18,93.2644%,261,0.1782%,15
+core::cmp::min,1,0.04,93.4070%,245,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.4070%,229,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.4070%,213,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.4070%,197,0.0356%,15
+"std::collections::hash::set::HashSet<T,S>::insert",83,2.96,90.5203%,453,2.9579%,15
+"hashbrown::set::HashSet<T,S,A>::insert",83,2.96,90.5203%,437,2.9579%,15
+"std::collections::hash::set::HashSet<T,S>::insert",1,0.04,93.4426%,421,0.0356%,15
+"hashbrown::set::HashSet<T,S,A>::insert",1,0.04,93.4426%,405,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.4426%,389,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.4426%,373,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.4426%,357,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.4783%,421,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.4783%,405,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.4783%,389,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.5139%,341,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.5139%,325,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.5139%,309,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.5495%,325,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.5495%,309,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.5495%,293,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.5852%,309,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.5852%,293,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.5852%,277,0.0356%,15
+hashbrown::raw::RawTableInner::new_uninitialized,2,0.07,93.5852%,325,0.0713%,15
+hashbrown::raw::alloc::inner::do_alloc,1,0.04,93.6208%,309,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.6208%,293,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.6208%,277,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.6208%,261,0.0356%,15
+<serde_toon::canonical::encode::CanonicalStructSerializer as serde_core::ser::SerializeStruct>::end,102,3.64,90.0927%,485,3.6351%,15
+serde_toon::canonical::encode::finish_object,101,3.60,90.1283%,469,3.5994%,15
+std::collections::hash::set::HashSet<T>::with_capacity,7,0.25,93.4783%,453,0.2495%,15
+"std::collections::hash::set::HashSet<T,S>::with_capacity_and_hasher",7,0.25,93.4783%,437,0.2495%,15
+"hashbrown::set::HashSet<T,S>::with_capacity_and_hasher",6,0.21,93.5139%,421,0.2138%,15
+"hashbrown::map::HashMap<K,V,S>::with_capacity_and_hasher",6,0.21,93.5139%,405,0.2138%,15
+hashbrown::raw::RawTable<T>::with_capacity,6,0.21,93.5139%,389,0.2138%,15
+"hashbrown::raw::RawTable<T,A>::with_capacity_in",6,0.21,93.5139%,373,0.2138%,15
+hashbrown::raw::RawTableInner::with_capacity,6,0.21,93.5139%,357,0.2138%,15
+hashbrown::raw::RawTableInner::fallible_with_capacity,5,0.18,93.5495%,341,0.1782%,15
+hashbrown::raw::capacity_to_buckets,2,0.07,93.6565%,325,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,93.6565%,309,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,93.6565%,293,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,93.6565%,277,0.0713%,15
+"<alloc::vec::Vec<T,A> as core::ops::index::Index<I>>::index",1,0.04,93.7277%,469,0.0356%,15
+"<alloc::vec::Vec<T,A> as core::ops::deref::Deref>::deref",1,0.04,93.7277%,453,0.0356%,15
+"alloc::vec::Vec<T,A>::as_slice",1,0.04,93.7277%,437,0.0356%,15
+core::slice::raw::from_raw_parts,1,0.04,93.7277%,421,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.7277%,405,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.7277%,389,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.7277%,373,0.0356%,15
+"<core::result::Result<T,E> as core::ops::try_trait::Try>::branch",1,0.04,93.7634%,469,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,93.7634%,453,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,93.7634%,437,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,93.7634%,421,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,13,0.46,93.7990%,469,0.4633%,15
+backtrace::backtrace::trace_unsynchronized,13,0.46,93.7990%,453,0.4633%,15
+backtrace::backtrace::libunwind::trace,13,0.46,93.7990%,437,0.4633%,15
+<serde_toon::canonical::encode::CanonicalStructSerializer as serde_core::ser::SerializeStruct>::serialize_field,2,0.07,94.2623%,469,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,94.2623%,453,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,94.2623%,437,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,94.2623%,421,0.0713%,15
+<smol_str::SmolStr as core::ops::deref::Deref>::deref,1,0.04,94.3336%,469,0.0356%,15
+smol_str::SmolStr::as_str,1,0.04,94.3336%,453,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,94.3336%,437,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,94.3336%,421,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,94.3336%,405,0.0356%,15
+"alloc::vec::Vec<T,A>::push",4,0.14,94.3692%,453,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,94.3692%,437,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,94.3692%,421,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,94.3692%,405,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,94.5118%,437,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,94.5118%,421,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,94.5118%,405,0.0356%,15
+"alloc::vec::Vec<T,A>::push",9,0.32,94.3692%,469,0.3207%,15
+"alloc::vec::Vec<T,A>::push_mut",5,0.18,94.5118%,453,0.1782%,15
+core::ptr::write,4,0.14,94.5474%,437,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,94.5474%,421,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,94.5474%,405,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,94.5474%,389,0.1426%,15
+core::cmp::impls::<impl core::cmp::PartialEq<&B> for &A>::eq,1,0.04,94.6900%,453,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,94.6900%,437,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,94.6900%,421,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,94.6900%,405,0.0356%,15
+<[A] as core::slice::cmp::SlicePartialEq<B>>::equal,1,0.04,94.7256%,437,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,94.7256%,421,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,94.7256%,405,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,94.7256%,389,0.0356%,15
+core::cmp::impls::<impl core::cmp::PartialEq<&B> for &A>::eq,3,0.11,94.6900%,469,0.1069%,15
+core::slice::cmp::<impl core::cmp::PartialEq<[U]> for [T]>::eq,2,0.07,94.7256%,453,0.0713%,15
+core::slice::cmp::<impl core::cmp::PartialEq<[U]> for [T]>::eq,1,0.04,94.7612%,437,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,94.7612%,421,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,94.7612%,405,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,94.7612%,389,0.0356%,15
+<alloc::string::String as core::ops::deref::Deref>::deref,1,0.04,94.7969%,453,0.0356%,15
+<alloc::string::String as core::ops::deref::Deref>::deref,1,0.04,94.7969%,437,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,94.7969%,421,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,94.7969%,405,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,94.7969%,389,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,94.8325%,437,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,94.8325%,421,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,94.8325%,405,0.1426%,15
+serde_toon::canonical::encode::CanonicalString::new,2,0.07,94.9751%,421,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,94.9751%,405,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,94.9751%,389,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,94.9751%,373,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,95.0463%,405,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,95.0463%,389,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,95.0463%,373,0.0356%,15
+serde_toon::canonical::encode::analyze_string_cached,1,0.04,95.0820%,405,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,95.0820%,389,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,95.0820%,373,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,95.0820%,357,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,95.1176%,373,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,95.1176%,357,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,95.1176%,341,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,95.1532%,357,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,95.1532%,341,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,95.1532%,325,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,95.1889%,309,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,95.1889%,293,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,95.1889%,277,0.0356%,15
+core::cell::RefCell<T>::borrow_mut,2,0.07,95.1889%,357,0.0713%,15
+core::cell::RefCell<T>::try_borrow_mut,2,0.07,95.1889%,341,0.0713%,15
+core::ptr::non_null::NonNull<T>::new_unchecked,2,0.07,95.1889%,325,0.0713%,15
+core::cell::RefCell<T>::borrow_mut,1,0.04,95.2245%,309,0.0356%,15
+core::cell::RefCell<T>::try_borrow_mut,1,0.04,95.2245%,293,0.0356%,15
+core::ptr::non_null::NonNull<T>::new_unchecked,1,0.04,95.2245%,277,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,95.2245%,261,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,95.2245%,245,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,95.2245%,229,0.0356%,15
+serde_toon::canonical::encode::analyze_string_cached::{{closure}},2,0.07,95.2602%,357,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,95.2602%,341,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,95.2602%,325,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,95.2602%,309,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,95.3314%,277,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,95.3314%,261,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,95.3314%,245,0.0356%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::finish,17,0.61,95.3671%,277,0.6058%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::finish,17,0.61,95.3671%,261,0.6058%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::finish,17,0.61,95.3671%,245,0.6058%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,17,0.61,95.3671%,229,0.6058%,15
+backtrace::backtrace::trace_unsynchronized,17,0.61,95.3671%,213,0.6058%,15
+backtrace::backtrace::libunwind::trace,17,0.61,95.3671%,197,0.6058%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,95.9729%,245,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,95.9729%,229,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,95.9729%,213,0.0356%,15
+<std::hash::random::RandomState as core::hash::BuildHasher>::build_hasher,5,0.18,95.9729%,277,0.1782%,15
+core::hash::sip::SipHasher13::new_with_keys,5,0.18,95.9729%,261,0.1782%,15
+core::hash::sip::Hasher<S>::new_with_keys,4,0.14,96.0086%,245,0.1426%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,4,0.14,96.0086%,229,0.1426%,15
+backtrace::backtrace::trace_unsynchronized,4,0.14,96.0086%,213,0.1426%,15
+backtrace::backtrace::libunwind::trace,4,0.14,96.0086%,197,0.1426%,15
+core::hash::BuildHasher::hash_one,3,0.11,96.1511%,277,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,96.1511%,261,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,96.1511%,245,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,96.1511%,229,0.1069%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,1,0.04,96.2580%,261,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,96.2580%,245,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,96.2580%,229,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,96.2580%,213,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,96.2937%,181,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,96.2937%,165,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,96.2937%,149,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,96.3293%,149,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,96.3293%,133,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,96.3293%,117,0.1069%,15
+core::hash::sip::u8to64_le,5,0.18,96.4362%,149,0.1782%,15
+core::ptr::copy_nonoverlapping,5,0.18,96.4362%,133,0.1782%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,5,0.18,96.4362%,117,0.1782%,15
+backtrace::backtrace::trace_unsynchronized,5,0.18,96.4362%,101,0.1782%,15
+backtrace::backtrace::libunwind::trace,5,0.18,96.4362%,85,0.1782%,15
+core::hash::sip::u8to64_le,9,0.32,96.3293%,181,0.3207%,15
+core::ptr::copy_nonoverlapping,9,0.32,96.3293%,165,0.3207%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,96.6144%,149,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,96.6144%,133,0.0356%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,96.6144%,117,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,96.6144%,101,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,96.6144%,85,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,96.6144%,69,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,96.6144%,53,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,6,0.21,96.6500%,165,0.2138%,15
+core::ptr::copy_nonoverlapping,6,0.21,96.6500%,149,0.2138%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,6,0.21,96.6500%,133,0.2138%,15
+backtrace::backtrace::trace_unsynchronized,6,0.21,96.6500%,117,0.2138%,15
+backtrace::backtrace::libunwind::trace,6,0.21,96.6500%,101,0.2138%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,17,0.61,96.2937%,197,0.6058%,15
+core::ptr::copy_nonoverlapping,7,0.25,96.6500%,181,0.2495%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,96.8639%,165,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,96.8639%,149,0.0356%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,96.8639%,133,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,96.8639%,117,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,96.8639%,101,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,96.8639%,85,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,96.8639%,69,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,6,0.21,96.8995%,197,0.2138%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,6,0.21,96.8995%,181,0.2138%,15
+backtrace::backtrace::trace_unsynchronized,6,0.21,96.8995%,165,0.2138%,15
+backtrace::backtrace::libunwind::trace,6,0.21,96.8995%,149,0.2138%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,2,0.07,97.1133%,165,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,97.1133%,149,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,97.1133%,133,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,97.1133%,117,0.0713%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,3,0.11,97.1133%,181,0.1069%,15
+core::cmp::min,1,0.04,97.1846%,165,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,97.1846%,149,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,97.1846%,133,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,97.1846%,117,0.0356%,15
+hashbrown::map::make_hash,55,1.96,95.3314%,309,1.9601%,15
+core::hash::BuildHasher::hash_one,55,1.96,95.3314%,293,1.9601%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,29,1.03,96.2580%,277,1.0335%,15
+core::hash::impls::<impl core::hash::Hash for str>::hash,28,1.00,96.2937%,261,0.9979%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::write_str,28,1.00,96.2937%,245,0.9979%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::write_str,28,1.00,96.2937%,229,0.9979%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,28,1.00,96.2937%,213,0.9979%,15
+core::hash::Hasher::write_u8,5,0.18,97.1133%,197,0.1782%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,2,0.07,97.2202%,181,0.0713%,15
+core::hash::Hasher::write_u8,2,0.07,97.2202%,165,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,97.2202%,149,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,97.2202%,133,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,97.2202%,117,0.0713%,15
+"hashbrown::map::HashMap<K,V,S,A>::get_inner",3,0.11,97.2915%,293,0.1069%,15
+"hashbrown::raw::RawTable<T,A>::get",3,0.11,97.2915%,277,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,97.2915%,261,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,97.2915%,245,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,97.2915%,229,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,6,0.21,97.3984%,261,0.2138%,15
+backtrace::backtrace::trace_unsynchronized,6,0.21,97.3984%,245,0.2138%,15
+backtrace::backtrace::libunwind::trace,6,0.21,97.3984%,229,0.2138%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,97.6123%,229,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,97.6123%,213,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,97.6123%,197,0.0356%,15
+core::core_arch::aarch64::neon::generated::vld1_u8,1,0.04,97.6479%,229,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,97.6479%,213,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,97.6479%,197,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,97.6479%,181,0.0356%,15
+hashbrown::control::group::neon::Group::load,3,0.11,97.6123%,261,0.1069%,15
+core::core_arch::aarch64::neon::generated::vld1_u8,3,0.11,97.6123%,245,0.1069%,15
+core::ptr::read_unaligned,1,0.04,97.6835%,229,0.0356%,15
+core::ptr::copy_nonoverlapping,1,0.04,97.6835%,213,0.0356%,15
+core::ptr::read_unaligned,1,0.04,97.6835%,197,0.0356%,15
+core::ptr::copy_nonoverlapping,1,0.04,97.6835%,181,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,97.6835%,165,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,97.6835%,149,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,97.6835%,133,0.0356%,15
+<core::ops::range::RangeTo<usize> as core::slice::index::SliceIndex<[T]>>::get_unchecked,1,0.04,97.7192%,149,0.0356%,15
+<core::ops::range::RangeTo<usize> as core::slice::index::SliceIndex<[T]>>::get_unchecked,1,0.04,97.7192%,133,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,97.7192%,117,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,97.7192%,101,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,97.7192%,85,0.0356%,15
+core::slice::<impl [T]>::get_unchecked,2,0.07,97.7192%,165,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,97.7548%,149,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,97.7548%,133,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,97.7548%,117,0.0356%,15
+<smol_str::SmolStr as core::borrow::Borrow<str>>::borrow,3,0.11,97.7192%,213,0.1069%,15
+smol_str::SmolStr::as_str,3,0.11,97.7192%,197,0.1069%,15
+smol_str::Repr::as_str,3,0.11,97.7192%,181,0.1069%,15
+smol_str::Repr::as_str,1,0.04,97.7904%,165,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,97.7904%,149,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,97.7904%,133,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,97.7904%,117,0.0356%,15
+"hashbrown::raw::RawTable<T,A>::find::{{closure}}",5,0.18,97.7192%,261,0.1782%,15
+hashbrown::map::equivalent_key::{{closure}},5,0.18,97.7192%,245,0.1782%,15
+<Q as hashbrown::Equivalent<K>>::equivalent,5,0.18,97.7192%,229,0.1782%,15
+core::cmp::impls::<impl core::cmp::PartialEq<&B> for &A>::eq,2,0.07,97.8261%,213,0.0713%,15
+core::str::traits::<impl core::cmp::PartialEq for str>::eq,2,0.07,97.8261%,197,0.0713%,15
+core::cmp::impls::<impl core::cmp::PartialEq<&B> for &A>::eq,2,0.07,97.8261%,181,0.0713%,15
+core::slice::cmp::<impl core::cmp::PartialEq<[U]> for [T]>::eq,2,0.07,97.8261%,165,0.0713%,15
+<[A] as core::slice::cmp::SlicePartialEq<B>>::equal,2,0.07,97.8261%,149,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,97.8261%,133,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,97.8261%,117,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,97.8261%,101,0.0713%,15
+serde_toon::canonical::encode::analyze_string_cached,81,2.89,95.0463%,421,2.8867%,15
+std::thread::local::LocalKey<T>::with,79,2.82,95.1176%,405,2.8154%,15
+std::thread::local::LocalKey<T>::try_with,79,2.82,95.1176%,389,2.8154%,15
+serde_toon::canonical::encode::analyze_string_cached::{{closure}},78,2.78,95.1532%,373,2.7798%,15
+"std::collections::hash::map::HashMap<K,V,S>::get",73,2.60,95.3314%,357,2.6016%,15
+"hashbrown::map::HashMap<K,V,S,A>::get",73,2.60,95.3314%,341,2.6016%,15
+"hashbrown::map::HashMap<K,V,S,A>::get_inner",73,2.60,95.3314%,325,2.6016%,15
+"hashbrown::raw::RawTable<T,A>::get",18,0.64,97.2915%,309,0.6415%,15
+"hashbrown::raw::RawTable<T,A>::find",15,0.53,97.3984%,293,0.5346%,15
+hashbrown::raw::RawTableInner::find_inner,15,0.53,97.3984%,277,0.5346%,15
+"hashbrown::raw::RawTable<T,A>::find",1,0.04,97.8974%,261,0.0356%,15
+hashbrown::raw::RawTableInner::find_inner,1,0.04,97.8974%,245,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,97.8974%,229,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,97.8974%,213,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,97.8974%,197,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,97.9330%,389,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,97.9330%,373,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,97.9330%,357,0.0356%,15
+smol_str::Repr::new,1,0.04,97.9686%,389,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,97.9686%,373,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,97.9686%,357,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,97.9686%,341,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,98.0043%,373,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,98.0043%,357,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,98.0043%,341,0.0713%,15
+core::array::<impl core::ops::index::IndexMut<I> for [T,1,0.04,98.0756%,373,0.0356%,15
+ N]>::index_mut,1,0.04,98.0756%,357,0.0356%,15
+core::slice::index::<impl core::ops::index::IndexMut<I> for [T]>::index_mut,1,0.04,98.0756%,341,0.0356%,15
+core::array::<impl core::ops::index::IndexMut<I> for [T,1,0.04,98.0756%,325,0.0356%,15
+ N]>::index_mut,1,0.04,98.0756%,309,0.0356%,15
+core::slice::index::<impl core::ops::index::IndexMut<I> for [T]>::index_mut,1,0.04,98.0756%,293,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,98.0756%,277,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,98.0756%,261,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,98.0756%,245,0.0356%,15
+core::iter::traits::iterator::Iterator::count,1,0.04,98.1112%,373,0.0356%,15
+"<core::iter::adapters::take_while::TakeWhile<I,P> as core::iter::traits::iterator::Iterator>::fold",1,0.04,98.1112%,357,0.0356%,15
+"<core::iter::adapters::take_while::TakeWhile<I,P> as core::iter::traits::iterator::Iterator>::try_fold",1,0.04,98.1112%,341,0.0356%,15
+core::iter::traits::iterator::Iterator::try_fold,1,0.04,98.1112%,325,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,98.1112%,309,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,98.1112%,293,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,98.1112%,277,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,98.1468%,341,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,98.1468%,325,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,98.1468%,309,0.1069%,15
+core::ptr::copy_nonoverlapping::precondition_check,3,0.11,98.2537%,341,0.1069%,15
+core::ub_checks::maybe_is_nonoverlapping,3,0.11,98.2537%,325,0.1069%,15
+core::ptr::copy_nonoverlapping::precondition_check,3,0.11,98.2537%,309,0.1069%,15
+core::ub_checks::maybe_is_nonoverlapping,3,0.11,98.2537%,293,0.1069%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,98.2537%,277,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,98.2537%,261,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,98.2537%,245,0.1069%,15
+core::slice::<impl [T]>::copy_from_slice,12,0.43,98.1468%,373,0.4277%,15
+core::ptr::copy_nonoverlapping,12,0.43,98.1468%,357,0.4277%,15
+core::slice::<impl [T]>::copy_from_slice,6,0.21,98.3607%,341,0.2138%,15
+core::ptr::copy_nonoverlapping,6,0.21,98.3607%,325,0.2138%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,6,0.21,98.3607%,309,0.2138%,15
+backtrace::backtrace::trace_unsynchronized,6,0.21,98.3607%,293,0.2138%,15
+backtrace::backtrace::libunwind::trace,6,0.21,98.3607%,277,0.2138%,15
+serde_core::ser::impls::<impl serde_core::ser::Serialize for alloc::string::String>::serialize,108,3.85,94.7969%,469,3.8489%,15
+<serde_toon::canonical::encode::CanonicalSerializer as serde_core::ser::Serializer>::serialize_str,107,3.81,94.8325%,453,3.8133%,15
+serde_toon::canonical::encode::CanonicalString::new,103,3.67,94.9751%,437,3.6707%,15
+smol_str::SmolStr::new,20,0.71,97.9330%,421,0.7128%,15
+smol_str::Repr::new,20,0.71,97.9330%,405,0.7128%,15
+smol_str::Repr::new_on_stack,18,0.64,98.0043%,389,0.6415%,15
+smol_str::Repr::new_on_stack,2,0.07,98.5745%,373,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,98.5745%,357,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,98.5745%,341,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,98.5745%,325,0.0713%,15
+<alloc::string::String as core::ops::deref::Deref>::deref,1,0.04,98.6458%,421,0.0356%,15
+<alloc::string::String as core::ops::deref::Deref>::deref,1,0.04,98.6458%,405,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,98.6458%,389,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,98.6458%,373,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,98.6458%,357,0.0356%,15
+serde_toon::canonical::encode::CanonicalString::new,2,0.07,98.6814%,389,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,98.6814%,373,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,98.6814%,357,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,98.6814%,341,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,98.7527%,357,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,98.7527%,341,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,98.7527%,325,0.0713%,15
+serde_toon::canonical::validate::analyze_string,4,0.14,98.7527%,373,0.1426%,15
+serde_toon::canonical::validate::analyze_string_unicode,2,0.07,98.8239%,357,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,98.8239%,341,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,98.8239%,325,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,98.8239%,309,0.0713%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::finish,2,0.07,98.8952%,245,0.0713%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::finish,2,0.07,98.8952%,229,0.0713%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::finish,2,0.07,98.8952%,213,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,98.8952%,197,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,98.8952%,181,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,98.8952%,165,0.0713%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,1,0.04,98.9665%,229,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,98.9665%,213,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,98.9665%,197,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,98.9665%,181,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,3,0.11,99.0021%,149,0.1069%,15
+backtrace::backtrace::trace_unsynchronized,3,0.11,99.0021%,133,0.1069%,15
+backtrace::backtrace::libunwind::trace,3,0.11,99.0021%,117,0.1069%,15
+core::hash::sip::u8to64_le,1,0.04,99.1091%,149,0.0356%,15
+core::ptr::copy_nonoverlapping,1,0.04,99.1091%,133,0.0356%,15
+core::hash::sip::u8to64_le,1,0.04,99.1091%,117,0.0356%,15
+core::ptr::copy_nonoverlapping,1,0.04,99.1091%,101,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.1091%,85,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.1091%,69,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.1091%,53,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,2,0.07,99.1447%,133,0.0713%,15
+core::ptr::copy_nonoverlapping,2,0.07,99.1447%,117,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,99.1447%,101,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,99.1447%,85,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,99.1447%,69,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.2160%,133,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.2160%,117,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.2160%,101,0.0356%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write,8,0.29,99.0021%,165,0.2851%,15
+core::ptr::copy_nonoverlapping,4,0.14,99.1447%,149,0.1426%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,99.2516%,133,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,99.2516%,117,0.0356%,15
+core::ptr::copy_nonoverlapping::precondition_check,1,0.04,99.2516%,101,0.0356%,15
+core::ub_checks::maybe_is_nonoverlapping,1,0.04,99.2516%,85,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.2516%,69,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.2516%,53,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.2516%,37,0.0356%,15
+hashbrown::map::make_hash,12,0.43,98.8952%,277,0.4277%,15
+core::hash::BuildHasher::hash_one,12,0.43,98.8952%,261,0.4277%,15
+core::hash::impls::<impl core::hash::Hash for &T>::hash,10,0.36,98.9665%,245,0.3564%,15
+core::hash::impls::<impl core::hash::Hash for str>::hash,9,0.32,99.0021%,229,0.3207%,15
+<std::hash::random::DefaultHasher as core::hash::Hasher>::write_str,9,0.32,99.0021%,213,0.3207%,15
+<core::hash::sip::SipHasher13 as core::hash::Hasher>::write_str,9,0.32,99.0021%,197,0.3207%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,9,0.32,99.0021%,181,0.3207%,15
+<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str,1,0.04,99.2872%,165,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.2872%,149,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.2872%,133,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.2872%,117,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,99.3229%,229,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,99.3229%,213,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,99.3229%,197,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.3942%,213,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.3942%,197,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.3942%,181,0.0356%,15
+hashbrown::control::group::neon::Group::load,2,0.07,99.3942%,229,0.0713%,15
+core::core_arch::aarch64::neon::generated::vld1_u8,1,0.04,99.4298%,213,0.0356%,15
+core::core_arch::aarch64::neon::generated::vld1_u8,1,0.04,99.4298%,197,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.4298%,181,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.4298%,165,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.4298%,149,0.0356%,15
+<Q as hashbrown::Equivalent<K>>::equivalent,1,0.04,99.4654%,197,0.0356%,15
+<smol_str::SmolStr as core::borrow::Borrow<str>>::borrow,1,0.04,99.4654%,181,0.0356%,15
+smol_str::SmolStr::as_str,1,0.04,99.4654%,165,0.0356%,15
+<Q as hashbrown::Equivalent<K>>::equivalent,1,0.04,99.4654%,149,0.0356%,15
+<smol_str::SmolStr as core::borrow::Borrow<str>>::borrow,1,0.04,99.4654%,133,0.0356%,15
+smol_str::SmolStr::as_str,1,0.04,99.4654%,117,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.4654%,101,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.4654%,85,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.4654%,69,0.0356%,15
+serde_toon::canonical::encode::analyze_string_cached,22,0.78,98.7527%,389,0.7840%,15
+std::thread::local::LocalKey<T>::with,18,0.64,98.8952%,373,0.6415%,15
+std::thread::local::LocalKey<T>::try_with,18,0.64,98.8952%,357,0.6415%,15
+serde_toon::canonical::encode::analyze_string_cached::{{closure}},18,0.64,98.8952%,341,0.6415%,15
+"std::collections::hash::map::HashMap<K,V,S>::get",18,0.64,98.8952%,325,0.6415%,15
+"hashbrown::map::HashMap<K,V,S,A>::get",18,0.64,98.8952%,309,0.6415%,15
+"hashbrown::map::HashMap<K,V,S,A>::get_inner",18,0.64,98.8952%,293,0.6415%,15
+"hashbrown::raw::RawTable<T,A>::get",6,0.21,99.3229%,277,0.2138%,15
+"hashbrown::raw::RawTable<T,A>::find",6,0.21,99.3229%,261,0.2138%,15
+hashbrown::raw::RawTableInner::find_inner,6,0.21,99.3229%,245,0.2138%,15
+"hashbrown::raw::RawTable<T,A>::find::{{closure}}",2,0.07,99.4654%,229,0.0713%,15
+hashbrown::map::equivalent_key::{{closure}},2,0.07,99.4654%,213,0.0713%,15
+hashbrown::map::equivalent_key::{{closure}},1,0.04,99.5011%,197,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.5011%,181,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.5011%,165,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.5011%,149,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,99.5367%,261,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,99.5367%,245,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,99.5367%,229,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.6080%,245,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.6080%,229,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.6080%,213,0.0356%,15
+<alloc::sync::Arc<[T]> as core::convert::From<&[T]>>::from,4,0.14,99.5367%,309,0.1426%,15
+<alloc::sync::Arc<[T]> as alloc::sync::ArcFromSlice<T>>::from_slice,4,0.14,99.5367%,293,0.1426%,15
+alloc::sync::Arc<[T]>::copy_from_slice,4,0.14,99.5367%,277,0.1426%,15
+core::ptr::copy_nonoverlapping,2,0.07,99.6080%,261,0.0713%,15
+alloc::sync::Arc<[T]>::copy_from_slice,1,0.04,99.6436%,245,0.0356%,15
+core::ptr::copy_nonoverlapping,1,0.04,99.6436%,229,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.6436%,213,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.6436%,197,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.6436%,181,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.6793%,261,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.6793%,245,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.6793%,229,0.0356%,15
+<serde_toon::canonical::encode::CanonicalStructSerializer as serde_core::ser::SerializeStruct>::serialize_field,169,6.02,93.7277%,485,6.0228%,15
+serde_core::ser::impls::<impl serde_core::ser::Serialize for core::option::Option<T>>::serialize,31,1.10,98.6458%,469,1.1048%,15
+<serde_toon::canonical::encode::CanonicalSerializer as serde_core::ser::Serializer>::serialize_some,31,1.10,98.6458%,453,1.1048%,15
+serde_core::ser::impls::<impl serde_core::ser::Serialize for alloc::string::String>::serialize,31,1.10,98.6458%,437,1.1048%,15
+<serde_toon::canonical::encode::CanonicalSerializer as serde_core::ser::Serializer>::serialize_str,30,1.07,98.6814%,421,1.0691%,15
+serde_toon::canonical::encode::CanonicalString::new,30,1.07,98.6814%,405,1.0691%,15
+smol_str::SmolStr::new,6,0.21,99.5367%,389,0.2138%,15
+smol_str::Repr::new,6,0.21,99.5367%,373,0.2138%,15
+core::option::Option<T>::unwrap_or_else,6,0.21,99.5367%,357,0.2138%,15
+smol_str::Repr::new::{{closure}},6,0.21,99.5367%,341,0.2138%,15
+<alloc::sync::Arc<str> as core::convert::From<&str>>::from,6,0.21,99.5367%,325,0.2138%,15
+alloc::sync::Arc<T>::from_raw,2,0.07,99.6793%,309,0.0713%,15
+"alloc::sync::Arc<T,A>::from_raw_in",2,0.07,99.6793%,293,0.0713%,15
+alloc::sync::data_offset,2,0.07,99.6793%,277,0.0713%,15
+alloc::sync::data_offset_align,1,0.04,99.7149%,261,0.0356%,15
+core::alloc::layout::Layout::padding_needed_for,1,0.04,99.7149%,245,0.0356%,15
+core::ptr::alignment::Alignment::new,1,0.04,99.7149%,229,0.0356%,15
+core::ptr::alignment::Alignment::new_unchecked,1,0.04,99.7149%,213,0.0356%,15
+alloc::sync::data_offset_align,1,0.04,99.7149%,197,0.0356%,15
+core::alloc::layout::Layout::padding_needed_for,1,0.04,99.7149%,181,0.0356%,15
+core::ptr::alignment::Alignment::new,1,0.04,99.7149%,165,0.0356%,15
+core::ptr::alignment::Alignment::new_unchecked,1,0.04,99.7149%,149,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.7149%,133,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.7149%,117,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.7149%,101,0.0356%,15
+core::iter::traits::iterator::Iterator::try_for_each,274,9.76,90.0214%,597,9.7648%,15
+core::iter::traits::iterator::Iterator::try_fold,274,9.76,90.0214%,581,9.7648%,15
+core::iter::traits::iterator::Iterator::try_for_each::call::{{closure}},274,9.76,90.0214%,565,9.7648%,15
+serde_core::ser::Serializer::collect_seq::{{closure}},274,9.76,90.0214%,549,9.7648%,15
+<serde_toon::canonical::encode::CanonicalSeqSerializer as serde_core::ser::SerializeSeq>::serialize_element,274,9.76,90.0214%,533,9.7648%,15
+serde_core::ser::impls::<impl serde_core::ser::Serialize for &T>::serialize,274,9.76,90.0214%,517,9.7648%,15
+profile_encode::_::<impl serde_core::ser::Serialize for profile_encode::GitHubRepo>::serialize,274,9.76,90.0214%,501,9.7648%,15
+profile_encode::_::<impl serde_core::ser::Serialize for profile_encode::GitHubRepo>::serialize,1,0.04,99.7505%,485,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.7505%,469,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.7505%,453,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.7505%,437,0.0356%,15
+<core::iter::adapters::enumerate::Enumerate<I> as core::iter::traits::iterator::Iterator>::next,2,0.07,99.7862%,581,0.0713%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,2,0.07,99.7862%,565,0.0713%,15
+backtrace::backtrace::trace_unsynchronized,2,0.07,99.7862%,549,0.0713%,15
+backtrace::backtrace::libunwind::trace,2,0.07,99.7862%,533,0.0713%,15
+serde_toon::canonical::encode::encode_string,1,0.04,99.8574%,565,0.0356%,15
+serde_toon::canonical::encode::CanonicalString::as_str,1,0.04,99.8574%,549,0.0356%,15
+smol_str::SmolStr::as_str,1,0.04,99.8574%,533,0.0356%,15
+smol_str::Repr::as_str,1,0.04,99.8574%,517,0.0356%,15
+core::slice::<impl [T]>::get_unchecked,1,0.04,99.8574%,501,0.0356%,15
+<core::ops::range::RangeTo<usize> as core::slice::index::SliceIndex<[T]>>::get_unchecked,1,0.04,99.8574%,485,0.0356%,15
+<core::ops::range::Range<usize> as core::slice::index::SliceIndex<[T]>>::get_unchecked,1,0.04,99.8574%,469,0.0356%,15
+<core::ops::range::Range<usize> as core::slice::index::SliceIndex<[T]>>::get_unchecked,1,0.04,99.8574%,453,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.8574%,437,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.8574%,421,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.8574%,405,0.0356%,15
+serde_toon::canonical::encode::encode_value,2,0.07,99.8574%,581,0.0713%,15
+serde_toon::canonical::encode::write_number,1,0.04,99.8931%,565,0.0356%,15
+itoa::Buffer::format,1,0.04,99.8931%,549,0.0356%,15
+itoa::<impl itoa::private::Sealed for u64>::write,1,0.04,99.8931%,533,0.0356%,15
+<u64 as itoa::Unsigned>::fmt,1,0.04,99.8931%,517,0.0356%,15
+core::slice::<impl [T]>::get_unchecked,1,0.04,99.8931%,501,0.0356%,15
+core::slice::<impl [T]>::get_unchecked,1,0.04,99.8931%,485,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.8931%,469,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.8931%,453,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.8931%,437,0.0356%,15
+serde_toon::canonical::encode::push_indent,1,0.04,99.9287%,581,0.0356%,15
+core::str::traits::<impl core::ops::index::Index<I> for str>::index,1,0.04,99.9287%,565,0.0356%,15
+core::str::traits::<impl core::slice::index::SliceIndex<str> for core::ops::range::RangeTo<usize>>::index,1,0.04,99.9287%,549,0.0356%,15
+core::str::traits::<impl core::slice::index::SliceIndex<str> for core::ops::range::RangeTo<usize>>::get,1,0.04,99.9287%,533,0.0356%,15
+core::str::traits::<impl core::slice::index::SliceIndex<str> for core::ops::range::RangeTo<usize>>::get_unchecked,1,0.04,99.9287%,517,0.0356%,15
+core::str::traits::<impl core::slice::index::SliceIndex<str> for core::ops::range::Range<usize>>::get_unchecked,1,0.04,99.9287%,501,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.9287%,485,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.9287%,469,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.9287%,453,0.0356%,15
+serde_toon::canonical::encode::encode_value_root,6,0.21,99.7862%,629,0.2138%,15
+serde_toon::canonical::encode::encode_root_array,6,0.21,99.7862%,613,0.2138%,15
+serde_toon::canonical::encode::encode_tabular_rows,6,0.21,99.7862%,597,0.2138%,15
+serde_toon::canonical::encode::push_inline_separator,1,0.04,99.9644%,581,0.0356%,15
+alloc::string::String::push,1,0.04,99.9644%,565,0.0356%,15
+<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace,1,0.04,99.9644%,549,0.0356%,15
+backtrace::backtrace::trace_unsynchronized,1,0.04,99.9644%,533,0.0356%,15
+backtrace::backtrace::libunwind::trace,1,0.04,99.9644%,517,0.0356%,15

@@ -1,0 +1,46 @@
+[package]
+name = "serde_toon"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Serde-compatible TOON v3.0 encoder/decoder"
+autobenches = false
+readme = "README.md"
+repository = "https://github.com/bnomei/serde_toon"
+documentation = "https://docs.rs/serde_toon"
+
+[lib]
+name = "serde_toon"
+path = "src2/lib.rs"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0", features = ["preserve_order"] }
+thiserror = "2.0"
+itoa = "1.0"
+ryu = "1.0"
+indexmap = "2.2"
+rayon = { version = "1.10", optional = true }
+memchr = "2.7"
+smallvec = "1.13"
+smol_str = "0.3"
+
+[features]
+default = ["parallel"]
+parallel = ["dep:rayon"]
+
+[dev-dependencies]
+serde = { version = "1.0", features = ["derive"] }
+criterion = "0.5"
+rstest = "0.18"
+pprof = { version = "0.15", features = ["flamegraph"] }
+
+[[bench]]
+name = "src2_canonical"
+path = "benches/src2_canonical.rs"
+harness = false
+
+[[bench]]
+name = "encode_decode"
+path = "benches/encode_decode.rs"
+harness = false
