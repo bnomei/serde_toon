@@ -9,7 +9,7 @@ Serde-compatible TOON Format Spec v3.0 encoder/decoder (275 tests).
 
 ```toml
 [dependencies]
-serde_toon = "0.1"
+serde_toon_format = "0.1"
 ```
 
 ## Auto-detect struct, JSON or TOON
