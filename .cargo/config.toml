@@ -1,0 +1,2 @@
+[alias]
+bench-peanuts = "!cargo bench --bench peanuts_characters && cargo bench --bench peanuts_specials && cargo bench --bench peanuts_universe && cargo bench --bench peanuts_jsonld"

@@ -1,0 +1,191 @@
+{
+  "context": {
+    "title": "Peanuts",
+    "author": "Charles M. Schulz",
+    "launch": {
+      "daily": "1950-10-02",
+      "sunday": "1952-01-06"
+    },
+    "end": {
+      "daily": "2000-01-03",
+      "sunday": "2000-02-13"
+    },
+    "currentStatus": "concluded_in_reruns",
+    "website": "https://www.peanuts.com",
+    "genres": ["humor", "gag_a_day", "satire", "children"],
+    "notableCounts": {
+      "stripCount": 17897,
+      "peakNewspapers": 2600,
+      "countries": 75,
+      "languages": 21
+    }
+  },
+  "owners": [
+    {
+      "name": "United Feature Syndicate",
+      "startYear": 1950,
+      "endYear": 1978
+    },
+    {
+      "name": "United Media",
+      "startYear": 1978,
+      "endYear": 2011
+    },
+    {
+      "name": "Peanuts Worldwide",
+      "startYear": 2011,
+      "endYear": null
+    }
+  ],
+  "syndicates": [
+    {
+      "name": "United Feature Syndicate",
+      "startYear": 1950,
+      "endYear": 2011
+    },
+    {
+      "name": "Andrews McMeel Syndication",
+      "startYear": 2011,
+      "endYear": null
+    }
+  ],
+  "characters": [
+    {
+      "id": 1,
+      "slug": "charlie_brown",
+      "displayName": "Charlie Brown",
+      "introducedYear": 1950,
+      "species": "human"
+    },
+    {
+      "id": 2,
+      "slug": "snoopy",
+      "displayName": "Snoopy",
+      "introducedYear": 1950,
+      "species": "beagle"
+    },
+    {
+      "id": 3,
+      "slug": "lucy_van_pelt",
+      "displayName": "Lucy Van Pelt",
+      "introducedYear": 1952,
+      "species": "human"
+    },
+    {
+      "id": 4,
+      "slug": "linus_van_pelt",
+      "displayName": "Linus Van Pelt",
+      "introducedYear": 1952,
+      "species": "human"
+    },
+    {
+      "id": 5,
+      "slug": "schroeder",
+      "displayName": "Schroeder",
+      "introducedYear": 1951,
+      "species": "human"
+    },
+    {
+      "id": 6,
+      "slug": "sally_brown",
+      "displayName": "Sally Brown",
+      "introducedYear": 1959,
+      "species": "human"
+    },
+    {
+      "id": 7,
+      "slug": "peppermint_patty",
+      "displayName": "Peppermint Patty",
+      "introducedYear": 1966,
+      "species": "human"
+    },
+    {
+      "id": 8,
+      "slug": "marcie",
+      "displayName": "Marcie",
+      "introducedYear": 1968,
+      "species": "human"
+    },
+    {
+      "id": 9,
+      "slug": "franklin_armstrong",
+      "displayName": "Franklin Armstrong",
+      "introducedYear": 1968,
+      "species": "human"
+    },
+    {
+      "id": 10,
+      "slug": "woodstock",
+      "displayName": "Woodstock",
+      "introducedYear": 1966,
+      "species": "bird"
+    }
+  ],
+  "specials": [
+    {
+      "id": 1,
+      "slug": "a_charlie_brown_christmas",
+      "title": "A Charlie Brown Christmas",
+      "airDate": "1965-12-09",
+      "network": "CBS"
+    },
+    {
+      "id": 2,
+      "slug": "its_the_great_pumpkin_charlie_brown",
+      "title": "It's the Great Pumpkin, Charlie Brown",
+      "airDate": "1966-10-27",
+      "network": "CBS"
+    },
+    {
+      "id": 3,
+      "slug": "a_charlie_brown_thanksgiving",
+      "title": "A Charlie Brown Thanksgiving",
+      "airDate": "1973-11-20",
+      "network": "CBS"
+    },
+    {
+      "id": 4,
+      "slug": "its_the_easter_beagle_charlie_brown",
+      "title": "It's the Easter Beagle, Charlie Brown",
+      "airDate": "1974-04-09",
+      "network": "CBS"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "charlie_brown",
+      "relation": "pet",
+      "target": "snoopy"
+    },
+    {
+      "source": "lucy_van_pelt",
+      "relation": "sibling",
+      "target": "linus_van_pelt"
+    },
+    {
+      "source": "linus_van_pelt",
+      "relation": "sibling",
+      "target": "lucy_van_pelt"
+    },
+    {
+      "source": "sally_brown",
+      "relation": "sibling",
+      "target": "charlie_brown"
+    },
+    {
+      "source": "peppermint_patty",
+      "relation": "friend",
+      "target": "marcie"
+    },
+    {
+      "source": "lucy_van_pelt",
+      "relation": "crush",
+      "target": "schroeder"
+    }
+  ],
+  "sources": [
+    "https://en.wikipedia.org/wiki/Peanuts",
+    "https://en.wikipedia.org/wiki/List_of_Peanuts_characters",
+    "https://en.wikipedia.org/wiki/Peanuts_filmography"
+  ]
+}

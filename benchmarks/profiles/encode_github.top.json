@@ -1,0 +1,2072 @@
+[
+  {
+    "function": "std::panic::catch_unwind",
+    "samples": 5658,
+    "percent": 200.0
+  },
+  {
+    "function": "std::panicking::catch_unwind",
+    "samples": 5658,
+    "percent": 200.0
+  },
+  {
+    "function": "std::panicking::catch_unwind::do_call",
+    "samples": 5658,
+    "percent": 200.0
+  },
+  {
+    "function": "core::ops::function::FnOnce::call_once",
+    "samples": 2830,
+    "percent": 100.03534817956876
+  },
+  {
+    "function": "8296964224",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "<pprof::backtrace::backtrace_rs::Trace as pprof::backtrace::Trace>::trace",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "_main",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "all",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "backtrace::backtrace::libunwind::trace",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "backtrace::backtrace::trace_unsynchronized",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "core::ops::function::impls::<impl core::ops::function::FnOnce<A> for &F>::call_once",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "profile_encode::main",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "serde_toon::to_string",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "serde_toon::to_string_with_options",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "std::rt::lang_start",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "std::rt::lang_start::{{closure}}",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "std::rt::lang_start_internal",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "std::rt::lang_start_internal::{{closure}}",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "std::sys::backtrace::__rust_begin_short_backtrace",
+    "samples": 2829,
+    "percent": 100.0
+  },
+  {
+    "function": "serde_toon::encode::to_string",
+    "samples": 2828,
+    "percent": 99.96465182043124
+  },
+  {
+    "function": "serde_toon::encode::encode_value",
+    "samples": 2152,
+    "percent": 76.06928243195476
+  },
+  {
+    "function": "_open$NOCANCEL",
+    "samples": 1300,
+    "percent": 45.95263343937787
+  },
+  {
+    "function": "serde_toon::encode::Encoder::encode_array_value",
+    "samples": 1256,
+    "percent": 44.397313538352776
+  },
+  {
+    "function": "serde_toon::encode::Encoder::encode_array_value::{{closure}}",
+    "samples": 1256,
+    "percent": 44.397313538352776
+  },
+  {
+    "function": "serde_toon::encode::Encoder::encode_array_value_inner",
+    "samples": 1256,
+    "percent": 44.397313538352776
+  },
+  {
+    "function": "serde_toon::encode::Encoder::encode_root",
+    "samples": 1256,
+    "percent": 44.397313538352776
+  },
+  {
+    "function": "serde_toon::encode::Encoder::with_array_delimiter",
+    "samples": 1256,
+    "percent": 44.397313538352776
+  },
+  {
+    "function": "serde_toon::encode::Encoder::encode_array_value_inner::{{closure}}",
+    "samples": 1132,
+    "percent": 40.0141392718275
+  },
+  {
+    "function": "<hashbrown::raw::RawTable<T,A> as core::ops::drop::Drop>::drop",
+    "samples": 968,
+    "percent": 34.217037822552136
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::drop_inner_table",
+    "samples": 968,
+    "percent": 34.217037822552136
+  },
+  {
+    "function": "serde_toon::encode::Encoder::append_scalar_tabular_prefixed",
+    "samples": 948,
+    "percent": 33.51007423117709
+  },
+  {
+    "function": "alloc::alloc::Global::alloc_impl",
+    "samples": 829,
+    "percent": 29.303640862495584
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::fallible_with_capacity",
+    "samples": 829,
+    "percent": 29.303640862495584
+  },
+  {
+    "function": "<alloc::alloc::Global as core::alloc::Allocator>::allocate",
+    "samples": 828,
+    "percent": 29.268292682926827
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::with_capacity_in",
+    "samples": 828,
+    "percent": 29.268292682926827
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T>::with_capacity",
+    "samples": 828,
+    "percent": 29.268292682926827
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::new_uninitialized",
+    "samples": 828,
+    "percent": 29.268292682926827
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::with_capacity",
+    "samples": 828,
+    "percent": 29.268292682926827
+  },
+  {
+    "function": "alloc::alloc::alloc",
+    "samples": 827,
+    "percent": 29.232944503358077
+  },
+  {
+    "function": "hashbrown::map::HashMap<K,V,S>::with_capacity_and_hasher",
+    "samples": 820,
+    "percent": 28.985507246376812
+  },
+  {
+    "function": "hashbrown::raw::alloc::inner::do_alloc",
+    "samples": 820,
+    "percent": 28.985507246376812
+  },
+  {
+    "function": "std::collections::hash::map::HashMap<K,V,S>::with_capacity_and_hasher",
+    "samples": 820,
+    "percent": 28.985507246376812
+  },
+  {
+    "function": "std::collections::hash::map::HashMap<K,V>::with_capacity",
+    "samples": 820,
+    "percent": 28.985507246376812
+  },
+  {
+    "function": "serde_core::ser::impls::<impl serde_core::ser::Serialize for &T>::serialize",
+    "samples": 575,
+    "percent": 20.32520325203252
+  },
+  {
+    "function": "core::hash::BuildHasher::hash_one",
+    "samples": 562,
+    "percent": 19.86567691763874
+  },
+  {
+    "function": "serde_toon::encode::Encoder::precompute_array_strings",
+    "samples": 518,
+    "percent": 18.310357016613644
+  },
+  {
+    "function": "serde_toon::encode::Encoder::precompute_string_flags",
+    "samples": 518,
+    "percent": 18.310357016613644
+  },
+  {
+    "function": "serde_toon::encode::Encoder::precompute_string_flags_inner",
+    "samples": 518,
+    "percent": 18.310357016613644
+  },
+  {
+    "function": "serde_toon::encode::Encoder::analyze_string_cached",
+    "samples": 509,
+    "percent": 17.992223400494876
+  },
+  {
+    "function": "serde_toon::encode::Encoder::append_scalar_tabular_prefixed::{{closure}}",
+    "samples": 502,
+    "percent": 17.744786143513608
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::drop_elements",
+    "samples": 488,
+    "percent": 17.24991162955108
+  },
+  {
+    "function": "serde_toon::encode::Encoder::finish_string",
+    "samples": 487,
+    "percent": 17.214563449982325
+  },
+  {
+    "function": "core::ptr::mut_ptr::<impl *mut T>::drop_in_place",
+    "samples": 486,
+    "percent": 17.17921527041357
+  },
+  {
+    "function": "hashbrown::raw::Bucket<T>::drop",
+    "samples": 486,
+    "percent": 17.17921527041357
+  },
+  {
+    "function": "<alloc::alloc::Global as core::alloc::Allocator>::deallocate",
+    "samples": 480,
+    "percent": 16.96712619300106
+  },
+  {
+    "function": "alloc::alloc::dealloc",
+    "samples": 480,
+    "percent": 16.96712619300106
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::free_buckets",
+    "samples": 480,
+    "percent": 16.96712619300106
+  },
+  {
+    "function": "core::ptr::drop_in_place<(char,std::collections::hash::map::HashMap<smol_str::SmolStr,(bool,bool)>)>",
+    "samples": 455,
+    "percent": 16.083421703782257
+  },
+  {
+    "function": "core::ptr::drop_in_place<hashbrown::map::HashMap<char,std::collections::hash::map::HashMap<smol_str::SmolStr,(bool,bool)>,std::hash::random::RandomState>>",
+    "samples": 455,
+    "percent": 16.083421703782257
+  },
+  {
+    "function": "core::ptr::drop_in_place<hashbrown::map::HashMap<smol_str::SmolStr,(bool,bool),std::hash::random::RandomState>>",
+    "samples": 455,
+    "percent": 16.083421703782257
+  },
+  {
+    "function": "core::ptr::drop_in_place<hashbrown::raw::RawTable<(char,std::collections::hash::map::HashMap<smol_str::SmolStr,(bool,bool)>)>>",
+    "samples": 455,
+    "percent": 16.083421703782257
+  },
+  {
+    "function": "core::ptr::drop_in_place<hashbrown::raw::RawTable<(smol_str::SmolStr,(bool,bool))>>",
+    "samples": 455,
+    "percent": 16.083421703782257
+  },
+  {
+    "function": "core::ptr::drop_in_place<std::collections::hash::map::HashMap<char,std::collections::hash::map::HashMap<smol_str::SmolStr,(bool,bool)>>>",
+    "samples": 455,
+    "percent": 16.083421703782257
+  },
+  {
+    "function": "core::ptr::drop_in_place<std::collections::hash::map::HashMap<smol_str::SmolStr,(bool,bool)>>",
+    "samples": 455,
+    "percent": 16.083421703782257
+  },
+  {
+    "function": "std::collections::hash::map::Entry<K,V>::or_insert_with",
+    "samples": 442,
+    "percent": 15.623895369388476
+  },
+  {
+    "function": "core::ptr::copy_nonoverlapping",
+    "samples": 434,
+    "percent": 15.34110993283846
+  },
+  {
+    "function": "serde_toon::encode::Encoder::precompute_small_string",
+    "samples": 392,
+    "percent": 13.856486390950867
+  },
+  {
+    "function": "serde_json::value::to_value",
+    "samples": 391,
+    "percent": 13.821138211382115
+  },
+  {
+    "function": "serde_toon::encode::Encoder::new",
+    "samples": 378,
+    "percent": 13.361611876988336
+  },
+  {
+    "function": "indexmap::map::IndexMap<K,V,S>::get",
+    "samples": 351,
+    "percent": 12.407211028632027
+  },
+  {
+    "function": "serde_json::map::Map<alloc::string::String,serde_json::value::Value>::get",
+    "samples": 351,
+    "percent": 12.407211028632027
+  },
+  {
+    "function": "hashbrown::map::make_hash",
+    "samples": 342,
+    "percent": 12.089077412513255
+  },
+  {
+    "function": "indexmap::map::IndexMap<K,V,S>::get_index_of",
+    "samples": 339,
+    "percent": 11.983032873807
+  },
+  {
+    "function": "core::hash::impls::<impl core::hash::Hash for &T>::hash",
+    "samples": 278,
+    "percent": 9.826793920113113
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::find",
+    "samples": 275,
+    "percent": 9.720749381406858
+  },
+  {
+    "function": "serde_toon::text::string::analyze_string",
+    "samples": 268,
+    "percent": 9.473312124425593
+  },
+  {
+    "function": "hashbrown::map::HashMap<K,V,S,A>::get",
+    "samples": 260,
+    "percent": 9.190526687875575
+  },
+  {
+    "function": "hashbrown::map::HashMap<K,V,S,A>::get_inner",
+    "samples": 260,
+    "percent": 9.190526687875575
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::find_inner",
+    "samples": 260,
+    "percent": 9.190526687875575
+  },
+  {
+    "function": "std::collections::hash::map::HashMap<K,V,S>::get",
+    "samples": 260,
+    "percent": 9.190526687875575
+  },
+  {
+    "function": "<core::hash::sip::Hasher<S> as core::hash::Hasher>::write",
+    "samples": 246,
+    "percent": 8.695652173913043
+  },
+  {
+    "function": "<core::hash::sip::Hasher<S> as core::hash::Hasher>::write_str",
+    "samples": 242,
+    "percent": 8.554259455638034
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::get",
+    "samples": 229,
+    "percent": 8.094733121244255
+  },
+  {
+    "function": "memchr::arch::generic::memchr::search_slice_with_raw",
+    "samples": 227,
+    "percent": 8.024036762106752
+  },
+  {
+    "function": "core::ptr::read_unaligned",
+    "samples": 221,
+    "percent": 7.811947684694238
+  },
+  {
+    "function": "<core::hash::sip::SipHasher13 as core::hash::Hasher>::write_str",
+    "samples": 206,
+    "percent": 7.281724991162955
+  },
+  {
+    "function": "<std::hash::random::DefaultHasher as core::hash::Hasher>::write_str",
+    "samples": 206,
+    "percent": 7.281724991162955
+  },
+  {
+    "function": "core::hash::impls::<impl core::hash::Hash for str>::hash",
+    "samples": 203,
+    "percent": 7.175680452456698
+  },
+  {
+    "function": "indexmap::map::IndexMap<K,V,S>::hash",
+    "samples": 193,
+    "percent": 6.822198656769177
+  },
+  {
+    "function": "<serde_json::value::ser::SerializeVec as serde_core::ser::SerializeSeq>::serialize_element",
+    "samples": 187,
+    "percent": 6.610109579356663
+  },
+  {
+    "function": "core::iter::traits::iterator::Iterator::try_fold",
+    "samples": 187,
+    "percent": 6.610109579356663
+  },
+  {
+    "function": "core::iter::traits::iterator::Iterator::try_for_each",
+    "samples": 187,
+    "percent": 6.610109579356663
+  },
+  {
+    "function": "core::iter::traits::iterator::Iterator::try_for_each::call::{{closure}}",
+    "samples": 187,
+    "percent": 6.610109579356663
+  },
+  {
+    "function": "serde_core::ser::Serializer::collect_seq",
+    "samples": 187,
+    "percent": 6.610109579356663
+  },
+  {
+    "function": "serde_core::ser::Serializer::collect_seq::{{closure}}",
+    "samples": 187,
+    "percent": 6.610109579356663
+  },
+  {
+    "function": "serde_core::ser::impls::<impl serde_core::ser::Serialize for alloc::vec::Vec<T>>::serialize",
+    "samples": 187,
+    "percent": 6.610109579356663
+  },
+  {
+    "function": "profile_encode::_::<impl serde_core::ser::Serialize for profile_encode::GitHubRepo>::serialize",
+    "samples": 186,
+    "percent": 6.574761399787911
+  },
+  {
+    "function": "<core::hash::sip::SipHasher13 as core::hash::Hasher>::finish",
+    "samples": 183,
+    "percent": 6.468716861081654
+  },
+  {
+    "function": "<std::hash::random::DefaultHasher as core::hash::Hasher>::finish",
+    "samples": 183,
+    "percent": 6.468716861081654
+  },
+  {
+    "function": "<core::hash::sip::Hasher<S> as core::hash::Hasher>::finish",
+    "samples": 175,
+    "percent": 6.185931424531637
+  },
+  {
+    "function": "serde_core::ser::SerializeMap::serialize_entry",
+    "samples": 175,
+    "percent": 6.185931424531637
+  },
+  {
+    "function": "<serde_json::value::ser::SerializeMap as serde_core::ser::SerializeStruct>::serialize_field",
+    "samples": 174,
+    "percent": 6.150583244962885
+  },
+  {
+    "function": "indexmap::inner::Core<K,V>::get_index_of",
+    "samples": 171,
+    "percent": 6.044538706256628
+  },
+  {
+    "function": "memchr::memchr::memchr",
+    "samples": 157,
+    "percent": 5.549664192294097
+  },
+  {
+    "function": "hashbrown::table::HashTable<T,A>::find",
+    "samples": 155,
+    "percent": 5.4789678331565925
+  },
+  {
+    "function": "<serde_json::value::ser::SerializeMap as serde_core::ser::SerializeMap>::serialize_value",
+    "samples": 154,
+    "percent": 5.443619653587841
+  },
+  {
+    "function": "serde_toon::encode::Encoder::append_string",
+    "samples": 152,
+    "percent": 5.372923294450336
+  },
+  {
+    "function": "memchr::memchr::memchr::{{closure}}",
+    "samples": 149,
+    "percent": 5.266878755744079
+  },
+  {
+    "function": "memchr::arch::aarch64::memchr::memchr_raw",
+    "samples": 148,
+    "percent": 5.231530576175327
+  },
+  {
+    "function": "memchr::memchr::memchr_raw",
+    "samples": 148,
+    "percent": 5.231530576175327
+  },
+  {
+    "function": "indexmap::map::IndexMap<K,V,S>::insert",
+    "samples": 136,
+    "percent": 4.8073524213503
+  },
+  {
+    "function": "serde_json::map::Map<alloc::string::String,serde_json::value::Value>::insert",
+    "samples": 136,
+    "percent": 4.8073524213503
+  },
+  {
+    "function": "indexmap::map::IndexMap<K,V,S>::insert_full",
+    "samples": 133,
+    "percent": 4.701307882644044
+  },
+  {
+    "function": "serde_toon::encode::Encoder::tabular_fields",
+    "samples": 129,
+    "percent": 4.559915164369035
+  },
+  {
+    "function": "hashbrown::map::HashMap<K,V,S,A>::insert",
+    "samples": 127,
+    "percent": 4.4892188052315305
+  },
+  {
+    "function": "std::collections::hash::map::HashMap<K,V,S>::insert",
+    "samples": 122,
+    "percent": 4.31247790738777
+  },
+  {
+    "function": "memchr::arch::aarch64::neon::memchr::One::find_raw",
+    "samples": 120,
+    "percent": 4.241781548250265
+  },
+  {
+    "function": "hashbrown::rustc_entry::<impl hashbrown::map::HashMap<K,V,S,A>>::rustc_entry",
+    "samples": 107,
+    "percent": 3.7822552138564864
+  },
+  {
+    "function": "std::collections::hash::map::HashMap<K,V,S>::entry",
+    "samples": 107,
+    "percent": 3.7822552138564864
+  },
+  {
+    "function": "core::ptr::copy_nonoverlapping::precondition_check",
+    "samples": 104,
+    "percent": 3.67621067515023
+  },
+  {
+    "function": "core::ub_checks::maybe_is_nonoverlapping",
+    "samples": 104,
+    "percent": 3.67621067515023
+  },
+  {
+    "function": "memchr::arch::aarch64::neon::memchr::One::find_raw_impl",
+    "samples": 102,
+    "percent": 3.6055143160127257
+  },
+  {
+    "function": "memchr::arch::generic::memchr::One<V>::find_raw",
+    "samples": 102,
+    "percent": 3.6055143160127257
+  },
+  {
+    "function": "hashbrown::control::group::neon::Group::load",
+    "samples": 92,
+    "percent": 3.2520325203252036
+  },
+  {
+    "function": "indexmap::inner::Core<K,V>::insert_full",
+    "samples": 90,
+    "percent": 3.1813361611876987
+  },
+  {
+    "function": "core::hash::sip::u8to64_le",
+    "samples": 88,
+    "percent": 3.1106398020501946
+  },
+  {
+    "function": "core::core_arch::aarch64::neon::generated::vld1_u8",
+    "samples": 87,
+    "percent": 3.0752916224814424
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::find::{{closure}}",
+    "samples": 77,
+    "percent": 2.7218098267939204
+  },
+  {
+    "function": "core::option::Option<T>::and_then",
+    "samples": 69,
+    "percent": 2.4390243902439024
+  },
+  {
+    "function": "<alloc::vec::Vec<T,A> as core::ops::deref::Deref>::deref",
+    "samples": 62,
+    "percent": 2.191587133262637
+  },
+  {
+    "function": "alloc::vec::Vec<T,A>::as_slice",
+    "samples": 62,
+    "percent": 2.191587133262637
+  },
+  {
+    "function": "core::slice::raw::from_raw_parts",
+    "samples": 62,
+    "percent": 2.191587133262637
+  },
+  {
+    "function": "<*const T as memchr::ext::Pointer>::distance",
+    "samples": 58,
+    "percent": 2.050194414987628
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::bucket",
+    "samples": 56,
+    "percent": 1.9794980558501238
+  },
+  {
+    "function": "<core::hash::sip::SipHasher13 as core::hash::Hasher>::write",
+    "samples": 55,
+    "percent": 1.9441498762813716
+  },
+  {
+    "function": "<std::hash::random::DefaultHasher as core::hash::Hasher>::write",
+    "samples": 55,
+    "percent": 1.9441498762813716
+  },
+  {
+    "function": "smallvec::SmallVec<A>::insert_from_slice",
+    "samples": 52,
+    "percent": 1.838105337575115
+  },
+  {
+    "function": "core::hash::Hasher::write_u8",
+    "samples": 50,
+    "percent": 1.7674089784376106
+  },
+  {
+    "function": "<T as alloc::slice::<impl [T]>::to_vec_in::ConvertVec>::to_vec",
+    "samples": 49,
+    "percent": 1.7320607988688583
+  },
+  {
+    "function": "memchr::arch::generic::memchr::One<V>::search_chunk",
+    "samples": 48,
+    "percent": 1.6967126193001063
+  },
+  {
+    "function": "memchr::vector::aarch64neon::<impl memchr::vector::Vector for core::core_arch::arm_shared::neon::uint8x16_t>::load_unaligned",
+    "samples": 47,
+    "percent": 1.661364439731354
+  },
+  {
+    "function": "core::core_arch::aarch64::neon::generated::vld1q_u8",
+    "samples": 46,
+    "percent": 1.6260162601626018
+  },
+  {
+    "function": "smallvec::SmallVec<A>::extend_from_slice",
+    "samples": 45,
+    "percent": 1.5906680805938493
+  },
+  {
+    "function": "alloc::slice::<impl [T]>::to_vec",
+    "samples": 44,
+    "percent": 1.5553199010250973
+  },
+  {
+    "function": "alloc::slice::<impl [T]>::to_vec_in",
+    "samples": 44,
+    "percent": 1.5553199010250973
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::find_or_find_insert_index",
+    "samples": 44,
+    "percent": 1.5553199010250973
+  },
+  {
+    "function": "<smol_str::SmolStr as core::hash::Hash>::hash",
+    "samples": 43,
+    "percent": 1.519971721456345
+  },
+  {
+    "function": "<smallvec::SmallVec<[u8",
+    "samples": 42,
+    "percent": 1.4846235418875928
+  },
+  {
+    "function": "hashbrown::table::HashTable<T,A>::entry",
+    "samples": 42,
+    "percent": 1.4846235418875928
+  },
+  {
+    "function": "smol_str::SmolStr::new",
+    "samples": 41,
+    "percent": 1.4492753623188406
+  },
+  {
+    "function": "256]> as serde_toon::text::string::ByteSink>::extend_bytes",
+    "samples": 40,
+    "percent": 1.4139271827500883
+  },
+  {
+    "function": "memchr::vector::aarch64neon::<impl memchr::vector::Vector for core::core_arch::arm_shared::neon::uint8x16_t>::splat",
+    "samples": 39,
+    "percent": 1.378579003181336
+  },
+  {
+    "function": "memchr::arch::aarch64::memchr::memchr3_raw",
+    "samples": 37,
+    "percent": 1.3078826440438318
+  },
+  {
+    "function": "memchr::memchr::memchr3",
+    "samples": 37,
+    "percent": 1.3078826440438318
+  },
+  {
+    "function": "memchr::memchr::memchr3::{{closure}}",
+    "samples": 37,
+    "percent": 1.3078826440438318
+  },
+  {
+    "function": "memchr::memchr::memchr3_raw",
+    "samples": 37,
+    "percent": 1.3078826440438318
+  },
+  {
+    "function": "smol_str::Repr::new",
+    "samples": 37,
+    "percent": 1.3078826440438318
+  },
+  {
+    "function": "memchr::arch::aarch64::neon::memchr::Three::find_raw",
+    "samples": 34,
+    "percent": 1.201838105337575
+  },
+  {
+    "function": "serde_toon::num::number::append_json_number_bytes",
+    "samples": 34,
+    "percent": 1.201838105337575
+  },
+  {
+    "function": "memchr::memchr::memchr2",
+    "samples": 33,
+    "percent": 1.166489925768823
+  },
+  {
+    "function": "<std::hash::random::RandomState as core::hash::BuildHasher>::build_hasher",
+    "samples": 32,
+    "percent": 1.1311417462000708
+  },
+  {
+    "function": "core::hash::impls::<impl core::hash::Hash for char>::hash",
+    "samples": 32,
+    "percent": 1.1311417462000708
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::find_or_find_insert_index_inner",
+    "samples": 32,
+    "percent": 1.1311417462000708
+  },
+  {
+    "function": "memchr::arch::aarch64::neon::memchr::One::new_unchecked",
+    "samples": 32,
+    "percent": 1.1311417462000708
+  },
+  {
+    "function": "memchr::arch::generic::memchr::One<V>::new",
+    "samples": 32,
+    "percent": 1.1311417462000708
+  },
+  {
+    "function": "hashbrown::control::group::neon::Group::match_tag",
+    "samples": 31,
+    "percent": 1.0957935666313185
+  },
+  {
+    "function": "memchr::memchr::memchr2::{{closure}}",
+    "samples": 31,
+    "percent": 1.0957935666313185
+  },
+  {
+    "function": "serde_toon::encode::Encoder::append_scalar_tabular",
+    "samples": 31,
+    "percent": 1.0957935666313185
+  },
+  {
+    "function": "<Q as equivalent::Equivalent<K>>::equivalent",
+    "samples": 29,
+    "percent": 1.025097207493814
+  },
+  {
+    "function": "core::hash::Hasher::write_u32",
+    "samples": 29,
+    "percent": 1.025097207493814
+  },
+  {
+    "function": "memchr::arch::aarch64::memchr::memchr2_raw",
+    "samples": 29,
+    "percent": 1.025097207493814
+  },
+  {
+    "function": "memchr::memchr::memchr2_raw",
+    "samples": 29,
+    "percent": 1.025097207493814
+  },
+  {
+    "function": "indexmap::map::IndexMap<K,V,S>::as_entries",
+    "samples": 28,
+    "percent": 0.9897490279250619
+  },
+  {
+    "function": "hashbrown::map::HashMap<K,V,S,A>::find_or_find_insert_slot",
+    "samples": 27,
+    "percent": 0.9544008483563097
+  },
+  {
+    "function": "indexmap::inner::equivalent::{{closure}}",
+    "samples": 27,
+    "percent": 0.9544008483563097
+  },
+  {
+    "function": "<serde_toon::encode::NumberKey as core::hash::Hash>::hash",
+    "samples": 26,
+    "percent": 0.9190526687875575
+  },
+  {
+    "function": "core::ptr::const_ptr::<impl *const T>::copy_to_nonoverlapping",
+    "samples": 26,
+    "percent": 0.9190526687875575
+  },
+  {
+    "function": "alloc::slice::<impl alloc::borrow::ToOwned for [T]>::to_owned",
+    "samples": 25,
+    "percent": 0.8837044892188053
+  },
+  {
+    "function": "alloc::str::<impl alloc::borrow::ToOwned for str>::to_owned",
+    "samples": 25,
+    "percent": 0.8837044892188053
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::find_or_find_insert_slot",
+    "samples": 25,
+    "percent": 0.8837044892188053
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::find_or_find_insert_slot_inner",
+    "samples": 25,
+    "percent": 0.8837044892188053
+  },
+  {
+    "function": "indexmap::inner::Core<K,V>::as_entries",
+    "samples": 25,
+    "percent": 0.8837044892188053
+  },
+  {
+    "function": "smallvec::SmallVec<A>::clear",
+    "samples": 25,
+    "percent": 0.8837044892188053
+  },
+  {
+    "function": "smallvec::SmallVec<A>::truncate",
+    "samples": 25,
+    "percent": 0.8837044892188053
+  },
+  {
+    "function": "core::slice::<impl [T]>::get_unchecked",
+    "samples": 24,
+    "percent": 0.8483563096500532
+  },
+  {
+    "function": "smol_str::Repr::new_on_stack",
+    "samples": 23,
+    "percent": 0.8130081300813009
+  },
+  {
+    "function": "alloc::raw_vec::RawVec<T,A>::with_capacity_in",
+    "samples": 21,
+    "percent": 0.7423117709437964
+  },
+  {
+    "function": "alloc::vec::Vec<T,A>::with_capacity_in",
+    "samples": 21,
+    "percent": 0.7423117709437964
+  },
+  {
+    "function": "memchr::arch::aarch64::neon::memchr::Three::find_raw_impl",
+    "samples": 21,
+    "percent": 0.7423117709437964
+  },
+  {
+    "function": "memchr::arch::aarch64::neon::memchr::Two::find_raw",
+    "samples": 21,
+    "percent": 0.7423117709437964
+  },
+  {
+    "function": "memchr::arch::aarch64::neon::memchr::Two::find_raw_impl",
+    "samples": 21,
+    "percent": 0.7423117709437964
+  },
+  {
+    "function": "memchr::arch::generic::memchr::Three<V>::find_raw",
+    "samples": 21,
+    "percent": 0.7423117709437964
+  },
+  {
+    "function": "memchr::arch::generic::memchr::Two<V>::find_raw",
+    "samples": 21,
+    "percent": 0.7423117709437964
+  },
+  {
+    "function": "alloc::string::String::as_str",
+    "samples": 20,
+    "percent": 0.7069635913750442
+  },
+  {
+    "function": "core::hash::sip::SipHasher13::new_with_keys",
+    "samples": 20,
+    "percent": 0.7069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<hashbrown::map::HashMap<serde_toon::encode::NumberKey,alloc::vec::Vec<u8>,std::hash::random::RandomState>>",
+    "samples": 20,
+    "percent": 0.7069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<hashbrown::raw::RawTable<(serde_toon::encode::NumberKey,alloc::vec::Vec<u8>)>>",
+    "samples": 20,
+    "percent": 0.7069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<std::collections::hash::map::HashMap<serde_toon::encode::NumberKey,alloc::vec::Vec<u8>>>",
+    "samples": 20,
+    "percent": 0.7069635913750442
+  },
+  {
+    "function": "<alloc::string::String as core::hash::Hash>::hash",
+    "samples": 19,
+    "percent": 0.671615411806292
+  },
+  {
+    "function": "smol_str::SmolStr::as_str",
+    "samples": 19,
+    "percent": 0.671615411806292
+  },
+  {
+    "function": "<alloc::sync::Arc<str> as core::convert::From<&str>>::from",
+    "samples": 18,
+    "percent": 0.6362672322375398
+  },
+  {
+    "function": "<hashbrown::control::bitmask::BitMaskIter as core::iter::traits::iterator::Iterator>::next",
+    "samples": 18,
+    "percent": 0.6362672322375398
+  },
+  {
+    "function": "alloc::raw_vec::RawVecInner<A>::with_capacity_in",
+    "samples": 18,
+    "percent": 0.6362672322375398
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::insert_tagged_at_index",
+    "samples": 18,
+    "percent": 0.6362672322375398
+  },
+  {
+    "function": "hashbrown::table::VacantEntry<T,A>::insert",
+    "samples": 18,
+    "percent": 0.6362672322375398
+  },
+  {
+    "function": "<serde_json::value::ser::SerializeMap as serde_core::ser::SerializeMap>::serialize_key",
+    "samples": 17,
+    "percent": 0.6009190526687875
+  },
+  {
+    "function": "core::hash::sip::Hasher<S>::new_with_keys",
+    "samples": 17,
+    "percent": 0.6009190526687875
+  },
+  {
+    "function": "itoa::Buffer::format",
+    "samples": 17,
+    "percent": 0.6009190526687875
+  },
+  {
+    "function": "memchr::arch::generic::memchr::fwd_byte_by_byte",
+    "samples": 17,
+    "percent": 0.6009190526687875
+  },
+  {
+    "function": "<Q as hashbrown::Equivalent<K>>::equivalent",
+    "samples": 16,
+    "percent": 0.5655708731000354
+  },
+  {
+    "function": "alloc::sync::Arc<[T]>::copy_from_slice",
+    "samples": 16,
+    "percent": 0.5655708731000354
+  },
+  {
+    "function": "core::option::Option<T>::unwrap_or_else",
+    "samples": 16,
+    "percent": 0.5655708731000354
+  },
+  {
+    "function": "core::ptr::const_ptr::<impl *const T>::offset",
+    "samples": 16,
+    "percent": 0.5655708731000354
+  },
+  {
+    "function": "itoa::<impl itoa::private::Sealed for i64>::write",
+    "samples": 16,
+    "percent": 0.5655708731000354
+  },
+  {
+    "function": "memchr::vector::aarch64neon::<impl memchr::vector::Vector for core::core_arch::arm_shared::neon::uint8x16_t>::movemask",
+    "samples": 16,
+    "percent": 0.5655708731000354
+  },
+  {
+    "function": "smol_str::Repr::new::{{closure}}",
+    "samples": 16,
+    "percent": 0.5655708731000354
+  },
+  {
+    "function": "<alloc::sync::Arc<[T]> as alloc::sync::ArcFromSlice<T>>::from_slice",
+    "samples": 15,
+    "percent": 0.5302226935312832
+  },
+  {
+    "function": "<alloc::sync::Arc<[T]> as core::convert::From<&[T]>>::from",
+    "samples": 15,
+    "percent": 0.5302226935312832
+  },
+  {
+    "function": "<u64 as itoa::Unsigned>::fmt",
+    "samples": 15,
+    "percent": 0.5302226935312832
+  },
+  {
+    "function": "core::hash::Hasher::write_i64",
+    "samples": 15,
+    "percent": 0.5302226935312832
+  },
+  {
+    "function": "core::hash::impls::<impl core::hash::Hash for i64>::hash",
+    "samples": 15,
+    "percent": 0.5302226935312832
+  },
+  {
+    "function": "<serde_json::value::ser::MapKeySerializer as serde_core::ser::Serializer>::serialize_str",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "alloc::raw_vec::RawVecInner<A>::try_allocate_in",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "alloc::str::<impl core::borrow::Borrow<str> for alloc::string::String>::borrow",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "core::cmp::min",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "core::hash::Hasher::write_u64",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "core::ptr::drop_in_place<(char,std::collections::hash::map::HashMap<serde_toon::encode::NumberKey,alloc::vec::Vec<u8>>)>",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "core::ptr::drop_in_place<hashbrown::map::HashMap<char,std::collections::hash::map::HashMap<serde_toon::encode::NumberKey,alloc::vec::Vec<u8>>,std::hash::random::RandomState>>",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "core::ptr::drop_in_place<hashbrown::raw::RawTable<(char,std::collections::hash::map::HashMap<serde_toon::encode::NumberKey,alloc::vec::Vec<u8>>)>>",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "core::ptr::drop_in_place<std::collections::hash::map::HashMap<char,std::collections::hash::map::HashMap<serde_toon::encode::NumberKey,alloc::vec::Vec<u8>>>>",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "hashbrown::raw::Bucket<T>::from_base_index",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "serde_core::ser::impls::<impl serde_core::ser::Serialize for str>::serialize",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "serde_toon::text::string::is_literal_like",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "smallvec::SmallVec<A>::triple",
+    "samples": 14,
+    "percent": 0.49487451396253096
+  },
+  {
+    "function": "<alloc::string::String as core::ops::deref::Deref>::deref",
+    "samples": 13,
+    "percent": 0.45952633439377877
+  },
+  {
+    "function": "core::ptr::non_null::NonNull<T>::new_unchecked",
+    "samples": 13,
+    "percent": 0.45952633439377877
+  },
+  {
+    "function": "core::slice::ascii::is_ascii::runtime",
+    "samples": 13,
+    "percent": 0.45952633439377877
+  },
+  {
+    "function": "smallvec::SmallVec<A>::len",
+    "samples": 13,
+    "percent": 0.45952633439377877
+  },
+  {
+    "function": "smallvec::SmallVec<A>::spilled",
+    "samples": 13,
+    "percent": 0.45952633439377877
+  },
+  {
+    "function": "smallvec::SmallVec<A>::triple_mut",
+    "samples": 13,
+    "percent": 0.45952633439377877
+  },
+  {
+    "function": "<smol_str::SmolStr as core::borrow::Borrow<str>>::borrow",
+    "samples": 12,
+    "percent": 0.4241781548250266
+  },
+  {
+    "function": "core::ptr::drop_in_place<(char,std::collections::hash::map::HashMap<smol_str::SmolStr,alloc::vec::Vec<u8>>)>",
+    "samples": 12,
+    "percent": 0.4241781548250266
+  },
+  {
+    "function": "core::ptr::drop_in_place<hashbrown::map::HashMap<char,std::collections::hash::map::HashMap<smol_str::SmolStr,alloc::vec::Vec<u8>>,std::hash::random::RandomState>>",
+    "samples": 12,
+    "percent": 0.4241781548250266
+  },
+  {
+    "function": "core::ptr::drop_in_place<hashbrown::map::HashMap<smol_str::SmolStr,alloc::vec::Vec<u8>,std::hash::random::RandomState>>",
+    "samples": 12,
+    "percent": 0.4241781548250266
+  },
+  {
+    "function": "core::ptr::drop_in_place<hashbrown::raw::RawTable<(char,std::collections::hash::map::HashMap<smol_str::SmolStr,alloc::vec::Vec<u8>>)>>",
+    "samples": 12,
+    "percent": 0.4241781548250266
+  },
+  {
+    "function": "core::ptr::drop_in_place<hashbrown::raw::RawTable<(smol_str::SmolStr,alloc::vec::Vec<u8>)>>",
+    "samples": 12,
+    "percent": 0.4241781548250266
+  },
+  {
+    "function": "core::ptr::drop_in_place<std::collections::hash::map::HashMap<char,std::collections::hash::map::HashMap<smol_str::SmolStr,alloc::vec::Vec<u8>>>>",
+    "samples": 12,
+    "percent": 0.4241781548250266
+  },
+  {
+    "function": "core::ptr::drop_in_place<std::collections::hash::map::HashMap<smol_str::SmolStr,alloc::vec::Vec<u8>>>",
+    "samples": 12,
+    "percent": 0.4241781548250266
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::find_insert_index_in_group",
+    "samples": 12,
+    "percent": 0.4241781548250266
+  },
+  {
+    "function": "serde_core::ser::impls::<impl serde_core::ser::Serialize for alloc::string::String>::serialize",
+    "samples": 12,
+    "percent": 0.4241781548250266
+  },
+  {
+    "function": "<serde_json::value::ser::Serializer as serde_core::ser::Serializer>::serialize_map",
+    "samples": 11,
+    "percent": 0.38882997525627433
+  },
+  {
+    "function": "<serde_json::value::ser::Serializer as serde_core::ser::Serializer>::serialize_struct",
+    "samples": 11,
+    "percent": 0.38882997525627433
+  },
+  {
+    "function": "<smallvec::SmallVec<A> as core::ops::deref::Deref>::deref",
+    "samples": 11,
+    "percent": 0.38882997525627433
+  },
+  {
+    "function": "<smallvec::SmallVec<A> as core::ops::index::Index<I>>::index",
+    "samples": 11,
+    "percent": 0.38882997525627433
+  },
+  {
+    "function": "core::cmp::impls::<impl core::cmp::PartialEq<&B> for &A>::eq",
+    "samples": 11,
+    "percent": 0.38882997525627433
+  },
+  {
+    "function": "hashbrown::map::equivalent_key::{{closure}}",
+    "samples": 11,
+    "percent": 0.38882997525627433
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::ctrl",
+    "samples": 11,
+    "percent": 0.38882997525627433
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::record_item_insert_at",
+    "samples": 11,
+    "percent": 0.38882997525627433
+  },
+  {
+    "function": "<alloc::string::String as core::ops::index::Index<I>>::index",
+    "samples": 10,
+    "percent": 0.3534817956875221
+  },
+  {
+    "function": "<serde_json::value::ser::Serializer as serde_core::ser::Serializer>::serialize_str",
+    "samples": 10,
+    "percent": 0.3534817956875221
+  },
+  {
+    "function": "alloc::sync::Arc<[T]>::allocate_for_slice",
+    "samples": 10,
+    "percent": 0.3534817956875221
+  },
+  {
+    "function": "core::hash::impls::<impl core::hash::Hash for isize>::hash",
+    "samples": 10,
+    "percent": 0.3534817956875221
+  },
+  {
+    "function": "core::slice::ascii::<impl [u8]>::is_ascii",
+    "samples": 10,
+    "percent": 0.3534817956875221
+  },
+  {
+    "function": "core::slice::ascii::is_ascii",
+    "samples": 10,
+    "percent": 0.3534817956875221
+  },
+  {
+    "function": "core::str::<impl str>::is_ascii",
+    "samples": 10,
+    "percent": 0.3534817956875221
+  },
+  {
+    "function": "hashbrown::control::bitmask::BitMask::lowest_set_bit",
+    "samples": 10,
+    "percent": 0.3534817956875221
+  },
+  {
+    "function": "hashbrown::control::group::neon::Group::match_empty",
+    "samples": 10,
+    "percent": 0.3534817956875221
+  },
+  {
+    "function": "indexmap::map::IndexMap<K,V>::with_capacity",
+    "samples": 10,
+    "percent": 0.3534817956875221
+  },
+  {
+    "function": "serde_json::map::Map<alloc::string::String,serde_json::value::Value>::with_capacity",
+    "samples": 10,
+    "percent": 0.3534817956875221
+  },
+  {
+    "function": "smol_str::Repr::as_str",
+    "samples": 10,
+    "percent": 0.3534817956875221
+  },
+  {
+    "function": "<usize as core::slice::index::SliceIndex<[T]>>::get_unchecked",
+    "samples": 9,
+    "percent": 0.3181336161187699
+  },
+  {
+    "function": "alloc::sync::Arc<T>::allocate_for_layout",
+    "samples": 9,
+    "percent": 0.3181336161187699
+  },
+  {
+    "function": "indexmap::inner::Core<K,V>::with_capacity",
+    "samples": 9,
+    "percent": 0.3181336161187699
+  },
+  {
+    "function": "indexmap::map::IndexMap<K,V,S>::with_capacity_and_hasher",
+    "samples": 9,
+    "percent": 0.3181336161187699
+  },
+  {
+    "function": "serde_toon::encode::Encoder::analyze_string_cached::{{closure}}",
+    "samples": 9,
+    "percent": 0.3181336161187699
+  },
+  {
+    "function": "serde_toon::text::string::analyze_string_unicode",
+    "samples": 9,
+    "percent": 0.3181336161187699
+  },
+  {
+    "function": "serde_toon::text::string::is_keyword",
+    "samples": 9,
+    "percent": 0.3181336161187699
+  },
+  {
+    "function": "<core::slice::iter::Iter<T> as core::iter::traits::iterator::Iterator>::all",
+    "samples": 8,
+    "percent": 0.2827854365500177
+  },
+  {
+    "function": "N]>::index_mut",
+    "samples": 8,
+    "percent": 0.2827854365500177
+  },
+  {
+    "function": "alloc::sync::Arc<[T]>::allocate_for_slice::{{closure}}",
+    "samples": 8,
+    "percent": 0.2827854365500177
+  },
+  {
+    "function": "core::array::<impl core::ops::index::IndexMut<I> for [T",
+    "samples": 8,
+    "percent": 0.2827854365500177
+  },
+  {
+    "function": "core::option::Option<T>::map",
+    "samples": 8,
+    "percent": 0.2827854365500177
+  },
+  {
+    "function": "core::ptr::const_ptr::<impl *const T>::align_offset",
+    "samples": 8,
+    "percent": 0.2827854365500177
+  },
+  {
+    "function": "core::slice::index::<impl core::ops::index::IndexMut<I> for [T]>::index_mut",
+    "samples": 8,
+    "percent": 0.2827854365500177
+  },
+  {
+    "function": "hashbrown::control::group::neon::Group::match_empty_or_deleted",
+    "samples": 8,
+    "percent": 0.2827854365500177
+  },
+  {
+    "function": "hashbrown::table::HashTable<T>::with_capacity",
+    "samples": 8,
+    "percent": 0.2827854365500177
+  },
+  {
+    "function": "serde_toon::text::string::is_canonical_unquoted_key",
+    "samples": 8,
+    "percent": 0.2827854365500177
+  },
+  {
+    "function": "serde_toon::text::string::is_numeric_like",
+    "samples": 8,
+    "percent": 0.2827854365500177
+  },
+  {
+    "function": "<[A] as core::slice::cmp::SlicePartialEq<B>>::equal",
+    "samples": 7,
+    "percent": 0.24743725698126548
+  },
+  {
+    "function": "<core::ops::range::RangeTo<usize> as core::slice::index::SliceIndex<[T]>>::get_unchecked",
+    "samples": 7,
+    "percent": 0.24743725698126548
+  },
+  {
+    "function": "core::hash::Hasher::write_isize",
+    "samples": 7,
+    "percent": 0.24743725698126548
+  },
+  {
+    "function": "core::hash::Hasher::write_usize",
+    "samples": 7,
+    "percent": 0.24743725698126548
+  },
+  {
+    "function": "core::slice::cmp::<impl core::cmp::PartialEq<[U]> for [T]>::eq",
+    "samples": 7,
+    "percent": 0.24743725698126548
+  },
+  {
+    "function": "core::str::traits::<impl core::cmp::PartialEq for str>::eq",
+    "samples": 7,
+    "percent": 0.24743725698126548
+  },
+  {
+    "function": "hashbrown::raw::Bucket<T>::as_ref",
+    "samples": 7,
+    "percent": 0.24743725698126548
+  },
+  {
+    "function": "memchr::arch::generic::memchr::Three<V>::search_chunk",
+    "samples": 7,
+    "percent": 0.24743725698126548
+  },
+  {
+    "function": "memchr::vector::aarch64neon::<impl memchr::vector::Vector for core::core_arch::arm_shared::neon::uint8x16_t>::load_aligned",
+    "samples": 7,
+    "percent": 0.24743725698126548
+  },
+  {
+    "function": "<core::str::iter::Chars as core::iter::traits::iterator::Iterator>::next",
+    "samples": 6,
+    "percent": 0.2120890774125133
+  },
+  {
+    "function": "core::ptr::copy",
+    "samples": 6,
+    "percent": 0.2120890774125133
+  },
+  {
+    "function": "core::slice::<impl [T]>::copy_from_slice",
+    "samples": 6,
+    "percent": 0.2120890774125133
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::find_insert_slot_in_group",
+    "samples": 6,
+    "percent": 0.2120890774125133
+  },
+  {
+    "function": "memchr::arch::generic::memchr::Two<V>::search_chunk",
+    "samples": 6,
+    "percent": 0.2120890774125133
+  },
+  {
+    "function": "smallvec::SmallVec<A>::as_mut_ptr",
+    "samples": 6,
+    "percent": 0.2120890774125133
+  },
+  {
+    "function": "smallvec::SmallVec<A>::inline_capacity",
+    "samples": 6,
+    "percent": 0.2120890774125133
+  },
+  {
+    "function": "smallvec::SmallVec<A>::push",
+    "samples": 6,
+    "percent": 0.2120890774125133
+  },
+  {
+    "function": "smallvec::SmallVec<A>::reserve",
+    "samples": 6,
+    "percent": 0.2120890774125133
+  },
+  {
+    "function": "<core::str::iter::Chars as core::iter::traits::iterator::Iterator>::next::{{closure}}",
+    "samples": 5,
+    "percent": 0.17674089784376104
+  },
+  {
+    "function": "core::char::convert::from_u32_unchecked",
+    "samples": 5,
+    "percent": 0.17674089784376104
+  },
+  {
+    "function": "core::char::methods::<impl char>::from_u32_unchecked",
+    "samples": 5,
+    "percent": 0.17674089784376104
+  },
+  {
+    "function": "core::ptr::const_ptr::<impl *const T>::read_unaligned",
+    "samples": 5,
+    "percent": 0.17674089784376104
+  },
+  {
+    "function": "core::ptr::drop_in_place<smol_str::SmolStr>",
+    "samples": 5,
+    "percent": 0.17674089784376104
+  },
+  {
+    "function": "memchr::arch::aarch64::neon::memchr::Three::new_unchecked",
+    "samples": 5,
+    "percent": 0.17674089784376104
+  },
+  {
+    "function": "memchr::arch::aarch64::neon::memchr::Two::new_unchecked",
+    "samples": 5,
+    "percent": 0.17674089784376104
+  },
+  {
+    "function": "memchr::arch::generic::memchr::Two<V>::new",
+    "samples": 5,
+    "percent": 0.17674089784376104
+  },
+  {
+    "function": "serde_toon::encode::Encoder::interned_key",
+    "samples": 5,
+    "percent": 0.17674089784376104
+  },
+  {
+    "function": "serde_toon::text::string::is_numeric_like::{{closure}}",
+    "samples": 5,
+    "percent": 0.17674089784376104
+  },
+  {
+    "function": "<alloc::vec::Vec<T,A> as core::ops::drop::Drop>::drop",
+    "samples": 4,
+    "percent": 0.14139271827500885
+  },
+  {
+    "function": "<core::ops::range::Range<usize> as core::slice::index::SliceIndex<[T]>>::get_unchecked",
+    "samples": 4,
+    "percent": 0.14139271827500885
+  },
+  {
+    "function": "<core::ops::range::RangeTo<usize> as core::slice::index::SliceIndex<[T]>>::index_mut",
+    "samples": 4,
+    "percent": 0.14139271827500885
+  },
+  {
+    "function": "alloc::vec::Vec<T,A>::push",
+    "samples": 4,
+    "percent": 0.14139271827500885
+  },
+  {
+    "function": "core::ptr::drop_in_place<serde_json::value::Value>",
+    "samples": 4,
+    "percent": 0.14139271827500885
+  },
+  {
+    "function": "hashbrown::control::bitmask::BitMask::nonzero_trailing_zeros",
+    "samples": 4,
+    "percent": 0.14139271827500885
+  },
+  {
+    "function": "indexmap::inner::Core<K,V>::push_entry",
+    "samples": 4,
+    "percent": 0.14139271827500885
+  },
+  {
+    "function": "smallvec::SmallVec<A>::set_len",
+    "samples": 4,
+    "percent": 0.14139271827500885
+  },
+  {
+    "function": "smallvec::SmallVec<A>::try_reserve",
+    "samples": 4,
+    "percent": 0.14139271827500885
+  },
+  {
+    "function": "<alloc::string::String as core::convert::AsRef<str>>::as_ref",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "<alloc::vec::Vec<T,A> as alloc::vec::spec_extend::SpecExtend<T,I>>::spec_extend",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "<alloc::vec::Vec<T> as alloc::vec::spec_from_iter::SpecFromIter<T,I>>::from_iter",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "<alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "<alloc::vec::Vec<T> as core::iter::traits::collect::FromIterator<T>>::from_iter",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "<core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::next",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "alloc::sync::Arc<T>::from_raw",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "alloc::vec::Vec<T,A>::extend_desugared",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "alloc::vec::Vec<T,A>::set_len",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "core::iter::traits::iterator::Iterator::collect",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "core::ops::function::impls::<impl core::ops::function::FnOnce<A> for &mut F>::call_once",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "core::ptr::drop_in_place<(smol_str::SmolStr,(bool,bool))>",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "core::ptr::drop_in_place<alloc::raw_vec::RawVec<u8>>",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "core::ptr::drop_in_place<alloc::vec::Vec<u8>>",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "core::slice::index::<impl core::ops::index::Index<I> for [T]>::index",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::data_end",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::set_ctrl",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "hashbrown::raw::TableLayout::calculate_layout_for",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "memchr::vector::aarch64neon::<impl memchr::vector::Vector for core::core_arch::arm_shared::neon::uint8x16_t>::cmpeq",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "serde_toon::encode::Encoder::intern_key_id",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "serde_toon::encode::Encoder::tabular_fields::{{closure}}",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "serde_toon::encode::Encoder::write_line_bytes",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "serde_toon::encode::Encoder::write_line_with_prefix_bytes",
+    "samples": 3,
+    "percent": 0.10604453870625664
+  },
+  {
+    "function": "256]> as serde_toon::text::string::ByteSink>::push_byte",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "<&T as core::convert::AsRef<U>>::as_ref",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "<&alloc::vec::Vec<T,A> as core::iter::traits::collect::IntoIterator>::into_iter",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "<T as core::convert::TryInto<U>>::try_into",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "<alloc::vec::Vec<T,A> as core::ops::index::Index<I>>::index",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "<hashbrown::raw::RawIter<T> as core::iter::traits::iterator::Iterator>::next",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "alloc::sync::Arc<T,A>::from_ptr_in",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "alloc::sync::Arc<T,A>::from_raw_in",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::alloc::layout::Layout::from_size_align_unchecked",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<[indexmap::Bucket<alloc::string::String,serde_json::value::Value>]>",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<[serde_json::value::Value]>",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<alloc::string::String>",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<alloc::sync::Weak<str,&alloc::alloc::Global>>",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<alloc::vec::Vec<indexmap::Bucket<alloc::string::String,serde_json::value::Value>>>",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<alloc::vec::Vec<serde_json::value::Value>>",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<indexmap::Bucket<alloc::string::String,serde_json::value::Value>>",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<indexmap::inner::Core<alloc::string::String,serde_json::value::Value>>",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<indexmap::map::IndexMap<alloc::string::String,serde_json::value::Value>>",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::ptr::drop_in_place<serde_json::map::Map<alloc::string::String,serde_json::value::Value>>",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::ptr::non_null::NonNull<T>::new",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "core::slice::raw::from_raw_parts_mut",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "hashbrown::raw::Bucket<T>::write",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "memchr::arch::generic::memchr::Three<V>::new",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "serde_toon::encode::Encoder::append_bytes",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "serde_toon::text::string::is_canonical_unquoted_key::{{closure}}",
+    "samples": 2,
+    "percent": 0.07069635913750442
+  },
+  {
+    "function": "<T as alloc::string::ToString>::to_string",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "<alloc::string::String as core::convert::From<&str>>::from",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "<alloc::sync::Arc<T,A> as core::ops::drop::Drop>::drop",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "<alloc::vec::Vec<T,A> as alloc::vec::spec_extend::SpecExtend<&T,core::slice::iter::Iter<T>>>::spec_extend",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "<serde_json::value::ser::Serializer as serde_core::ser::Serializer>::serialize_some",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "<serde_json::value::ser::Serializer as serde_core::ser::Serializer>::serialize_u64",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "<serde_toon::encode::NumberKey as core::cmp::PartialEq>::eq",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "<std::hash::random::RandomState as core::default::Default>::default",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "<str as alloc::string::SpecToString>::spec_to_string",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "alloc::sync::Arc<T,A>::drop_slow",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "alloc::vec::Vec<T,A>::extend_from_slice",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "alloc::vec::Vec<T>::with_capacity",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "core::alloc::layout::Layout::array",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "core::alloc::layout::Layout::array::inner",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "core::ptr::drop_in_place<(serde_toon::encode::NumberKey,alloc::vec::Vec<u8>)>",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "core::ptr::drop_in_place<alloc::sync::Arc<str>>",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "core::ptr::drop_in_place<smol_str::Repr>",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "core::ptr::mut_ptr::<impl *mut T>::write",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "core::ptr::write",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "core::slice::<impl [T]>::get",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "core::str::validations::next_code_point",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::control::group::neon::Group::match_full",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::map::make_hasher::{{closure}}",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::raw::RawIterRange<T>::next_impl",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::insert_in_slot",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::reserve",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::reserve_rehash",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::raw::RawTable<T,A>::reserve_rehash::{{closure}}",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::ctrl_slice",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::fix_insert_index",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::is_bucket_full",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::reserve_rehash_inner",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::raw::RawTableInner::resize_inner",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "hashbrown::rustc_entry::<impl hashbrown::map::HashMap<K,V,S,A>>::rustc_entry::{{closure}}",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "memchr::vector::aarch64neon::<impl memchr::vector::Vector for core::core_arch::arm_shared::neon::uint8x16_t>::or",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "serde_core::ser::impls::<impl serde_core::ser::Serialize for core::option::Option<T>>::serialize",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "serde_core::ser::impls::<impl serde_core::ser::Serialize for u64>::serialize",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "std::hash::random::RandomState::new",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "std::hash::random::RandomState::new::KEYS::{{constant}}::{{closure}}",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "std::thread::local::LocalKey<T>::try_with",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  },
+  {
+    "function": "std::thread::local::LocalKey<T>::with",
+    "samples": 1,
+    "percent": 0.03534817956875221
+  }
+]

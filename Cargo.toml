@@ -1,0 +1,71 @@
+[package]
+name = "serde_toon"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Serde-compatible TOON v3.0 encoder/decoder"
+autobenches = false
+readme = "README.md"
+repository = "https://github.com/bnomei/serde_toon"
+documentation = "https://docs.rs/serde_toon"
+
+[lib]
+name = "serde_toon"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = { version = "1.0.149", features = ["preserve_order"] }
+thiserror = "2.0.18"
+itoa = "1.0.17"
+ryu = "1.0.22"
+rayon = { version = "1.11.0", optional = true }
+memchr = "2.7.6"
+smallvec = "1.15.1"
+smol_str = "0.3.5"
+
+[features]
+default = []
+parallel = ["dep:rayon"]
+
+[profile.bench]
+debug = 0
+
+[dev-dependencies]
+serde = { version = "1.0.228", features = ["derive"] }
+criterion = "0.5.1"
+rstest = "0.18.2"
+pprof = { version = "0.15.0", features = ["flamegraph"] }
+
+[[example]]
+name = "profile_encode"
+path = "benchmarks/profile_encode.rs"
+
+[[example]]
+name = "profile_decode"
+path = "benchmarks/profile_decode.rs"
+
+[[bench]]
+name = "github_repos"
+path = "benches/github_repos.rs"
+harness = false
+
+[[bench]]
+name = "peanuts_characters"
+path = "benches/peanuts_characters.rs"
+harness = false
+
+[[bench]]
+name = "peanuts_specials"
+path = "benches/peanuts_specials.rs"
+harness = false
+
+[[bench]]
+name = "peanuts_universe"
+path = "benches/peanuts_universe.rs"
+harness = false
+
+[[bench]]
+name = "peanuts_jsonld"
+path = "benches/peanuts_jsonld.rs"
+harness = false
