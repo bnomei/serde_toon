@@ -59,19 +59,6 @@ Other options include indentation (`Indent::Spaces(n)` or `with_spaces`), key fo
 
 ## Benchmarks
 
-Benchmarks live in `benches/encode_decode.rs` and cover typed structs across:
-
-- `uniform_repos` (synthetic uniform array)
-- `deep_tree` (nested tree)
-- `semi_uniform_rows` (untagged enum mix)
-- `config_map` (nested map-heavy config)
-- `github_repos` (fixture from `benchmarks/data/github-repos.json`)
-
-Each dataset is measured in `encode`, `decode`, and `roundtrip` groups for both TOON and JSON.
-
-Baseline results (no `parallel` feature). Avg time uses the Criterion median from the latest run.
-Parallel-feature numbers will be added next.
-
 Encode avg time:
 
 | Dataset | JSON | TOON | TOON (parallel) |
@@ -91,45 +78,6 @@ Decode avg time:
 | semi_uniform_rows | 879.50 us | 2.621 ms | 2.668 ms |
 | config_map | 59.31 us | 56.31 us | 57.74 us |
 | github_repos | 48.19 us | 273.64 us | 277.46 us |
-
-Roundtrip avg time:
-
-| Dataset | JSON | TOON | TOON (parallel) |
-| --- | --- | --- | --- |
-| uniform_repos | 2.366 ms | 16.928 ms | 16.222 ms |
-| deep_tree | 120.42 us | 655.63 us | 651.17 us |
-| semi_uniform_rows | 1.094 ms | 4.739 ms | 4.582 ms |
-| config_map | 60.75 us | 66.02 us | 66.60 us |
-| github_repos | 79.16 us | 503.12 us | 508.32 us |
-
-Run without parallel (serial):
-
-```
-cargo bench --bench encode_decode --no-default-features
-```
-
-Run with TOON's `parallel` feature (now default):
-
-```
-cargo bench --bench encode_decode
-```
-
-Filter to a specific dataset or group using Criterion's pattern matching, for example:
-
-```
-cargo bench github_repos
-cargo bench encode::github_repos
-```
-
-Parallel behavior is controlled by the feature flag and internal heuristics.
-Encoding heuristics can be tuned via environment variables:
-
-- `TOON_ESTIMATE_MIN_FIELDS` (default 16)
-- `TOON_ESTIMATE_MIN_ITEMS` (default 32)
-- `TOON_TABULAR_MIN_ROWS` (default 2)
-
-Criterion writes JSON outputs under `target/criterion/<group>/<format>/<dataset>/new/`.
-Example: `target/criterion/encode/toon/github_repos/new/estimates.json`.
 
 ## License
 

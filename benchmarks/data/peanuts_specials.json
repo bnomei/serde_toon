@@ -1,0 +1,129 @@
+{
+  "context": {
+    "dataset": "peanuts_specials",
+    "focus": "tv_specials",
+    "source": "Wikipedia"
+  },
+  "sources": [
+    "https://en.wikipedia.org/wiki/Peanuts_filmography"
+  ],
+  "specials": [
+    {
+      "id": 1,
+      "slug": "a_charlie_brown_christmas",
+      "title": "A Charlie Brown Christmas",
+      "airDate": "1965-12-09",
+      "network": "CBS",
+      "otherNetworks": ["ABC", "Apple TV+", "PBS"],
+      "notes": "First Peanuts special"
+    },
+    {
+      "id": 2,
+      "slug": "charlie_browns_all_stars",
+      "title": "Charlie Brown's All Stars!",
+      "airDate": "1966-06-08",
+      "network": "CBS",
+      "otherNetworks": ["ABC", "Apple TV+"],
+      "notes": null
+    },
+    {
+      "id": 3,
+      "slug": "its_the_great_pumpkin_charlie_brown",
+      "title": "It's the Great Pumpkin, Charlie Brown",
+      "airDate": "1966-10-27",
+      "network": "CBS",
+      "otherNetworks": ["ABC", "Apple TV+", "PBS"],
+      "notes": null
+    },
+    {
+      "id": 4,
+      "slug": "youre_in_love_charlie_brown",
+      "title": "You're in Love, Charlie Brown",
+      "airDate": "1967-06-12",
+      "network": "CBS",
+      "otherNetworks": ["Apple TV+"],
+      "notes": null
+    },
+    {
+      "id": 5,
+      "slug": "hes_your_dog_charlie_brown",
+      "title": "He's Your Dog, Charlie Brown",
+      "airDate": "1968-02-14",
+      "network": "CBS",
+      "otherNetworks": ["Apple TV+"],
+      "notes": null
+    },
+    {
+      "id": 6,
+      "slug": "it_was_a_short_summer_charlie_brown",
+      "title": "It Was a Short Summer, Charlie Brown",
+      "airDate": "1969-09-27",
+      "network": "CBS",
+      "otherNetworks": ["Apple TV+"],
+      "notes": "First Peanuts special to not receive an Emmy"
+    },
+    {
+      "id": 7,
+      "slug": "play_it_again_charlie_brown",
+      "title": "Play It Again, Charlie Brown",
+      "airDate": "1971-03-28",
+      "network": "CBS",
+      "otherNetworks": ["Apple TV+"],
+      "notes": null
+    },
+    {
+      "id": 8,
+      "slug": "youre_not_elected_charlie_brown",
+      "title": "You're Not Elected, Charlie Brown",
+      "airDate": "1972-10-29",
+      "network": "CBS",
+      "otherNetworks": ["ABC", "Apple TV+"],
+      "notes": null
+    },
+    {
+      "id": 9,
+      "slug": "theres_no_time_for_love_charlie_brown",
+      "title": "There's No Time for Love, Charlie Brown",
+      "airDate": "1973-03-11",
+      "network": "CBS",
+      "otherNetworks": ["Apple TV+"],
+      "notes": null
+    },
+    {
+      "id": 10,
+      "slug": "a_charlie_brown_thanksgiving",
+      "title": "A Charlie Brown Thanksgiving",
+      "airDate": "1973-11-20",
+      "network": "CBS",
+      "otherNetworks": ["ABC", "Apple TV+", "PBS"],
+      "notes": null
+    },
+    {
+      "id": 11,
+      "slug": "its_a_mystery_charlie_brown",
+      "title": "It's a Mystery, Charlie Brown",
+      "airDate": "1974-02-01",
+      "network": "CBS",
+      "otherNetworks": ["Apple TV+"],
+      "notes": null
+    },
+    {
+      "id": 12,
+      "slug": "its_the_easter_beagle_charlie_brown",
+      "title": "It's the Easter Beagle, Charlie Brown",
+      "airDate": "1974-04-09",
+      "network": "CBS",
+      "otherNetworks": ["ABC", "Apple TV+"],
+      "notes": null
+    },
+    {
+      "id": 13,
+      "slug": "be_my_valentine_charlie_brown",
+      "title": "Be My Valentine, Charlie Brown",
+      "airDate": "1975-01-28",
+      "network": "CBS",
+      "otherNetworks": ["ABC", "Apple TV+"],
+      "notes": null
+    }
+  ]
+}
