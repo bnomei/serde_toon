@@ -7,7 +7,7 @@ description = "Serde-compatible TOON v3.0 encoder/decoder"
 autobenches = false
 readme = "README.md"
 repository = "https://github.com/bnomei/serde_toon"
-documentation = "https://docs.rs/serde_toon"
+documentation = "https://docs.rs/serde_toon_format"
 
 [lib]
 name = "serde_toon"
