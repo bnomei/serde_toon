@@ -1,5 +1,5 @@
 [package]
-name = "serde_toon"
+name = "serde_toon_format"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
