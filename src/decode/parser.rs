@@ -266,7 +266,10 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
         let null_id = self.null_node();
         let row_template: Vec<Pair> = unique_keys
             .iter()
-            .map(|&key| Pair { key, value: null_id })
+            .map(|&key| Pair {
+                key,
+                value: null_id,
+            })
             .collect();
         self.arena
             .pairs
@@ -334,9 +337,13 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
             }
             let row_pair_start = self.arena.pairs.len();
             let row_pairs_len = row_template.len();
-            self.arena
-                .pairs
-                .resize(row_pair_start + row_pairs_len, Pair { key: 0, value: null_id });
+            self.arena.pairs.resize(
+                row_pair_start + row_pairs_len,
+                Pair {
+                    key: 0,
+                    value: null_id,
+                },
+            );
             {
                 let row_slice =
                     &mut self.arena.pairs[row_pair_start..row_pair_start + row_pairs_len];
@@ -603,9 +610,7 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                 }
                 StringRef::Owned(value) => SmolStr::new(value.as_str()),
             };
-            Ok(KeyToken {
-                value,
-            })
+            Ok(KeyToken { value })
         } else {
             if self.strict {
                 if contains_whitespace(token) {

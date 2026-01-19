@@ -19,9 +19,9 @@ use crate::{DecodeOptions, Error, ExpandPaths, Indent, Result};
 #[cfg(feature = "parallel")]
 use crate::arena::NodeKind;
 #[cfg(feature = "parallel")]
-use rayon::prelude::*;
-#[cfg(feature = "parallel")]
 use ::serde::Deserialize;
+#[cfg(feature = "parallel")]
+use rayon::prelude::*;
 
 #[cfg(feature = "parallel")]
 const PARALLEL_ARRAY_MIN_ITEMS: usize = 64;

@@ -543,12 +543,7 @@ impl Encoder {
                         let value = obj
                             .get(field.as_str())
                             .ok_or_else(|| Error::encode("tabular row missing field"))?;
-                        encoder.append_scalar_tabular_prefixed(
-                            out,
-                            value,
-                            delimiter_char,
-                            idx,
-                        )?;
+                        encoder.append_scalar_tabular_prefixed(out, value, delimiter_char, idx)?;
                     }
                 }
                 Ok(())
@@ -817,8 +812,7 @@ impl Encoder {
                         .or_insert_with(|| {
                             HashMap::with_capacity(TABULAR_PREFIXED_CACHE_MAX_ITEMS)
                         });
-                    if len <= NUMBER_CACHE_MAX_LEN
-                        && cache.len() < TABULAR_PREFIXED_CACHE_MAX_ITEMS
+                    if len <= NUMBER_CACHE_MAX_LEN && cache.len() < TABULAR_PREFIXED_CACHE_MAX_ITEMS
                     {
                         cache.insert(key, buf.as_slice()[start..].to_vec());
                     }
@@ -841,11 +835,7 @@ impl Encoder {
                         .and_then(|cache| cache.get(value.as_str()))
                     {
                         buf.extend_bytes(encoded);
-                        self.update_tabular_last_string(
-                            column,
-                            value,
-                            &buf.as_slice()[start..],
-                        );
+                        self.update_tabular_last_string(column, value, &buf.as_slice()[start..]);
                         return Ok(());
                     }
                     if let Some(encoded) = self
@@ -866,11 +856,7 @@ impl Encoder {
                                 .entry(SmolStr::new(value))
                                 .or_insert_with(|| buf.as_slice()[start..].to_vec());
                         }
-                        self.update_tabular_last_string(
-                            column,
-                            value,
-                            &buf.as_slice()[start..],
-                        );
+                        self.update_tabular_last_string(column, value, &buf.as_slice()[start..]);
                         return Ok(());
                     }
                     buf.push_byte(delimiter_byte);
@@ -1360,8 +1346,7 @@ impl RowEncoder {
             if len <= NUMBER_CACHE_MAX_LEN
                 && self.number_encoded_cache.len() < TABULAR_NUMBER_CACHE_MAX_ITEMS
             {
-                self.number_encoded_cache
-                    .insert(key, buf[start..].to_vec());
+                self.number_encoded_cache.insert(key, buf[start..].to_vec());
             }
             return Ok(());
         }
