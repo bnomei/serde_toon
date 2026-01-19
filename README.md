@@ -1,11 +1,11 @@
 # Serde TOON
 
-[![Crates.io Version](https://img.shields.io/crates/v/serde_toon)](https://crates.io/crates/serde_toon)
+[![Crates.io Version](https://img.shields.io/crates/v/serde_toon_format)](https://crates.io/crates/serde_toon_format)
 [![CI](https://img.shields.io/github/actions/workflow/status/bnomei/serde_toon/ci.yml?branch=main)](https://github.com/bnomei/serde_toon/actions/workflows/ci.yml)
-[![Crates.io Downloads](https://img.shields.io/crates/d/serde_toon)](https://crates.io/crates/serde_toon)
-[![License](https://img.shields.io/crates/l/serde_toon)](https://crates.io/crates/serde_toon)
+[![Crates.io Downloads](https://img.shields.io/crates/d/serde_toon_format)](https://crates.io/crates/serde_toon_format)
+[![License](https://img.shields.io/crates/l/serde_toon_format)](https://crates.io/crates/serde_toon_format)
 
-Serde-compatible TOON v3.0 encoder/decoder with optional v1.5 features.
+Serde-compatible TOON Format Spec v3.0 encoder/decoder (275 tests).
 
 ```toml
 [dependencies]
@@ -147,14 +147,16 @@ assert_eq!(value, serde_json::json!({"a": {"b": 1}}));
 
 ## Benchmarks
 
-GitHub baseline (median):
+This TOON encoder/decoder is well optimized. You can compare it to other implementations with `serde_json` as a baseline.
+
+GitHub_Repo example baseline (median):
 
 - github_repos/encode_toon: 241.64 µs
 - github_repos/decode_toon: 92.94 µs
 - github_repos/encode_json: 28.824 µs
 - github_repos/decode_json: 46.657 µs
 
-Peanuts baseline (median):
+Peanuts example baseline (median):
 
 - peanuts_characters/encode_toon: 21.057 µs
 - peanuts_characters/decode_toon: 10.432 µs
@@ -175,29 +177,6 @@ Peanuts baseline (median):
 - peanuts_jsonld/decode_toon: 64.089 µs
 - peanuts_jsonld/encode_json: 6.8633 µs
 - peanuts_jsonld/decode_json: 12.488 µs
-
-## Profiling
-
-Generate encode/decode flamegraphs and CSV summaries for the GitHub and peanuts
-datasets:
-
-```bash
-bash benchmarks/run_profiles.sh
-```
-
-Requires `uv` on PATH for the CSV conversion step (stdlib-only Python script).
-
-Tune runtime or output location:
-
-```bash
-PROFILE_SECONDS=60 PROFILE_FREQ=200 PROFILE_DIR=benchmarks/profiles bash benchmarks/run_profiles.sh
-```
-
-Profile encode via `to_vec` instead of `to_string`:
-
-```bash
-PROFILE_BYTES=1 bash benchmarks/run_profiles.sh
-```
 
 ## License
 
