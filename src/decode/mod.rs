@@ -6,7 +6,7 @@ mod serde;
 use std::io::Read;
 
 use ::serde::de::DeserializeOwned;
-use memchr::{memchr, memchr2, memchr_iter};
+use memchr::{memchr, memchr2, memchr3, memchr_iter};
 use serde_json::{Map, Value};
 use smallvec::SmallVec;
 use smol_str::SmolStr;
@@ -44,6 +44,11 @@ pub fn from_str<T: DeserializeOwned>(input: &str, options: &DecodeOptions) -> Re
     })();
     pool::put_arena_parts(arena.into_parts());
     result
+}
+
+pub fn from_str_value(input: &str, options: &DecodeOptions) -> Result<Value> {
+    let mut decoder = Decoder::new(options);
+    decoder.decode_document(input)
 }
 
 #[cfg(feature = "parallel")]
@@ -117,7 +122,6 @@ struct Decoder {
 }
 
 type TokenBuf<'a> = SmallVec<[&'a str; 16]>;
-type RowBuf = SmallVec<[Value; 16]>;
 
 impl Decoder {
     fn new(options: &DecodeOptions) -> Self {
@@ -899,7 +903,6 @@ impl Decoder {
     ) -> Result<(Vec<Value>, usize, bool)> {
         let mut rows = Vec::with_capacity(expected_len);
         let mut tokens = TokenBuf::with_capacity(fields.len());
-        let mut row_values = RowBuf::with_capacity(fields.len());
         let mut field_paths: Vec<Option<Vec<&str>>> = Vec::new();
         let mut fast_path = self.expand_paths != ExpandPaths::Safe;
         if !fast_path {
@@ -909,6 +912,7 @@ impl Decoder {
             }
             fast_path = field_paths.iter().all(|parts| parts.is_none());
         }
+        let field_names: Vec<String> = fields.iter().map(|field| field.value.to_string()).collect();
         let mut row_level = None;
         while idx < lines.len() {
             let line = &lines[idx];
@@ -946,10 +950,9 @@ impl Decoder {
                     row_content = stripped.trim_start();
                 }
             }
-            if !self.is_tabular_row(row_content, delimiter)? {
+            if !self.split_tabular_row_into(row_content, delimiter, &mut tokens)? {
                 return Ok((rows, idx, true));
             }
-            self.split_delimited_into(row_content, delimiter, &mut tokens)?;
             if tokens.len() != fields.len() {
                 if self.strict {
                     return Err(Error::decode("tabular row field count mismatch"));
@@ -960,26 +963,27 @@ impl Decoder {
                     tokens.truncate(fields.len());
                 }
             }
-            row_values.clear();
-            for token in tokens.iter() {
-                let value = if token.is_empty() {
-                    Value::String(String::new())
-                } else {
-                    self.parse_value_token(token)?
-                };
-                row_values.push(value);
-            }
             let mut obj = Map::with_capacity(fields.len());
             if fast_path {
-                for (idx, value) in row_values.drain(..).enumerate() {
-                    obj.insert(fields[idx].value.to_string(), value);
+                for (idx, token) in tokens.iter().enumerate() {
+                    let value = if token.is_empty() {
+                        Value::String(String::new())
+                    } else {
+                        self.parse_value_token(token)?
+                    };
+                    obj.insert(field_names[idx].clone(), value);
                 }
             } else {
-                for (idx, value) in row_values.drain(..).enumerate() {
+                for (idx, token) in tokens.iter().enumerate() {
+                    let value = if token.is_empty() {
+                        Value::String(String::new())
+                    } else {
+                        self.parse_value_token(token)?
+                    };
                     if let Some(parts) = field_paths[idx].as_deref() {
                         self.insert_path(&mut obj, parts, value)?;
                     } else {
-                        obj.insert(fields[idx].value.to_string(), value);
+                        obj.insert(field_names[idx].clone(), value);
                     }
                 }
             }
@@ -989,45 +993,109 @@ impl Decoder {
         Ok((rows, idx, false))
     }
 
-    fn is_tabular_row(&self, line: &str, delimiter: char) -> Result<bool> {
+    fn split_tabular_row_into<'c>(
+        &self,
+        input: &'c str,
+        delimiter: char,
+        tokens: &mut TokenBuf<'c>,
+    ) -> Result<bool> {
+        tokens.clear();
+        let bytes = input.as_bytes();
+        if input.is_ascii() && !bytes.contains(&b'"') && !bytes.contains(&b'\\') {
+            let delim_byte = delimiter as u8;
+            let delim_pos = memchr(delim_byte, bytes);
+            let colon_pos = memchr(b':', bytes);
+            if let Some(colon) = colon_pos {
+                if delim_pos.is_none() || delim_pos.is_some_and(|pos| colon < pos) {
+                    return Ok(false);
+                }
+            }
+            let mut start = 0;
+            for idx in memchr_iter(delim_byte, bytes) {
+                let token = trim_ascii(&input[start..idx]);
+                tokens.push(token);
+                start = idx + 1;
+            }
+            if start < bytes.len() || input.ends_with(delimiter) {
+                let token = trim_ascii(&input[start..]);
+                tokens.push(token);
+            }
+            return Ok(true);
+        }
+
         let mut in_quotes = false;
         let mut escape = false;
-        let mut colon_pos = None;
-        let mut delim_pos = None;
         let delim_byte = delimiter as u8;
-        for (idx, byte) in line.as_bytes().iter().enumerate() {
+        let mut start = 0;
+        let mut idx = 0;
+        let mut saw_delim = false;
+        let mut colon_before_delim = false;
+
+        while idx < bytes.len() {
             if escape {
                 escape = false;
+                idx += 1;
                 continue;
             }
             if in_quotes {
-                if *byte == b'\\' {
-                    escape = true;
-                    continue;
-                }
-                if *byte == b'"' {
-                    in_quotes = false;
+                match memchr2(b'\\', b'"', &bytes[idx..]) {
+                    Some(offset) => {
+                        let pos = idx + offset;
+                        match bytes[pos] {
+                            b'\\' => {
+                                escape = true;
+                                idx = pos + 1;
+                            }
+                            b'"' => {
+                                in_quotes = false;
+                                idx = pos + 1;
+                            }
+                            _ => unreachable!("memchr2 returned unexpected byte"),
+                        }
+                    }
+                    None => {
+                        idx = bytes.len();
+                    }
                 }
                 continue;
             }
-            if *byte == b'"' {
-                in_quotes = true;
-                continue;
-            }
-            if *byte == b':' && colon_pos.is_none() {
-                colon_pos = Some(idx);
-            }
-            if *byte == delim_byte && delim_pos.is_none() {
-                delim_pos = Some(idx);
+
+            match memchr3(delim_byte, b'"', b':', &bytes[idx..]) {
+                Some(offset) => {
+                    let pos = idx + offset;
+                    match bytes[pos] {
+                        b'"' => {
+                            in_quotes = true;
+                            idx = pos + 1;
+                        }
+                        b':' => {
+                            if !saw_delim {
+                                colon_before_delim = true;
+                            }
+                            idx = pos + 1;
+                        }
+                        _ => {
+                            let token = trim_ascii(&input[start..pos]);
+                            tokens.push(token);
+                            start = pos + 1;
+                            idx = start;
+                            saw_delim = true;
+                        }
+                    }
+                }
+                None => break,
             }
         }
+
         if in_quotes {
             return Err(Error::decode("unterminated string"));
         }
-        if let Some(colon) = colon_pos {
-            if delim_pos.is_none() || delim_pos.is_some_and(|pos| colon < pos) {
-                return Ok(false);
-            }
+        if colon_before_delim {
+            return Ok(false);
+        }
+        if start < bytes.len() || input.ends_with(delimiter) {
+            let token = trim_ascii(&input[start..]);
+            tokens.push(token);
         }
         Ok(true)
     }

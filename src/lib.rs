@@ -253,7 +253,7 @@ pub fn decode_to_value(input: &str) -> Result<Value> {
 }
 
 pub fn decode_to_value_with_options(input: &str, options: &DecodeOptions) -> Result<Value> {
-    let value = decode::from_str(input, options)?;
+    let value = decode::from_str_value(input, options)?;
     Ok(canonicalize_numbers(value))
 }
 
