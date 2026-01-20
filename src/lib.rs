@@ -2,7 +2,7 @@
 //!
 //! # Examples
 //!
-//! Auto-detect struct, JSON or TOON:
+//! Quick encode/decode:
 //!
 //! ```rust
 //! use serde::Serialize;
@@ -19,11 +19,11 @@
 //!     age: 37,
 //! };
 //! let toon = toon!(encode: user)?;
-//! let json_value = toon!(r#"{"name":"Grace Hopper"}"#)?;
-//! let toon_value = toon!("name: Ada Lovelace")?;
+//! let toon_from_json = toon!(encode_json: r#"{"name":"Grace Hopper"}"#)?;
+//! let value = toon!("name: Ada Lovelace")?;
 //! assert_eq!(toon, "name: Ada Lovelace\nage: 37");
-//! assert_eq!(json_value, serde_json::json!({"name": "Grace Hopper"}));
-//! assert_eq!(toon_value, serde_json::json!({"name": "Ada Lovelace"}));
+//! assert_eq!(toon_from_json, "name: Grace Hopper");
+//! assert_eq!(value, serde_json::json!({"name": "Ada Lovelace"}));
 //! # Ok::<(), serde_toon::Error>(())
 //! ```
 //!
@@ -307,7 +307,7 @@ pub fn validate_str_with_options(input: &str, options: &DecodeOptions) -> Result
 }
 
 #[macro_export]
-/// Parse a JSON or TOON string into a `serde_json::Value`.
+/// Parse a JSON or TOON string into a `serde_json::Value`, or encode values into TOON.
 ///
 /// This macro calls `decode_to_value_auto`, returning a `Result<Value>`.
 ///
@@ -320,12 +320,26 @@ pub fn validate_str_with_options(input: &str, options: &DecodeOptions) -> Result
 /// assert_eq!(value, serde_json::json!({"name": "Snoopy", "age": 5}));
 /// # Ok::<(), serde_toon::Error>(())
 /// ```
+///
+/// ```rust
+/// use serde_toon::toon;
+///
+/// let toon = toon!(encode_json: r#"{"name":"Grace Hopper"}"#)?;
+/// assert_eq!(toon, "name: Grace Hopper");
+/// # Ok::<(), serde_toon::Error>(())
+/// ```
 macro_rules! toon {
     (encode: $input:expr) => {
         $crate::to_string(&$input)
     };
     (encode: $input:expr, $options:expr) => {
         $crate::to_string_with_options(&$input, $options)
+    };
+    (encode_json: $input:expr) => {
+        $crate::to_string_from_json_str($input)
+    };
+    (encode_json: $input:expr, $options:expr) => {
+        $crate::to_string_from_json_str_with_options($input, $options)
     };
     ($input:expr) => {
         $crate::decode_to_value_auto($input)
