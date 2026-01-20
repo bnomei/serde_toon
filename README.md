@@ -173,8 +173,6 @@ This repo includes a `toon` CLI in `cli/` mirroring the API of the [original TOO
 
 ```bash
 cargo install --path cli
-# or
-cargo install serde_toon_format_cli
 ```
 
 ```bash
