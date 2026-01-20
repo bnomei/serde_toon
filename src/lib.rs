@@ -85,10 +85,9 @@
 //!     "name: Grace Hopper\nfield: computer science\nyear: 1952"
 //! );
 //!
-//! let back_to_json = serde_json::to_string(&from_str::<serde_json::Value>(&toon)?)
-//!     .map_err(|err| serde_toon::Error::serialize(format!("json encode failed: {err}")))?;
+//! let back_to_json = serde_json::to_string(&from_str::<serde_json::Value>(&toon)?)?;
 //! assert_eq!(back_to_json, json);
-//! # Ok::<(), serde_toon::Error>(())
+//! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 //!
 //! Untyped values:
