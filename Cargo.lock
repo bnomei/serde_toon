@@ -1181,31 +1181,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_toon_format"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "819262fce212eba4660ad2c87286ff9c5226e86f76ab1423d96e090b196eb359"
-dependencies = [
- "itoa",
- "memchr",
- "ryu",
- "serde",
- "serde_json",
- "smallvec",
- "smol_str",
- "thiserror",
-]
-
-[[package]]
 name = "serde_toon_format_cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "assert_cmd",
  "clap",
  "predicates",
  "serde",
  "serde_json",
- "serde_toon_format 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_toon_format",
  "tempfile",
  "tiktoken-rs",
 ]
@@ -1548,6 +1532,6 @@ dependencies = [
 
 [[package]]
 name = "zmij"
-version = "1.0.15"
+version = "1.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94f63c051f4fe3c1509da62131a678643c5b6fbdc9273b2b79d4378ebda003d2"
+checksum = "dfcd145825aace48cff44a8844de64bf75feec3080e0aa5cdbde72961ae51a65"
