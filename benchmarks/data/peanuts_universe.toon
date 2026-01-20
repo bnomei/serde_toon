@@ -1,0 +1,48 @@
+context:
+  title: Peanuts
+  author: Charles M. Schulz
+  launch:
+    daily: "1950-10-02"
+    sunday: "1952-01-06"
+  end:
+    daily: "2000-01-03"
+    sunday: "2000-02-13"
+  currentStatus: concluded_in_reruns
+  website: "https://www.peanuts.com"
+  genres[4]: humor,gag_a_day,satire,children
+  notableCounts:
+    stripCount: 17897
+    peakNewspapers: 2600
+    countries: 75
+    languages: 21
+owners[3]{name,startYear,endYear}:
+  United Feature Syndicate,1950,1978
+  United Media,1978,2011
+  Peanuts Worldwide,2011,null
+syndicates[2]{name,startYear,endYear}:
+  United Feature Syndicate,1950,2011
+  Andrews McMeel Syndication,2011,null
+characters[10]{id,slug,displayName,introducedYear,species}:
+  1,charlie_brown,Charlie Brown,1950,human
+  2,snoopy,Snoopy,1950,beagle
+  3,lucy_van_pelt,Lucy Van Pelt,1952,human
+  4,linus_van_pelt,Linus Van Pelt,1952,human
+  5,schroeder,Schroeder,1951,human
+  6,sally_brown,Sally Brown,1959,human
+  7,peppermint_patty,Peppermint Patty,1966,human
+  8,marcie,Marcie,1968,human
+  9,franklin_armstrong,Franklin Armstrong,1968,human
+  10,woodstock,Woodstock,1966,bird
+specials[4]{id,slug,title,airDate,network}:
+  1,a_charlie_brown_christmas,A Charlie Brown Christmas,"1965-12-09",CBS
+  2,its_the_great_pumpkin_charlie_brown,"It's the Great Pumpkin, Charlie Brown","1966-10-27",CBS
+  3,a_charlie_brown_thanksgiving,A Charlie Brown Thanksgiving,"1973-11-20",CBS
+  4,its_the_easter_beagle_charlie_brown,"It's the Easter Beagle, Charlie Brown","1974-04-09",CBS
+relationships[6]{source,relation,target}:
+  charlie_brown,pet,snoopy
+  lucy_van_pelt,sibling,linus_van_pelt
+  linus_van_pelt,sibling,lucy_van_pelt
+  sally_brown,sibling,charlie_brown
+  peppermint_patty,friend,marcie
+  lucy_van_pelt,crush,schroeder
+sources[3]: "https://en.wikipedia.org/wiki/Peanuts","https://en.wikipedia.org/wiki/List_of_Peanuts_characters","https://en.wikipedia.org/wiki/Peanuts_filmography"

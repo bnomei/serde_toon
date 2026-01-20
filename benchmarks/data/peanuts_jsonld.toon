@@ -1,0 +1,231 @@
+"@context": "https://schema.org"
+"@graph"[19]:
+  - "@id": "https://www.peanuts.com/#organization"
+    "@type": Organization
+    name: Peanuts Worldwide
+    url: "https://www.peanuts.com"
+    datePublished: null
+    category: rights_holder
+    isPartOf: null
+    author: null
+    publisher: null
+    genre[0]:
+    description: Owner of the Peanuts brand and official website.
+    sameAs[1]: "https://en.wikipedia.org/wiki/Peanuts"
+  - "@id": "https://www.peanuts.com/#website"
+    "@type": WebSite
+    name: Peanuts
+    url: "https://www.peanuts.com"
+    datePublished: null
+    category: website
+    isPartOf: null
+    author: null
+    publisher: "https://www.peanuts.com/#organization"
+    genre[0]:
+    description: Official site for the Peanuts franchise.
+    sameAs[1]: "https://www.peanuts.com"
+  - "@id": "https://www.peanuts.com/#series"
+    "@type": CreativeWorkSeries
+    name: Peanuts
+    url: "https://en.wikipedia.org/wiki/Peanuts"
+    datePublished: "1950-10-02"
+    category: comic_strip
+    isPartOf: null
+    author: Charles M. Schulz
+    publisher: "https://www.peanuts.com/#organization"
+    genre[4]: humor,gag-a-day,satire,children
+    description: Syndicated comic strip about a group of children and a dog.
+    sameAs[1]: "https://en.wikipedia.org/wiki/Peanuts"
+  - "@id": "https://www.peanuts.com/#special-a-charlie-brown-christmas"
+    "@type": CreativeWork
+    name: A Charlie Brown Christmas
+    url: "https://en.wikipedia.org/wiki/A_Charlie_Brown_Christmas"
+    datePublished: "1965-12-09"
+    category: tv_special
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: tv_special
+    description: First Peanuts television special.
+    sameAs[1]: "https://en.wikipedia.org/wiki/A_Charlie_Brown_Christmas"
+  - "@id": "https://www.peanuts.com/#special-charlie-browns-all-stars"
+    "@type": CreativeWork
+    name: Charlie Brown's All Stars!
+    url: "https://en.wikipedia.org/wiki/Charlie_Brown%27s_All_Stars!"
+    datePublished: "1966-06-08"
+    category: tv_special
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: tv_special
+    description: null
+    sameAs[1]: "https://en.wikipedia.org/wiki/Charlie_Brown%27s_All_Stars!"
+  - "@id": "https://www.peanuts.com/#special-its-the-great-pumpkin"
+    "@type": CreativeWork
+    name: "It's the Great Pumpkin, Charlie Brown"
+    url: "https://en.wikipedia.org/wiki/It%27s_the_Great_Pumpkin,_Charlie_Brown"
+    datePublished: "1966-10-27"
+    category: tv_special
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: tv_special
+    description: null
+    sameAs[1]: "https://en.wikipedia.org/wiki/It%27s_the_Great_Pumpkin,_Charlie_Brown"
+  - "@id": "https://www.peanuts.com/#special-youre-not-elected"
+    "@type": CreativeWork
+    name: "You're Not Elected, Charlie Brown"
+    url: "https://en.wikipedia.org/wiki/You%27re_Not_Elected,_Charlie_Brown"
+    datePublished: "1972-10-29"
+    category: tv_special
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: tv_special
+    description: null
+    sameAs[1]: "https://en.wikipedia.org/wiki/You%27re_Not_Elected,_Charlie_Brown"
+  - "@id": "https://www.peanuts.com/#special-a-charlie-brown-thanksgiving"
+    "@type": CreativeWork
+    name: A Charlie Brown Thanksgiving
+    url: "https://en.wikipedia.org/wiki/A_Charlie_Brown_Thanksgiving"
+    datePublished: "1973-11-20"
+    category: tv_special
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: tv_special
+    description: null
+    sameAs[1]: "https://en.wikipedia.org/wiki/A_Charlie_Brown_Thanksgiving"
+  - "@id": "https://www.peanuts.com/#special-its-the-easter-beagle"
+    "@type": CreativeWork
+    name: "It's the Easter Beagle, Charlie Brown"
+    url: "https://en.wikipedia.org/wiki/It%27s_the_Easter_Beagle,_Charlie_Brown"
+    datePublished: "1974-04-09"
+    category: tv_special
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: tv_special
+    description: null
+    sameAs[1]: "https://en.wikipedia.org/wiki/It%27s_the_Easter_Beagle,_Charlie_Brown"
+  - "@id": "https://www.peanuts.com/#character-charlie-brown"
+    "@type": Person
+    name: Charlie Brown
+    url: "https://en.wikipedia.org/wiki/Charlie_Brown"
+    datePublished: "1950-10-02"
+    category: character
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: character
+    description: "The main character, an average yet emotionally mature, gentle, considerate, and often innocent boy who has an ever-changing mood and grace; he is regarded as an embarrassment and a loser by other children and is strongly disliked and rejected by most of them; he takes his frequent failures personally, yet rises out of nearly every downfall with renewed optimism and determination."
+    sameAs[1]: "https://en.wikipedia.org/wiki/Charlie_Brown"
+  - "@id": "https://www.peanuts.com/#character-snoopy"
+    "@type": Person
+    name: Snoopy
+    url: "https://en.wikipedia.org/wiki/Snoopy"
+    datePublished: "1950-10-04"
+    category: character
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: character
+    description: "Charlie Brown's pet dog, a beagle. Intelligent beyond his species, he is independent-minded and prone to daydreaming and fantasies."
+    sameAs[1]: "https://en.wikipedia.org/wiki/Snoopy"
+  - "@id": "https://www.peanuts.com/#character-lucy-van-pelt"
+    "@type": Person
+    name: Lucy Van Pelt
+    url: "https://en.wikipedia.org/wiki/Lucy_Van_Pelt"
+    datePublished: "1952-03-03"
+    category: character
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: character
+    description: "Linus' older sister; a bossy, fussy, crabby girl who sometimes torments Charlie Brown, frequently bullies Linus, battles with Snoopy, and who has a crush on Schroeder."
+    sameAs[1]: "https://en.wikipedia.org/wiki/Lucy_Van_Pelt"
+  - "@id": "https://www.peanuts.com/#character-linus-van-pelt"
+    "@type": Person
+    name: Linus Van Pelt
+    url: "https://en.wikipedia.org/wiki/Linus_Van_Pelt"
+    datePublished: "1952-09-19"
+    category: character
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: character
+    description: Lucy's younger brother; Charlie Brown's blanket-toting best friend; Sally's unrequited love interest; the most insecure but the smartest and most intellectual out of all the characters; a frequent philosopher and theologian.
+    sameAs[1]: "https://en.wikipedia.org/wiki/Linus_Van_Pelt"
+  - "@id": "https://www.peanuts.com/#character-schroeder"
+    "@type": Person
+    name: Schroeder
+    url: "https://en.wikipedia.org/wiki/Schroeder_(Peanuts)"
+    datePublished: "1951-05-30"
+    category: character
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: character
+    description: Piano-playing prodigy and catcher on Charlie Brown's baseball team; Lucy's unrequited love interest; ardent admirer of Beethoven; Charlie Brown's closest friend besides Linus.
+    sameAs[1]: "https://en.wikipedia.org/wiki/Schroeder_(Peanuts)"
+  - "@id": "https://www.peanuts.com/#character-sally-brown"
+    "@type": Person
+    name: Sally Brown
+    url: "https://en.wikipedia.org/wiki/Sally_Brown"
+    datePublished: "1959-08-23"
+    category: character
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: character
+    description: "Charlie Brown's younger sister who has a crush on Linus; often complains, overreacts or overanalyzes situations; she often shows little respect for her older brother."
+    sameAs[1]: "https://en.wikipedia.org/wiki/Sally_Brown"
+  - "@id": "https://www.peanuts.com/#character-peppermint-patty"
+    "@type": Person
+    name: Peppermint Patty
+    url: "https://en.wikipedia.org/wiki/Peppermint_Patty_(Peanuts)"
+    datePublished: "1966-08-22"
+    category: character
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: character
+    description: "A freckle-faced tomboy who has a crush on Charlie Brown, whom she calls 'Chuck'; leader of a baseball team and one of Charlie Brown's rival managers; she has difficulties with school, where she often falls asleep at her desk; for several years she did not realize Snoopy was a dog."
+    sameAs[1]: "https://en.wikipedia.org/wiki/Peppermint_Patty_(Peanuts)"
+  - "@id": "https://www.peanuts.com/#character-marcie"
+    "@type": Person
+    name: Marcie
+    url: "https://en.wikipedia.org/wiki/Marcie_(Peanuts)"
+    datePublished: "1968-06-18"
+    category: character
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: character
+    description: "A mild-mannered, plain and bookish girl; Peppermint Patty's best friend despite their different personalities; calls Peppermint Patty 'Sir'; secretly likes Charlie Brown whom she calls 'Charles'."
+    sameAs[1]: "https://en.wikipedia.org/wiki/Marcie_(Peanuts)"
+  - "@id": "https://www.peanuts.com/#character-franklin-armstrong"
+    "@type": Person
+    name: Franklin Armstrong
+    url: "https://en.wikipedia.org/wiki/Franklin_(Peanuts)"
+    datePublished: "1968-07-31"
+    category: character
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: character
+    description: An African-American child; was initially bemused by the strange kids (and Snoopy) in Charlie Brown's neighborhood; has intelligence and rationality comparable to Linus; plays on Peppermint Patty's baseball team.
+    sameAs[1]: "https://en.wikipedia.org/wiki/Franklin_(Peanuts)"
+  - "@id": "https://www.peanuts.com/#character-woodstock"
+    "@type": Person
+    name: Woodstock
+    url: "https://en.wikipedia.org/wiki/Woodstock_(Peanuts)"
+    datePublished: "1966-03-17"
+    category: character
+    isPartOf: "https://www.peanuts.com/#series"
+    author: null
+    publisher: null
+    genre[1]: character
+    description: "Snoopy's best friend; a tiny yellow bird. First seen in early 1966, Schulz did not give him a name until June 22, 1970."
+    sameAs[1]: "https://en.wikipedia.org/wiki/Woodstock_(Peanuts)"
+sources[3]: "https://en.wikipedia.org/wiki/Peanuts","https://en.wikipedia.org/wiki/List_of_Peanuts_characters","https://en.wikipedia.org/wiki/Peanuts_filmography"

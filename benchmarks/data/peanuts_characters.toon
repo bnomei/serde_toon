@@ -1,0 +1,18 @@
+context:
+  dataset: peanuts_characters
+  focus: main_characters
+  source: Wikipedia
+sources[1]: "https://en.wikipedia.org/wiki/List_of_Peanuts_characters"
+characters[12]{id,slug,displayName,introducedYear,lastAppearanceYear,species,role,traits}:
+  1,charlie_brown,Charlie Brown,1950,2000,human,main,"The main character, an average yet emotionally mature, gentle, considerate, and often innocent boy who has an ever-changing mood and grace; he is regarded as an embarrassment and a loser by other children and is strongly disliked and rejected by most of them; he takes his frequent failures personally, yet rises out of nearly every downfall with renewed optimism and determination."
+  2,snoopy,Snoopy,1950,2000,beagle,main,"Charlie Brown's pet dog, a beagle. Intelligent beyond his species, he is independent-minded and prone to daydreaming and fantasies."
+  3,lucy_van_pelt,Lucy Van Pelt,1952,1999,human,main,"Linus' older sister; a bossy, fussy, crabby girl who sometimes torments Charlie Brown, frequently bullies Linus, battles with Snoopy, and who has a crush on Schroeder."
+  4,linus_van_pelt,Linus Van Pelt,1952,2000,human,main,Lucy's younger brother; Charlie Brown's blanket-toting best friend; Sally's unrequited love interest; the most insecure but the smartest and most intellectual out of all the characters; a frequent philosopher and theologian.
+  5,schroeder,Schroeder,1951,1999,human,main,Piano-playing prodigy and catcher on Charlie Brown's baseball team; Lucy's unrequited love interest; ardent admirer of Beethoven; Charlie Brown's closest friend besides Linus.
+  6,sally_brown,Sally Brown,1959,2000,human,main,"Charlie Brown's younger sister who has a crush on Linus; often complains, overreacts or overanalyzes situations; she often shows little respect for her older brother."
+  7,pig_pen,Pig-Pen,1954,1999,human,main,"The character who attracts dust, making him extremely filthy. In one strip, Pig-Pen is perfectly clean, until he steps outside and instantly becomes dirty."
+  8,peppermint_patty,Peppermint Patty,1966,2000,human,main,"A freckle-faced tomboy who has a crush on Charlie Brown, whom she calls 'Chuck'; leader of a baseball team and one of Charlie Brown's rival managers; she has difficulties with school, where she often falls asleep at her desk; for several years she did not realize Snoopy was a dog."
+  9,franklin_armstrong,Franklin Armstrong,1968,1999,human,main,An African-American child; was initially bemused by the strange kids (and Snoopy) in Charlie Brown's neighborhood; has intelligence and rationality comparable to Linus; plays on Peppermint Patty's baseball team.
+  10,marcie,Marcie,1968,2000,human,main,"A mild-mannered, plain and bookish girl; Peppermint Patty's best friend despite their different personalities; calls Peppermint Patty 'Sir'; secretly likes Charlie Brown whom she calls 'Charles'."
+  11,woodstock,Woodstock,1966,2000,bird,main,"Snoopy's best friend; a tiny yellow bird. First seen in early 1966, Schulz did not give him a name until June 22, 1970."
+  12,rerun_van_pelt,Rerun Van Pelt,1973,2000,human,main,Younger brother of Linus and Lucy; frequently rides on the back of his mother's bicycle; often takes his siblings' places and roles.
