@@ -1164,22 +1164,6 @@ dependencies = [
 
 [[package]]
 name = "serde_toon_format"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77fef54445509ed55c3b8a897fee112111a624c003ee412675507c281fa6ba50"
-dependencies = [
- "itoa",
- "memchr",
- "ryu",
- "serde",
- "serde_json",
- "smallvec",
- "smol_str",
- "thiserror",
-]
-
-[[package]]
-name = "serde_toon_format"
 version = "0.1.1"
 dependencies = [
  "criterion",
@@ -1197,6 +1181,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_toon_format"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "819262fce212eba4660ad2c87286ff9c5226e86f76ab1423d96e090b196eb359"
+dependencies = [
+ "itoa",
+ "memchr",
+ "ryu",
+ "serde",
+ "serde_json",
+ "smallvec",
+ "smol_str",
+ "thiserror",
+]
+
+[[package]]
 name = "serde_toon_format_cli"
 version = "0.1.0"
 dependencies = [
@@ -1205,7 +1205,7 @@ dependencies = [
  "predicates",
  "serde",
  "serde_json",
- "serde_toon_format 0.1.0",
+ "serde_toon_format 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "tempfile",
  "tiktoken-rs",
 ]
