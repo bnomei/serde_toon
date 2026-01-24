@@ -4,6 +4,8 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/bnomei/serde_toon/ci.yml?branch=main)](https://github.com/bnomei/serde_toon/actions/workflows/ci.yml)
 [![Crates.io Downloads](https://img.shields.io/crates/d/serde_toon_format)](https://crates.io/crates/serde_toon_format)
 [![License](https://img.shields.io/crates/l/serde_toon_format)](https://crates.io/crates/serde_toon_format)
+[![Discord](https://flat.badgen.net/badge/discord/bnomei?color=7289da&icon=discord&label)](https://discordapp.com/users/bnomei)
+[![Buymecoffee](https://flat.badgen.net/badge/icon/donate?icon=buymeacoffee&color=FF813F&label)](https://www.buymeacoffee.com/bnomei)
 
 Serde-compatible [TOON](https://toonformat.dev) v3.0 encoder/decoder with optional v1.5 features, validated by the [spec fixture suite](https://github.com/toon-format/spec) (275 tests).
 
@@ -247,7 +249,7 @@ Defaults listed here are the settings applied in the benchmarks (defaults unless
 
 #### Strict + Validated
 
-**Strict + Validated** is a separate pass/fail check. We run each decoder in its strict/validated mode when available, and we do not apply any patches or lenient settings for that table. If a crate can’t parse the dataset under strict validation, it’s marked ❌. 
+**Strict + Validated** is a separate pass/fail check. We run each decoder in its strict/validated mode when available, and we do not apply any patches or lenient settings for that table. If a crate can’t parse the dataset under strict validation, it’s marked ❌.
 
 | Library | Pass (strict+validated) |
 | --- | --- |
