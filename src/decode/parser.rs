@@ -5,6 +5,7 @@ use smallvec::SmallVec;
 use smol_str::SmolStr;
 
 use crate::arena::{ArenaView, Node, NodeData, NodeKind, Pair, Span, StringRef};
+use crate::error::Location;
 use crate::text::string::is_canonical_unquoted_key;
 use crate::{DecodeOptions, Error, Indent, Result};
 
@@ -61,10 +62,15 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
             if let Some(header) = self.parse_array_header(first_content)? {
                 if header.key.is_none() {
                     if first_line.indent != 0 {
-                        return Err(Error::decode("unexpected indentation"));
+                        return Err(self.attach_location_for_line(
+                            &scan,
+                            first_non_blank_idx,
+                            Error::decode("unexpected indentation"),
+                        ));
                     }
-                    let parsed =
-                        self.parse_array_from_header(&header, &scan, first_non_blank_idx + 1, 0)?;
+                    let parsed = self
+                        .parse_array_from_header(&header, &scan, first_non_blank_idx + 1, 0)
+                        .map_err(|err| self.attach_location_for_slice(&scan, first_content, err))?;
                     self.ensure_no_trailing_content(&scan, parsed.next_idx)?;
                     return Ok(parsed.node_id);
                 }
@@ -72,36 +78,64 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
         }
 
         if scan.non_blank == 1 && first_line.indent == 0 {
-            return self.decode_single_line(first_content);
+            return self
+                .decode_single_line(first_content, &scan)
+                .map_err(|err| self.attach_location_for_slice(&scan, first_content, err));
         }
 
         if scan.non_blank == 1 && self.strict && first_line.indent != 0 {
-            return Err(Error::decode("unexpected indentation"));
+            return Err(self.attach_location_for_line(
+                &scan,
+                first_non_blank_idx,
+                Error::decode("unexpected indentation"),
+            ));
         }
 
         let (node_id, idx) = self.parse_object_block(&scan, 0, 0)?;
         if idx < scan.lines.len() {
-            return Err(Error::decode("unexpected trailing content"));
+            return Err(self.attach_location_for_line(
+                &scan,
+                idx,
+                Error::decode("unexpected trailing content"),
+            ));
         }
         Ok(node_id)
     }
 
     fn ensure_no_trailing_content(&self, scan: &ScanResult, start_idx: usize) -> Result<()> {
-        if scan.lines[start_idx..].iter().any(|line| !line.is_blank) {
-            return Err(Error::decode("unexpected trailing content"));
+        if let Some((idx, _)) = scan
+            .lines
+            .iter()
+            .enumerate()
+            .skip(start_idx)
+            .find(|(_, line)| !line.is_blank)
+        {
+            return Err(self.attach_location_for_line(
+                scan,
+                idx,
+                Error::decode("unexpected trailing content"),
+            ));
         }
         Ok(())
     }
 
-    fn decode_single_line(&mut self, line: &'a str) -> Result<usize> {
-        if let Some(array) = self.parse_array_line(line)? {
+    fn decode_single_line(&mut self, line: &'a str, scan: &ScanResult) -> Result<usize> {
+        if let Some(array) = self
+            .parse_array_line(line)
+            .map_err(|err| self.attach_location_for_slice(scan, line, err))?
+        {
             return Ok(array);
         }
         if let (Some(bracket_idx), Some(colon_idx)) = (line.find('['), line.find(':')) {
             if bracket_idx < colon_idx {
-                if let Some(header) = self.parse_array_header(line)? {
+                if let Some(header) = self
+                    .parse_array_header(line)
+                    .map_err(|err| self.attach_location_for_slice(scan, line, err))?
+                {
                     if let Some(key) = header.key.as_ref() {
-                        let value = self.build_array_value(&header)?;
+                        let value = self
+                            .build_array_value(&header)
+                            .map_err(|err| self.attach_location_for_slice(scan, line, err))?;
                         let key_id = self.intern_key(&key.value);
                         let pairs = vec![Pair { key: key_id, value }];
                         return Ok(self.push_object(&pairs));
@@ -110,12 +144,19 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
             }
         }
 
-        if let Some((key, value)) = self.split_key_value(line)? {
-            let key = self.parse_key_token(trim_ascii(key))?;
+        if let Some((key, value)) = self
+            .split_key_value(line)
+            .map_err(|err| self.attach_location_for_slice(scan, line, err))?
+        {
+            let key = self
+                .parse_key_token(trim_ascii(key))
+                .map_err(|err| self.attach_location_for_slice(scan, key, err))?;
             let value_id = if trim_ascii(value).is_empty() {
                 self.push_object(&[])
             } else {
-                self.parse_value_token(value)?
+                let value_trimmed = trim_ascii(value);
+                self.parse_value_token(value)
+                    .map_err(|err| self.attach_location_for_slice(scan, value_trimmed, err))?
             };
             let key_id = self.intern_key(&key.value);
             let pairs = vec![Pair {
@@ -126,12 +167,18 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
         }
 
         if self.strict {
-            self.parse_array_header(line)?;
+            self.parse_array_header(line)
+                .map_err(|err| self.attach_location_for_slice(scan, line, err))?;
         }
         if self.strict && line.is_ascii() && !line.starts_with('"') && contains_whitespace(line) {
-            return Err(Error::decode("unquoted primitive contains whitespace"));
+            return Err(self.attach_location_for_slice(
+                scan,
+                line,
+                Error::decode("unquoted primitive contains whitespace"),
+            ));
         }
         self.parse_value_token(line)
+            .map_err(|err| self.attach_location_for_slice(scan, line, err))
     }
 
     fn parse_array_line(&mut self, line: &'a str) -> Result<Option<usize>> {
@@ -291,7 +338,11 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                 if peek >= scan.lines.len() || scan.lines[peek].level <= base_level {
                     break;
                 }
-                return Err(Error::decode("blank line not allowed in array"));
+                return Err(self.attach_location_for_line(
+                    scan,
+                    idx,
+                    Error::decode("blank line not allowed in array"),
+                ));
             }
             let level = line.level;
             if row_level.is_none() {
@@ -305,7 +356,11 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                 return Ok((rows, idx, false));
             }
             if level > row_level {
-                return Err(Error::decode("unexpected indentation"));
+                return Err(self.attach_location_for_line(
+                    scan,
+                    idx,
+                    Error::decode("unexpected indentation"),
+                ));
             }
             let mut row_content = trim_ascii(self.line_content(line));
             if let Some(stripped) = row_content.strip_prefix('-') {
@@ -313,12 +368,19 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                     row_content = stripped.trim_start();
                 }
             }
-            if !self.split_tabular_row_into(row_content, delimiter, &mut tokens)? {
+            if !self
+                .split_tabular_row_into(row_content, delimiter, &mut tokens)
+                .map_err(|err| self.attach_location_for_slice(scan, row_content, err))?
+            {
                 return Ok((rows, idx, true));
             }
             if tokens.len() != fields.len() {
                 if self.strict {
-                    return Err(Error::decode("tabular row field count mismatch"));
+                    return Err(self.attach_location_for_slice(
+                        scan,
+                        row_content,
+                        Error::decode("tabular row field count mismatch"),
+                    ));
                 }
                 if tokens.len() < fields.len() {
                     tokens.extend(std::iter::repeat_n("", fields.len() - tokens.len()));
@@ -331,7 +393,8 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                 let value_id = if token.is_empty() {
                     self.empty_string_node()
                 } else {
-                    self.parse_value_token_trimmed(token)?
+                    self.parse_value_token_trimmed(token)
+                        .map_err(|err| self.attach_location_for_slice(scan, token, err))?
                 };
                 value_ids.push(value_id);
             }
@@ -384,18 +447,30 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                 if peek >= scan.lines.len() || scan.lines[peek].level < item_level {
                     break;
                 }
-                return Err(Error::decode("blank line not allowed in array"));
+                return Err(self.attach_location_for_line(
+                    scan,
+                    idx,
+                    Error::decode("blank line not allowed in array"),
+                ));
             }
             let level = line.level;
             if level < item_level {
                 break;
             }
             if level > item_level {
-                return Err(Error::decode("unexpected indentation"));
+                return Err(self.attach_location_for_line(
+                    scan,
+                    idx,
+                    Error::decode("unexpected indentation"),
+                ));
             }
             let content = trim_ascii(self.line_content(line));
             if !content.starts_with('-') {
-                return Err(Error::decode("expected list item"));
+                return Err(self.attach_location_for_slice(
+                    scan,
+                    content,
+                    Error::decode("expected list item"),
+                ));
             }
             let item_content = content[1..].trim_start();
             let (item, next_idx) = self.parse_list_item(item_content, scan, idx + 1, item_level)?;
@@ -416,15 +491,26 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
             return Ok((self.push_object(&[]), idx));
         }
 
-        if let Some(header) = self.parse_array_header(item_content)? {
+        let header = match self.parse_array_header(item_content) {
+            Ok(header) => header,
+            Err(err) => {
+                return Err(self.attach_location_for_slice(scan, item_content, err));
+            }
+        };
+        if let Some(header) = header {
             if header.key.is_none() {
-                let parsed = self.parse_array_from_header(&header, scan, idx, item_level)?;
+                let parsed = self
+                    .parse_array_from_header(&header, scan, idx, item_level)
+                    .map_err(|err| self.attach_location_for_slice(scan, item_content, err))?;
                 return Ok((parsed.node_id, parsed.next_idx));
             }
-            let key = header
-                .key
-                .clone()
-                .ok_or_else(|| Error::decode("array header missing key in object context"))?;
+            let key = header.key.clone().ok_or_else(|| {
+                self.attach_location_for_slice(
+                    scan,
+                    item_content,
+                    Error::decode("array header missing key in object context"),
+                )
+            })?;
             let array_base_level = if header.fields.is_some() {
                 if self.strict {
                     item_level + 1
@@ -434,27 +520,39 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
             } else {
                 item_level + 1
             };
-            let parsed = self.parse_array_from_header(&header, scan, idx, array_base_level)?;
+            let parsed = self
+                .parse_array_from_header(&header, scan, idx, array_base_level)
+                .map_err(|err| self.attach_location_for_slice(scan, item_content, err))?;
             let mut pairs = Vec::new();
             let mut pair_index = HashMap::new();
             let key_id = self.intern_key(&key.value);
             insert_pair(&mut pairs, &mut pair_index, key_id, parsed.node_id);
-            let next_idx = self.parse_object_block_into(
-                scan,
-                parsed.next_idx,
-                item_level + 1,
-                &mut pairs,
-                &mut pair_index,
-            )?;
+            let next_idx = self
+                .parse_object_block_into(
+                    scan,
+                    parsed.next_idx,
+                    item_level + 1,
+                    &mut pairs,
+                    &mut pair_index,
+                )
+                .map_err(|err| self.attach_location_for_slice(scan, item_content, err))?;
             let obj_node = self.push_object(&pairs);
             return Ok((obj_node, next_idx));
         }
 
-        if self.split_key_value(item_content)?.is_some() {
-            return self.parse_object_item_from_line(item_content, scan, idx, item_level);
+        if self
+            .split_key_value(item_content)
+            .map_err(|err| self.attach_location_for_slice(scan, item_content, err))?
+            .is_some()
+        {
+            return self
+                .parse_object_item_from_line(item_content, scan, idx, item_level)
+                .map_err(|err| self.attach_location_for_slice(scan, item_content, err));
         }
 
-        let value = self.parse_value_token_trimmed(item_content)?;
+        let value = self
+            .parse_value_token_trimmed(item_content)
+            .map_err(|err| self.attach_location_for_slice(scan, item_content, err))?;
         Ok((value, idx))
     }
 
@@ -468,20 +566,31 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
         let base_level = item_level + 1;
         let mut pairs = Vec::new();
         let mut pair_index = HashMap::new();
-        if let Some((key, value)) = self.split_key_value(first_content)? {
-            let key = self.parse_key_token(trim_ascii(key))?;
+        if let Some((key, value)) = self
+            .split_key_value(first_content)
+            .map_err(|err| self.attach_location_for_slice(scan, first_content, err))?
+        {
+            let key = self
+                .parse_key_token(trim_ascii(key))
+                .map_err(|err| self.attach_location_for_slice(scan, key, err))?;
             let key_id = self.intern_key(&key.value);
             if trim_ascii(value).is_empty() {
-                let (nested, next_idx) = self.parse_object_block(scan, idx, base_level + 1)?;
+                let (nested, next_idx) = self
+                    .parse_object_block(scan, idx, base_level + 1)
+                    .map_err(|err| self.attach_location_for_slice(scan, first_content, err))?;
                 insert_pair(&mut pairs, &mut pair_index, key_id, nested);
                 idx = next_idx;
             } else {
-                let value_id = self.parse_value_token(value)?;
+                let value_trimmed = trim_ascii(value);
+                let value_id = self
+                    .parse_value_token(value)
+                    .map_err(|err| self.attach_location_for_slice(scan, value_trimmed, err))?;
                 insert_pair(&mut pairs, &mut pair_index, key_id, value_id);
             }
         }
-        let next_idx =
-            self.parse_object_block_into(scan, idx, base_level, &mut pairs, &mut pair_index)?;
+        let next_idx = self
+            .parse_object_block_into(scan, idx, base_level, &mut pairs, &mut pair_index)
+            .map_err(|err| self.attach_location_for_slice(scan, first_content, err))?;
         let obj_node = self.push_object(&pairs);
         Ok((obj_node, next_idx))
     }
@@ -521,16 +630,31 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                 break;
             }
             if level > base_level {
-                return Err(Error::decode("unexpected indentation"));
+                return Err(self.attach_location_for_line(
+                    scan,
+                    idx,
+                    Error::decode("unexpected indentation"),
+                ));
             }
             let content = trim_ascii(self.line_content(line));
 
-            if let Some(header) = self.parse_array_header(content)? {
-                let key = header
-                    .key
-                    .as_ref()
-                    .ok_or_else(|| Error::decode("array header missing key in object context"))?;
-                let parsed = self.parse_array_from_header(&header, scan, idx + 1, base_level)?;
+            let header = match self.parse_array_header(content) {
+                Ok(header) => header,
+                Err(err) => {
+                    return Err(self.attach_location_for_slice(scan, content, err));
+                }
+            };
+            if let Some(header) = header {
+                let key = header.key.as_ref().ok_or_else(|| {
+                    self.attach_location_for_slice(
+                        scan,
+                        content,
+                        Error::decode("array header missing key in object context"),
+                    )
+                })?;
+                let parsed = self
+                    .parse_array_from_header(&header, scan, idx + 1, base_level)
+                    .map_err(|err| self.attach_location_for_slice(scan, content, err))?;
                 let key_id = self.intern_key(&key.value);
                 insert_pair(pairs, pair_index, key_id, parsed.node_id);
                 if parsed.deindent_next {
@@ -540,16 +664,25 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                 continue;
             }
 
-            if let Some((key, value)) = self.split_key_value(content)? {
-                let key = self.parse_key_token(trim_ascii(key))?;
+            if let Some((key, value)) = self
+                .split_key_value(content)
+                .map_err(|err| self.attach_location_for_slice(scan, content, err))?
+            {
+                let key = self
+                    .parse_key_token(trim_ascii(key))
+                    .map_err(|err| self.attach_location_for_slice(scan, key, err))?;
                 let key_id = self.intern_key(&key.value);
                 if trim_ascii(value).is_empty() {
-                    let (nested, next_idx) =
-                        self.parse_object_block(scan, idx + 1, base_level + 1)?;
+                    let (nested, next_idx) = self
+                        .parse_object_block(scan, idx + 1, base_level + 1)
+                        .map_err(|err| self.attach_location_for_slice(scan, content, err))?;
                     insert_pair(pairs, pair_index, key_id, nested);
                     idx = next_idx;
                 } else {
-                    let value_id = self.parse_value_token(value)?;
+                    let value_trimmed = trim_ascii(value);
+                    let value_id = self
+                        .parse_value_token(value)
+                        .map_err(|err| self.attach_location_for_slice(scan, value_trimmed, err))?;
                     insert_pair(pairs, pair_index, key_id, value_id);
                     idx += 1;
                 }
@@ -557,9 +690,15 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
             }
 
             if self.strict {
-                return Err(Error::decode("bare key not allowed in strict mode"));
+                return Err(self.attach_location_for_slice(
+                    scan,
+                    content,
+                    Error::decode("bare key not allowed in strict mode"),
+                ));
             }
-            let key = self.parse_key_token(content)?;
+            let key = self
+                .parse_key_token(content)
+                .map_err(|err| self.attach_location_for_slice(scan, content, err))?;
             let key_id = self.intern_key(&key.value);
             let null_id = self.null_node();
             insert_pair(pairs, pair_index, key_id, null_id);
@@ -1074,6 +1213,44 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
             start,
             end: start + slice.len(),
         }
+    }
+
+    fn location_from_offset(&self, scan: &ScanResult, offset: usize) -> Option<Location> {
+        for (idx, line) in scan.lines.iter().enumerate() {
+            if offset <= line.end {
+                let column = offset.saturating_sub(line.raw_start);
+                return Some(Location {
+                    offset,
+                    line: idx + 1,
+                    column: column + 1,
+                });
+            }
+        }
+        None
+    }
+
+    fn attach_location_from_offset(&self, scan: &ScanResult, offset: usize, err: Error) -> Error {
+        if err.location.is_some() {
+            return err;
+        }
+        match self.location_from_offset(scan, offset) {
+            Some(location) => err.with_location(location),
+            None => err,
+        }
+    }
+
+    fn attach_location_for_line(&self, scan: &ScanResult, line_idx: usize, err: Error) -> Error {
+        let offset = scan
+            .lines
+            .get(line_idx)
+            .map(|line| line.raw_start)
+            .unwrap_or(0);
+        self.attach_location_from_offset(scan, offset, err)
+    }
+
+    fn attach_location_for_slice(&self, scan: &ScanResult, slice: &str, err: Error) -> Error {
+        let offset = self.span_for(slice).start;
+        self.attach_location_from_offset(scan, offset, err)
     }
 
     fn intern_key(&mut self, key: &SmolStr) -> usize {
