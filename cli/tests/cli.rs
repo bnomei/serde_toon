@@ -158,3 +158,12 @@ fn flatten_depth_without_key_folding_is_ignored() {
         .success()
         .stdout("a:\n  b: 1");
 }
+
+#[test]
+fn indent_zero_is_rejected() {
+    cargo_bin_cmd!("toon")
+        .args(["--indent", "0"])
+        .assert()
+        .failure()
+        .stderr(contains("indent size must be greater than zero"));
+}
