@@ -126,6 +126,12 @@
 //! assert_eq!(value, serde_json::json!({"a": {"b": 1}}));
 //! # Ok::<(), serde_toon::Error>(())
 //! ```
+//!
+//! # Removed APIs
+//!
+//! ```compile_fail
+//! use serde_toon::tabular;
+//! ```
 
 pub mod arena;
 pub mod canonical;
@@ -134,7 +140,6 @@ pub mod encode;
 pub mod error;
 pub mod num;
 pub mod options;
-pub mod tabular;
 pub mod text;
 
 use std::io::{Read, Write};
