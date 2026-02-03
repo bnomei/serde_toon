@@ -29,6 +29,8 @@ serde_toon_format = "0.1"
 - Performance-first: optimized encoder/decoder, streaming APIs (`to_writer`, `from_reader`), buffer APIs (`to_vec`, `from_slice`), optional parallel decode via `parallel`.
 - Serde-native API, auto-detect macro (`toon!`), canonical encoding (`encode_canonical`), and strict validation (`validate_str`).
 
+Note: `to_writer` streams output line-by-line without a full output buffer, but it still serializes the input into a `serde_json::Value` before encoding. Use `to_string` or `to_vec` if you want the full buffer in-memory.
+
 ## Quick encode/decode
 
 ```rust

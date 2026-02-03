@@ -74,8 +74,115 @@ fn number_cache_key(number: &serde_json::Number) -> Option<NumberKey> {
     number.as_f64().map(|value| NumberKey::F64(value.to_bits()))
 }
 
+trait OutputSink {
+    fn is_empty(&self) -> bool;
+    fn push_byte(&mut self, byte: u8) -> Result<()>;
+    fn extend_bytes(&mut self, bytes: &[u8]) -> Result<()>;
+    fn reserve(&mut self, additional: usize);
+    fn clear(&mut self);
+    fn finish_line(&mut self) -> Result<()>;
+}
+
+struct VecOutput {
+    buf: Vec<u8>,
+}
+
+impl VecOutput {
+    fn new() -> Self {
+        Self {
+            buf: Vec::with_capacity(128),
+        }
+    }
+
+    fn take(&mut self) -> Vec<u8> {
+        std::mem::take(&mut self.buf)
+    }
+}
+
+impl OutputSink for VecOutput {
+    fn is_empty(&self) -> bool {
+        self.buf.is_empty()
+    }
+
+    fn push_byte(&mut self, byte: u8) -> Result<()> {
+        self.buf.push(byte);
+        Ok(())
+    }
+
+    fn extend_bytes(&mut self, bytes: &[u8]) -> Result<()> {
+        self.buf.extend_from_slice(bytes);
+        Ok(())
+    }
+
+    fn reserve(&mut self, additional: usize) {
+        self.buf.reserve(additional);
+    }
+
+    fn clear(&mut self) {
+        self.buf.clear();
+    }
+
+    fn finish_line(&mut self) -> Result<()> {
+        Ok(())
+    }
+}
+
+struct WriterOutput<W: Write> {
+    writer: W,
+    buffer: Vec<u8>,
+    has_output: bool,
+}
+
+impl<W: Write> WriterOutput<W> {
+    fn new(writer: W) -> Self {
+        Self {
+            writer,
+            buffer: Vec::with_capacity(256),
+            has_output: false,
+        }
+    }
+}
+
+impl<W: Write> OutputSink for WriterOutput<W> {
+    fn is_empty(&self) -> bool {
+        !self.has_output
+    }
+
+    fn push_byte(&mut self, byte: u8) -> Result<()> {
+        self.buffer.push(byte);
+        Ok(())
+    }
+
+    fn extend_bytes(&mut self, bytes: &[u8]) -> Result<()> {
+        self.buffer.extend_from_slice(bytes);
+        Ok(())
+    }
+
+    fn reserve(&mut self, additional: usize) {
+        let _ = additional;
+    }
+
+    fn clear(&mut self) {
+        self.buffer.clear();
+        self.has_output = false;
+    }
+
+    fn finish_line(&mut self) -> Result<()> {
+        if self.buffer.is_empty() {
+            return Ok(());
+        }
+        self.writer
+            .write_all(&self.buffer)
+            .map_err(|err| Error::encode_with_source(format!("write failed: {err}"), err))?;
+        self.buffer.clear();
+        self.has_output = true;
+        Ok(())
+    }
+}
+
 thread_local! {
-    static ENCODER_POOL: RefCell<Encoder> = RefCell::new(Encoder::new(&EncodeOptions::default()));
+    static ENCODER_POOL: RefCell<Encoder<VecOutput>> =
+        RefCell::new(Encoder::new(&EncodeOptions::default()));
 }
 
 fn validate_options(options: &EncodeOptions) -> Result<()> {
@@ -126,16 +233,17 @@ pub fn to_vec<T: Serialize>(value: &T, options: &EncodeOptions) -> Result<Vec<u8
 }
 
 pub fn to_writer<T: Serialize, W: Write>(
-    mut writer: W,
+    writer: W,
     value: &T,
     options: &EncodeOptions,
 ) -> Result<()> {
     validate_options(options)?;
-    let bytes = to_vec(value, options)?;
-    writer
-        .write_all(&bytes)
-        .map_err(|err| Error::encode_with_source(format!("write failed: {err}"), err))?;
-    Ok(())
+    let value = serde_json::to_value(value)
+        .map_err(|err| Error::serialize_with_source(format!("serialize failed: {err}"), err))?;
+    let mut encoder = Encoder::new_with_output(options, WriterOutput::new(writer));
+    encoder.reserve_for_value(&value);
+    encoder.precompute_string_flags(&value);
+    encoder.encode_root(&value)
 }
 
 fn bytes_to_string(bytes: Vec<u8>) -> Result<String> {
@@ -157,7 +265,7 @@ fn encode_value(value: &Value, options: &EncodeOptions) -> Result<Vec<u8>> {
     })
 }
 
-struct Encoder {
+struct Encoder<O: OutputSink> {
     document_delimiter: char,
     key_folding: bool,
     flatten_depth: usize,
@@ -174,11 +282,21 @@ struct Encoder {
     key_intern: HashMap<String, usize>,
     interned_keys: Vec<String>,
     line_buf: Vec<u8>,
-    out: Vec<u8>,
+    out: O,
 }
 
-impl Encoder {
+impl Encoder<VecOutput> {
     fn new(options: &EncodeOptions) -> Self {
+        Self::new_with_output(options, VecOutput::new())
+    }
+
+    fn take_bytes(&mut self) -> Vec<u8> {
+        self.out.take()
+    }
+}
+
+impl<O: OutputSink> Encoder<O> {
+    fn new_with_output(options: &EncodeOptions, out: O) -> Self {
         let Indent::Spaces(indent_size) = options.indent;
         let indent_unit = vec![b' '; indent_size];
         Self {
@@ -198,7 +316,7 @@ impl Encoder {
             key_intern: HashMap::new(),
             interned_keys: Vec::new(),
             line_buf: Vec::with_capacity(128),
-            out: Vec::with_capacity(128),
+            out,
         }
     }
 
@@ -219,10 +337,6 @@ impl Encoder {
         self.line_buf.clear();
         self.out.clear();
         self.tabular_last_values.clear();
-    }
-
-    fn take_bytes(&mut self) -> Vec<u8> {
-        std::mem::take(&mut self.out)
     }
 
     fn active_delimiter(&self) -> char {
@@ -380,7 +494,7 @@ impl Encoder {
             _ => self.with_line_buf(|encoder, line| -> Result<()> {
                 line.clear();
                 encoder.append_scalar_document(line, value)?;
-                encoder.write_line_bytes(0, line);
+                encoder.write_line_bytes(0, line)?;
                 Ok(())
             }),
         }
@@ -410,12 +524,13 @@ impl Encoder {
         match value {
             Value::Array(array) => self.encode_array_value(array, indent_level, Some(key), b""),
             Value::Object(map) => {
-                self.with_line_buf(|encoder, line| {
+                self.with_line_buf(|encoder, line| -> Result<()> {
                     line.clear();
                     encoder.append_encoded_key(line, key);
                     line.push(b':');
-                    encoder.write_line_bytes(indent_level, line);
-                });
+                    encoder.write_line_bytes(indent_level, line)?;
+                    Ok(())
+                })?;
                 self.encode_object(map, indent_level + 1)
             }
             _ => self.with_line_buf(|encoder, line| -> Result<()> {
@@ -423,7 +538,7 @@ impl Encoder {
                 encoder.append_encoded_key(line, key);
                 line.extend_from_slice(b": ");
                 encoder.append_scalar_document(line, value)?;
-                encoder.write_line_bytes(indent_level, line);
+                encoder.write_line_bytes(indent_level, line)?;
                 Ok(())
             }),
         }
@@ -501,12 +616,13 @@ impl Encoder {
         prefix: &[u8],
     ) -> Result<()> {
         if let Some(fields) = self.tabular_fields(array) {
-            self.with_line_buf(|encoder, line| {
+            self.with_line_buf(|encoder, line| -> Result<()> {
                 line.clear();
                 encoder.append_array_header(line, array.len(), key, Some(&fields));
                 line.push(b':');
-                encoder.write_line_with_prefix_bytes(indent_level, prefix, line);
-            });
+                encoder.write_line_with_prefix_bytes(indent_level, prefix, line)?;
+                Ok(())
+            })?;
             self.reserve_tabular_rows(array.len(), fields.len());
             let mut row_indent = indent_level + 1;
             if prefix == b"- " && key.is_some() {
@@ -528,7 +644,7 @@ impl Encoder {
                     .collect();
                 for result in results {
                     let row = result?;
-                    self.write_line_bytes(row_indent, &row);
+                    self.write_line_bytes(row_indent, &row)?;
                 }
                 return Ok(());
             }
@@ -537,30 +653,29 @@ impl Encoder {
                 .iter()
                 .map(|field| SmolStr::new(self.interned_key(*field)))
                 .collect();
-            self.with_out_buf(|encoder, out| -> Result<()> {
-                encoder.reset_tabular_last_values(field_names.len());
-                for item in array {
-                    let obj = item
-                        .as_object()
-                        .ok_or_else(|| Error::encode("tabular row is not an object"))?;
-                    let mut iter = field_names.iter().enumerate();
-                    let Some((_, first_field)) = iter.next() else {
-                        continue;
-                    };
-                    encoder.begin_line_with_prefix_into(out, row_indent, b"");
+            self.reset_tabular_last_values(field_names.len());
+            let mut row = Vec::with_capacity(128);
+            for item in array {
+                let obj = item
+                    .as_object()
+                    .ok_or_else(|| Error::encode("tabular row is not an object"))?;
+                let mut iter = field_names.iter().enumerate();
+                let Some((_, first_field)) = iter.next() else {
+                    continue;
+                };
+                row.clear();
+                let value = obj
+                    .get(first_field.as_str())
+                    .ok_or_else(|| Error::encode("tabular row missing field"))?;
+                self.append_scalar_tabular(&mut row, value, delimiter_char)?;
+                for (idx, field) in iter {
                     let value = obj
-                        .get(first_field.as_str())
+                        .get(field.as_str())
                         .ok_or_else(|| Error::encode("tabular row missing field"))?;
-                    encoder.append_scalar_tabular(out, value, delimiter_char)?;
-                    for (idx, field) in iter {
-                        let value = obj
-                            .get(field.as_str())
-                            .ok_or_else(|| Error::encode("tabular row missing field"))?;
-                        encoder.append_scalar_tabular_prefixed(out, value, delimiter_char, idx)?;
-                    }
+                    self.append_scalar_tabular_prefixed(&mut row, value, delimiter_char, idx)?;
                 }
-                Ok(())
-            })?;
+                self.write_line_bytes(row_indent, &row)?;
+            }
             return Ok(());
         }
 
@@ -575,18 +690,19 @@ impl Encoder {
                     line.extend_from_slice(b": ");
                     encoder.append_inline_scalars(line, array)?;
                 }
-                encoder.write_line_with_prefix_bytes(indent_level, prefix, line);
+                encoder.write_line_with_prefix_bytes(indent_level, prefix, line)?;
                 Ok(())
             })?;
             return Ok(());
         }
 
-        self.with_line_buf(|encoder, line| {
+        self.with_line_buf(|encoder, line| -> Result<()> {
             line.clear();
             encoder.append_array_header(line, array.len(), key, None);
             line.push(b':');
-            encoder.write_line_with_prefix_bytes(indent_level, prefix, line);
-        });
+            encoder.write_line_with_prefix_bytes(indent_level, prefix, line)?;
+            Ok(())
+        })?;
         let mut item_indent = indent_level + 1;
         if prefix == b"- " && key.is_some() {
             item_indent += 1;
@@ -604,7 +720,7 @@ impl Encoder {
             _ => self.with_line_buf(|encoder, line| -> Result<()> {
                 line.clear();
                 encoder.append_scalar_document(line, value)?;
-                encoder.write_line_with_prefix_bytes(indent_level, b"- ", line);
+                encoder.write_line_with_prefix_bytes(indent_level, b"- ", line)?;
                 Ok(())
             }),
         }
@@ -617,7 +733,7 @@ impl Encoder {
     ) -> Result<()> {
         let mut iter = map.iter();
         let Some((first_key, first_value)) = iter.next() else {
-            self.write_line_with_prefix_bytes(indent_level, b"-", b"");
+            self.write_line_with_prefix_bytes(indent_level, b"-", b"")?;
             return Ok(());
         };
 
@@ -626,12 +742,13 @@ impl Encoder {
                 self.encode_array_value(array, indent_level, Some(first_key), b"- ")?;
             }
             Value::Object(nested) => {
-                self.with_line_buf(|encoder, line| {
+                self.with_line_buf(|encoder, line| -> Result<()> {
                     line.clear();
                     encoder.append_encoded_key(line, first_key);
                     line.push(b':');
-                    encoder.write_line_with_prefix_bytes(indent_level, b"- ", line);
-                });
+                    encoder.write_line_with_prefix_bytes(indent_level, b"- ", line)?;
+                    Ok(())
+                })?;
                 self.encode_object(nested, indent_level + 1)?;
             }
             _ => {
@@ -640,7 +757,7 @@ impl Encoder {
                     encoder.append_encoded_key(line, first_key);
                     line.extend_from_slice(b": ");
                     encoder.append_scalar_document(line, first_value)?;
-                    encoder.write_line_with_prefix_bytes(indent_level, b"- ", line);
+                    encoder.write_line_with_prefix_bytes(indent_level, b"- ", line)?;
                     Ok(())
                 })?;
             }
@@ -1062,16 +1179,6 @@ impl Encoder {
         result
     }
 
-    fn with_out_buf<F, R>(&mut self, f: F) -> R
-    where
-        F: FnOnce(&mut Self, &mut Vec<u8>) -> R,
-    {
-        let mut buf = std::mem::take(&mut self.out);
-        let result = f(self, &mut buf);
-        self.out = buf;
-        result
-    }
-
     #[cfg(feature = "parallel")]
     fn should_parallel_tabular(&self, rows: usize, fields: usize) -> bool {
         rows >= PARALLEL_TABULAR_MIN_ROWS
@@ -1100,42 +1207,32 @@ impl Encoder {
         Some(fields)
     }
 
-    fn write_line_bytes(&mut self, indent_level: usize, content: &[u8]) {
-        self.write_line_with_prefix_bytes(indent_level, b"", content);
+    fn write_line_bytes(&mut self, indent_level: usize, content: &[u8]) -> Result<()> {
+        self.write_line_with_prefix_bytes(indent_level, b"", content)
     }
 
-    fn begin_line_with_prefix(&mut self, indent_level: usize, prefix: &[u8]) {
+    fn begin_line_with_prefix(&mut self, indent_level: usize, prefix: &[u8]) -> Result<()> {
         if !self.out.is_empty() {
-            self.out.push(b'\n');
+            self.out.push_byte(b'\n')?;
         }
         if indent_level > 0 && !self.indent_unit.is_empty() {
             self.ensure_indent_cache(indent_level);
             let indent = &self.indent_cache[indent_level];
-            Self::append_bytes(&mut self.out, indent);
+            self.out.extend_bytes(indent)?;
         }
-        Self::append_bytes(&mut self.out, prefix);
+        self.out.extend_bytes(prefix)?;
+        Ok(())
     }
 
-    fn begin_line_with_prefix_into(
+    fn write_line_with_prefix_bytes(
         &mut self,
-        out: &mut Vec<u8>,
         indent_level: usize,
         prefix: &[u8],
-    ) {
-        if !out.is_empty() {
-            out.push(b'\n');
-        }
-        if indent_level > 0 && !self.indent_unit.is_empty() {
-            self.ensure_indent_cache(indent_level);
-            let indent = &self.indent_cache[indent_level];
-            Self::append_bytes(out, indent);
-        }
-        Self::append_bytes(out, prefix);
-    }
-
-    fn write_line_with_prefix_bytes(&mut self, indent_level: usize, prefix: &[u8], content: &[u8]) {
-        self.begin_line_with_prefix(indent_level, prefix);
-        Self::append_bytes(&mut self.out, content);
+        content: &[u8],
+    ) -> Result<()> {
+        self.begin_line_with_prefix(indent_level, prefix)?;
+        self.out.extend_bytes(content)?;
+        self.out.finish_line()
     }
 
     fn ensure_indent_cache(&mut self, level: usize) {
@@ -1177,28 +1274,7 @@ impl Encoder {
         self.out.reserve(estimate);
     }
 
-    fn append_bytes(out: &mut Vec<u8>, bytes: &[u8]) {
-        match bytes.len() {
-            0 => {}
-            1 => out.push(bytes[0]),
-            2 => {
-                out.push(bytes[0]);
-                out.push(bytes[1]);
-            }
-            3 => {
-                out.push(bytes[0]);
-                out.push(bytes[1]);
-                out.push(bytes[2]);
-            }
-            4 => {
-                out.push(bytes[0]);
-                out.push(bytes[1]);
-                out.push(bytes[2]);
-                out.push(bytes[3]);
-            }
-            _ => out.extend_from_slice(bytes),
-        }
-    }
+    // append_bytes helper removed; output routing handled by OutputSink
 }
 
 fn is_scalar(value: &Value) -> bool {
