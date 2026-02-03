@@ -1,10 +1,11 @@
 name: CodSpeed Benchmarks
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:
@@ -15,10 +16,12 @@ jobs:
   benchmarks:
     name: Run benchmarks
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v5
         with:
           submodules: 'true'
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Rust toolchain
         uses: moonrepo/setup-rust@v1
