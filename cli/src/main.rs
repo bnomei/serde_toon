@@ -1,6 +1,6 @@
 use std::error::Error;
 use std::fs;
-use std::io::{self, BufRead, BufReader, Read, Write};
+use std::io::{self, BufRead, BufReader, Cursor, Read, Write};
 use std::path::Path;
 
 use clap::{ArgAction, Parser, ValueEnum};
@@ -92,6 +92,12 @@ enum Mode {
     Decode,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum ModeSelection {
+    Fixed(Mode),
+    AutoDetect,
+}
+
 #[derive(Debug)]
 enum InputSource {
     Stdin,
@@ -111,16 +117,120 @@ fn run() -> Result<(), Box<dyn Error>> {
     let mode = resolve_mode(&args, &input_source)?;
 
     match mode {
-        Mode::Encode => {
+        ModeSelection::Fixed(Mode::Encode) => {
             let input_text = read_input_text(&input_source)?;
             run_encode(&args, &input_text, &input_source)
         }
-        Mode::Decode => run_decode(&args, &input_source),
+        ModeSelection::Fixed(Mode::Decode) => run_decode(&args, &input_source),
+        ModeSelection::AutoDetect => run_auto_detect(&args, &input_source),
     }
 }
 
 fn run_encode(args: &Args, input: &str, input_source: &InputSource) -> Result<(), Box<dyn Error>> {
     let value: Value = serde_json::from_str(input)?;
+    run_encode_value(args, &value, input_source)
+}
+
+fn run_encode_value(
+    args: &Args,
+    value: &Value,
+    input_source: &InputSource,
+) -> Result<(), Box<dyn Error>> {
+    let options = build_encode_options(args);
+    let output_target = OutputTarget::from_arg(args.output.as_deref());
+
+    if args.stats {
+        let toon = serde_toon::to_string_with_options(value, &options)?;
+        write_output(output_target.path(), toon.as_bytes())?;
+        let leading_newlines = if let OutputTarget::File(path) = &output_target {
+            report_status(Mode::Encode, input_source, path);
+            1
+        } else {
+            2
+        };
+        print_stats(value, &toon, leading_newlines)?;
+        return Ok(());
+    }
+
+    with_output_writer(output_target.path(), |writer| {
+        serde_toon::to_writer_with_options(writer, value, &options).map_err(|err| err.into())
+    })?;
+    if let OutputTarget::File(path) = &output_target {
+        report_status(Mode::Encode, input_source, path);
+    }
+    Ok(())
+}
+
+fn run_decode(args: &Args, input_source: &InputSource) -> Result<(), Box<dyn Error>> {
+    let reader = open_input_reader(input_source)?;
+    let value = decode_value_from_reader(args, reader)?;
+    run_decode_value(args, &value, input_source)
+}
+
+fn run_decode_value(
+    args: &Args,
+    value: &Value,
+    input_source: &InputSource,
+) -> Result<(), Box<dyn Error>> {
+    let output_target = OutputTarget::from_arg(args.output.as_deref());
+
+    with_output_writer(output_target.path(), |writer| {
+        write_json(writer, value, args.indent)
+    })?;
+    if let OutputTarget::File(path) = &output_target {
+        report_status(Mode::Decode, input_source, path);
+    }
+    Ok(())
+}
+
+fn run_auto_detect(args: &Args, input_source: &InputSource) -> Result<(), Box<dyn Error>> {
+    let input = read_input_text(input_source)?;
+    match detect_auto_kind(&input) {
+        AutoDetectKind::Json => match serde_json::from_str::<Value>(&input) {
+            Ok(value) => run_encode_value(args, &value, input_source),
+            Err(json_err) => match decode_value_from_str(args, &input) {
+                Ok(value) => run_decode_value(args, &value, input_source),
+                Err(toon_err) => Err(auto_detect_error(json_err, toon_err)),
+            },
+        },
+        AutoDetectKind::Toon => match decode_value_from_str(args, &input) {
+            Ok(value) => run_decode_value(args, &value, input_source),
+            Err(toon_err) => match serde_json::from_str::<Value>(&input) {
+                Ok(value) => run_encode_value(args, &value, input_source),
+                Err(json_err) => Err(auto_detect_error(json_err, toon_err)),
+            },
+        },
+        AutoDetectKind::Uncertain => {
+            Err("unable to auto-detect mode; use --encode or --decode".into())
+        }
+    }
+}
+
+fn resolve_mode(args: &Args, input_source: &InputSource) -> Result<ModeSelection, Box<dyn Error>> {
+    if args.encode {
+        return Ok(ModeSelection::Fixed(Mode::Encode));
+    }
+
+    if args.decode {
+        return Ok(ModeSelection::Fixed(Mode::Decode));
+    }
+
+    match input_source {
+        InputSource::Stdin => Ok(ModeSelection::Fixed(Mode::Encode)),
+        InputSource::File(path) => match Path::new(path)
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .map(|ext| ext.to_ascii_lowercase())
+            .as_deref()
+        {
+            Some("json") => Ok(ModeSelection::Fixed(Mode::Encode)),
+            Some("toon") => Ok(ModeSelection::Fixed(Mode::Decode)),
+            _ => Ok(ModeSelection::AutoDetect),
+        },
+    }
+}
+
+fn build_encode_options(args: &Args) -> EncodeOptions {
     let mut options = EncodeOptions::new().with_indent(Indent::Spaces(args.indent));
 
     if let Some(delimiter) = args.delimiter {
@@ -133,78 +243,155 @@ fn run_encode(args: &Args, input: &str, input_source: &InputSource) -> Result<()
         options = options.with_flatten_depth(Some(flatten_depth));
     }
 
-    let output_target = OutputTarget::from_arg(args.output.as_deref());
-
-    if args.stats {
-        let toon = serde_toon::to_string_with_options(&value, &options)?;
-        write_output(output_target.path(), toon.as_bytes())?;
-        let leading_newlines = if let OutputTarget::File(path) = &output_target {
-            report_status(Mode::Encode, input_source, path);
-            1
-        } else {
-            2
-        };
-        print_stats(&value, &toon, leading_newlines)?;
-        return Ok(());
-    }
-
-    with_output_writer(output_target.path(), |writer| {
-        serde_toon::to_writer_with_options(writer, &value, &options).map_err(|err| err.into())
-    })?;
-    if let OutputTarget::File(path) = &output_target {
-        report_status(Mode::Encode, input_source, path);
-    }
-    Ok(())
+    options
 }
 
-fn run_decode(args: &Args, input_source: &InputSource) -> Result<(), Box<dyn Error>> {
-    let options = DecodeOptions::new()
+fn build_decode_options(args: &Args) -> DecodeOptions {
+    DecodeOptions::new()
         .with_indent(Indent::Spaces(args.indent))
         .with_strict(args.strict)
-        .with_expand_paths(args.expand_paths.into());
+        .with_expand_paths(args.expand_paths.into())
+}
 
-    let reader = open_input_reader(input_source)?;
-
-    let value: Value = if args.strict {
-        serde_toon::from_reader_streaming_with_options(reader, &options)?
+fn decode_value_from_reader(
+    args: &Args,
+    reader: Box<dyn BufRead>,
+) -> Result<Value, Box<dyn Error>> {
+    let options = build_decode_options(args);
+    if args.strict {
+        Ok(serde_toon::from_reader_streaming_with_options(
+            reader, &options,
+        )?)
     } else {
         let normalizer = TabNormalizingReader::new(reader);
         let reader = BufReader::new(normalizer);
-        serde_toon::from_reader_streaming_with_options(reader, &options)?
-    };
-    let output_target = OutputTarget::from_arg(args.output.as_deref());
-
-    with_output_writer(output_target.path(), |writer| {
-        write_json(writer, &value, args.indent)
-    })?;
-    if let OutputTarget::File(path) = &output_target {
-        report_status(Mode::Decode, input_source, path);
+        Ok(serde_toon::from_reader_streaming_with_options(
+            reader, &options,
+        )?)
     }
-    Ok(())
 }
 
-fn resolve_mode(args: &Args, input_source: &InputSource) -> Result<Mode, Box<dyn Error>> {
-    if args.encode {
-        return Ok(Mode::Encode);
-    }
+fn decode_value_from_str(args: &Args, input: &str) -> Result<Value, Box<dyn Error>> {
+    let cursor = Cursor::new(input.as_bytes());
+    let reader = Box::new(BufReader::new(cursor));
+    decode_value_from_reader(args, reader)
+}
 
-    if args.decode {
-        return Ok(Mode::Decode);
-    }
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum AutoDetectKind {
+    Json,
+    Toon,
+    Uncertain,
+}
 
-    match input_source {
-        InputSource::Stdin => Ok(Mode::Encode),
-        InputSource::File(path) => match Path::new(path)
-            .extension()
-            .and_then(|ext| ext.to_str())
-            .map(|ext| ext.to_ascii_lowercase())
-            .as_deref()
-        {
-            Some("json") => Ok(Mode::Encode),
-            Some("toon") => Ok(Mode::Decode),
-            _ => Err("unable to auto-detect mode; use --encode or --decode".into()),
-        },
+fn detect_auto_kind(input: &str) -> AutoDetectKind {
+    let first_non_ws = input.chars().find(|ch| !ch.is_whitespace());
+    let toon_key_pos = find_toon_key_token(input);
+    if let Some(ch) = first_non_ws {
+        if ch == '{' || ch == '[' {
+            if let Some(json_key_pos) = find_json_quoted_key(input) {
+                if toon_key_pos.is_none() || Some(json_key_pos) < toon_key_pos {
+                    return AutoDetectKind::Json;
+                }
+            }
+        }
+        if ch.is_ascii_alphabetic() || ch == '_' {
+            return AutoDetectKind::Toon;
+        }
+    } else {
+        return AutoDetectKind::Uncertain;
     }
+    if toon_key_pos.is_some() {
+        return AutoDetectKind::Toon;
+    }
+    AutoDetectKind::Uncertain
+}
+
+fn find_json_quoted_key(input: &str) -> Option<usize> {
+    let bytes = input.as_bytes();
+    let mut idx = 0;
+    while idx < bytes.len() {
+        if bytes[idx] == b'"' {
+            let start = idx;
+            idx += 1;
+            let mut escape = false;
+            while idx < bytes.len() {
+                let byte = bytes[idx];
+                if escape {
+                    escape = false;
+                    idx += 1;
+                    continue;
+                }
+                if byte == b'\\' {
+                    escape = true;
+                    idx += 1;
+                    continue;
+                }
+                if byte == b'"' {
+                    idx += 1;
+                    break;
+                }
+                idx += 1;
+            }
+            if idx >= bytes.len() {
+                break;
+            }
+            let mut lookahead = idx;
+            while lookahead < bytes.len()
+                && matches!(bytes[lookahead], b' ' | b'\t' | b'\r' | b'\n')
+            {
+                lookahead += 1;
+            }
+            if lookahead < bytes.len() && bytes[lookahead] == b':' {
+                return Some(start);
+            }
+            idx = lookahead;
+            continue;
+        }
+        idx += 1;
+    }
+    None
+}
+
+fn find_toon_key_token(input: &str) -> Option<usize> {
+    let mut offset = 0;
+    for line in input.split_terminator('\n') {
+        let bytes = line.as_bytes();
+        let mut idx = 0;
+        while idx < bytes.len() && matches!(bytes[idx], b' ' | b'\t' | b'\r') {
+            idx += 1;
+        }
+        if idx < bytes.len() && is_ident_start_byte(bytes[idx]) {
+            let start = offset + idx;
+            idx += 1;
+            while idx < bytes.len() && is_ident_continue_byte(bytes[idx]) {
+                idx += 1;
+            }
+            while idx < bytes.len() && matches!(bytes[idx], b' ' | b'\t') {
+                idx += 1;
+            }
+            if idx < bytes.len() && bytes[idx] == b':' {
+                return Some(start);
+            }
+        }
+        offset += line.len() + 1;
+    }
+    None
+}
+
+fn is_ident_start_byte(byte: u8) -> bool {
+    byte.is_ascii_alphabetic() || byte == b'_'
+}
+
+fn is_ident_continue_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'.'
+}
+
+fn auto_detect_error(json_err: serde_json::Error, toon_err: Box<dyn Error>) -> Box<dyn Error> {
+    let json_err = json_err.to_string();
+    let toon_err = toon_err.to_string();
+    format!("input is neither valid JSON nor TOON: json error: {json_err}; toon error: {toon_err}")
+        .into()
 }
 
 fn input_source_from_arg(input: Option<&str>) -> InputSource {
