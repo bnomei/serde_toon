@@ -99,6 +99,11 @@ impl Error {
         self
     }
 
+    pub fn with_location(mut self, location: Location) -> Self {
+        self.location = Some(location);
+        self
+    }
+
     fn new(kind: ErrorKind, stage: ErrorStage, message: impl Into<String>) -> Self {
         Self {
             kind,

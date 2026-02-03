@@ -1,9 +1,11 @@
 use memchr::memchr_iter;
 
+use crate::error::Location;
 use crate::{Error, Result};
 
 #[derive(Clone, Copy, Debug)]
 pub struct ScanLine {
+    pub raw_start: usize,
     pub indent: usize,
     pub level: usize,
     pub start: usize,
@@ -30,7 +32,14 @@ pub fn scan_lines(input: &str, indent_size: usize, strict: bool) -> Result<ScanR
         if end > start && bytes[end - 1] == b'\r' {
             end -= 1;
         }
-        let line = build_line(bytes, start, end, indent_size, strict)?;
+        let line_idx = lines.len();
+        let line = build_line(bytes, start, end, indent_size, strict).map_err(|err| {
+            err.with_location(Location {
+                offset: start,
+                line: line_idx + 1,
+                column: 1,
+            })
+        })?;
         if !line.is_blank {
             non_blank += 1;
         }
@@ -42,7 +51,14 @@ pub fn scan_lines(input: &str, indent_size: usize, strict: bool) -> Result<ScanR
     if end > start && bytes[end - 1] == b'\r' {
         end -= 1;
     }
-    let line = build_line(bytes, start, end, indent_size, strict)?;
+    let line_idx = lines.len();
+    let line = build_line(bytes, start, end, indent_size, strict).map_err(|err| {
+        err.with_location(Location {
+            offset: start,
+            line: line_idx + 1,
+            column: 1,
+        })
+    })?;
     if !line.is_blank {
         non_blank += 1;
     }
@@ -60,6 +76,7 @@ fn build_line(
 ) -> Result<ScanLine> {
     if start >= end {
         return Ok(ScanLine {
+            raw_start: start,
             indent: 0,
             level: 0,
             start,
@@ -76,6 +93,7 @@ fn build_line(
     }
     if only_whitespace {
         return Ok(ScanLine {
+            raw_start: start,
             indent: 0,
             level: 0,
             start,
@@ -107,6 +125,7 @@ fn build_line(
     let level = indent_columns / indent_size;
     let content_start = start + indent_chars;
     Ok(ScanLine {
+        raw_start: start,
         indent: indent_columns,
         level,
         start: content_start,
