@@ -281,15 +281,140 @@ pub fn decode_to_value_auto_with_options<S: AsRef<str>>(
     options: &DecodeOptions,
 ) -> Result<Value> {
     let input = input.as_ref();
-    match serde_json::from_str::<Value>(input) {
-        Ok(value) => Ok(canonicalize_numbers(value)),
-        Err(json_err) => match decode_to_value_with_options(input, options) {
+    match detect_auto_kind(input) {
+        AutoDetectKind::Json | AutoDetectKind::Uncertain => {
+            match serde_json::from_str::<Value>(input) {
+                Ok(value) => Ok(canonicalize_numbers(value)),
+                Err(json_err) => match decode_to_value_with_options(input, options) {
+                    Ok(value) => Ok(value),
+                    Err(toon_err) => Err(auto_detect_error(json_err, toon_err)),
+                },
+            }
+        }
+        AutoDetectKind::Toon => match decode_to_value_with_options(input, options) {
             Ok(value) => Ok(value),
-            Err(toon_err) => Err(Error::decode(format!(
-                "input is neither valid JSON nor TOON: json error: {json_err}; toon error: {toon_err}"
-            ))),
+            Err(toon_err) => match serde_json::from_str::<Value>(input) {
+                Ok(value) => Ok(canonicalize_numbers(value)),
+                Err(json_err) => Err(auto_detect_error(json_err, toon_err)),
+            },
         },
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum AutoDetectKind {
+    Json,
+    Toon,
+    Uncertain,
+}
+
+fn detect_auto_kind(input: &str) -> AutoDetectKind {
+    let first_non_ws = input.chars().find(|ch| !ch.is_whitespace());
+    let toon_key_pos = find_toon_key_token(input);
+    if let Some(ch) = first_non_ws {
+        if ch == '{' || ch == '[' {
+            if let Some(json_key_pos) = find_json_quoted_key(input) {
+                if toon_key_pos.is_none() || Some(json_key_pos) < toon_key_pos {
+                    return AutoDetectKind::Json;
+                }
+            }
+        }
+        if ch.is_ascii_alphabetic() || ch == '_' {
+            return AutoDetectKind::Toon;
+        }
+    } else {
+        return AutoDetectKind::Uncertain;
+    }
+    if toon_key_pos.is_some() {
+        return AutoDetectKind::Toon;
+    }
+    AutoDetectKind::Uncertain
+}
+
+fn find_json_quoted_key(input: &str) -> Option<usize> {
+    let bytes = input.as_bytes();
+    let mut idx = 0;
+    while idx < bytes.len() {
+        if bytes[idx] == b'"' {
+            let start = idx;
+            idx += 1;
+            let mut escape = false;
+            while idx < bytes.len() {
+                let byte = bytes[idx];
+                if escape {
+                    escape = false;
+                    idx += 1;
+                    continue;
+                }
+                if byte == b'\\' {
+                    escape = true;
+                    idx += 1;
+                    continue;
+                }
+                if byte == b'"' {
+                    idx += 1;
+                    break;
+                }
+                idx += 1;
+            }
+            if idx >= bytes.len() {
+                break;
+            }
+            let mut lookahead = idx;
+            while lookahead < bytes.len()
+                && matches!(bytes[lookahead], b' ' | b'\t' | b'\r' | b'\n')
+            {
+                lookahead += 1;
+            }
+            if lookahead < bytes.len() && bytes[lookahead] == b':' {
+                return Some(start);
+            }
+            idx = lookahead;
+            continue;
+        }
+        idx += 1;
+    }
+    None
+}
+
+fn find_toon_key_token(input: &str) -> Option<usize> {
+    let mut offset = 0;
+    for line in input.split_terminator('\n') {
+        let bytes = line.as_bytes();
+        let mut idx = 0;
+        while idx < bytes.len() && matches!(bytes[idx], b' ' | b'\t' | b'\r') {
+            idx += 1;
+        }
+        if idx < bytes.len() && is_ident_start_byte(bytes[idx]) {
+            let start = offset + idx;
+            idx += 1;
+            while idx < bytes.len() && is_ident_continue_byte(bytes[idx]) {
+                idx += 1;
+            }
+            while idx < bytes.len() && matches!(bytes[idx], b' ' | b'\t') {
+                idx += 1;
+            }
+            if idx < bytes.len() && bytes[idx] == b':' {
+                return Some(start);
+            }
+        }
+        offset += line.len() + 1;
+    }
+    None
+}
+
+fn is_ident_start_byte(byte: u8) -> bool {
+    byte.is_ascii_alphabetic() || byte == b'_'
+}
+
+fn is_ident_continue_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'.'
+}
+
+fn auto_detect_error(json_err: serde_json::Error, toon_err: Error) -> Error {
+    Error::decode(format!(
+        "input is neither valid JSON nor TOON: json error: {json_err}; toon error: {toon_err}"
+    ))
 }
 
 fn canonicalize_numbers(value: Value) -> Value {
