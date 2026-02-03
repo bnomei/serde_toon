@@ -142,7 +142,7 @@ pub mod num;
 pub mod options;
 pub mod text;
 
-use std::io::{Read, Write};
+use std::io::{BufRead, Read, Write};
 
 pub use crate::error::{Error, ErrorKind, ErrorStage, Location};
 pub use crate::options::{
@@ -250,6 +250,17 @@ pub fn from_reader_with_options<T: DeserializeOwned, R: Read>(
     options: &DecodeOptions,
 ) -> Result<T> {
     decode::from_reader(reader, options)
+}
+
+pub fn from_reader_streaming<T: DeserializeOwned, R: BufRead>(reader: R) -> Result<T> {
+    from_reader_streaming_with_options(reader, &DecodeOptions::default())
+}
+
+pub fn from_reader_streaming_with_options<T: DeserializeOwned, R: BufRead>(
+    reader: R,
+    options: &DecodeOptions,
+) -> Result<T> {
+    decode::from_reader_streaming(reader, options)
 }
 
 pub fn decode_to_value(input: &str) -> Result<Value> {
