@@ -78,7 +78,16 @@ thread_local! {
     static ENCODER_POOL: RefCell<Encoder> = RefCell::new(Encoder::new(&EncodeOptions::default()));
 }
 
+fn validate_options(options: &EncodeOptions) -> Result<()> {
+    let Indent::Spaces(indent_size) = options.indent;
+    if indent_size == 0 {
+        return Err(Error::encode("indent size must be greater than zero"));
+    }
+    Ok(())
+}
+
 pub fn to_string<T: Serialize>(value: &T, options: &EncodeOptions) -> Result<String> {
+    validate_options(options)?;
     let value = serde_json::to_value(value)
         .map_err(|err| Error::serialize_with_source(format!("serialize failed: {err}"), err))?;
     let bytes = encode_value(&value, options)?;
@@ -90,6 +99,7 @@ pub fn to_string_into<T: Serialize>(
     options: &EncodeOptions,
     out: &mut String,
 ) -> Result<()> {
+    validate_options(options)?;
     let value = serde_json::to_value(value)
         .map_err(|err| Error::serialize_with_source(format!("serialize failed: {err}"), err))?;
     let bytes = encode_value(&value, options)?;
@@ -101,6 +111,7 @@ pub fn to_string_into<T: Serialize>(
 }
 
 pub fn to_string_from_json_str(input: &str, options: &EncodeOptions) -> Result<String> {
+    validate_options(options)?;
     let value: Value = serde_json::from_str(input)
         .map_err(|err| Error::serialize_with_source(format!("invalid json: {err}"), err))?;
     let bytes = encode_value(&value, options)?;
@@ -108,6 +119,7 @@ pub fn to_string_from_json_str(input: &str, options: &EncodeOptions) -> Result<S
 }
 
 pub fn to_vec<T: Serialize>(value: &T, options: &EncodeOptions) -> Result<Vec<u8>> {
+    validate_options(options)?;
     let value = serde_json::to_value(value)
         .map_err(|err| Error::serialize_with_source(format!("serialize failed: {err}"), err))?;
     encode_value(&value, options)
@@ -118,6 +130,7 @@ pub fn to_writer<T: Serialize, W: Write>(
     value: &T,
     options: &EncodeOptions,
 ) -> Result<()> {
+    validate_options(options)?;
     let bytes = to_vec(value, options)?;
     writer
         .write_all(&bytes)

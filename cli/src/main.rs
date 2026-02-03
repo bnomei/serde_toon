@@ -33,7 +33,7 @@ struct Args {
     delimiter: Option<Delimiter>,
 
     /// Indentation size (default: 2).
-    #[arg(long, value_name = "number", default_value_t = 2)]
+    #[arg(long, value_name = "number", default_value_t = 2, value_parser = parse_indent)]
     indent: usize,
 
     /// Show token statistics.
@@ -226,6 +226,16 @@ fn parse_delimiter(raw: &str) -> Result<Delimiter, String> {
             "Invalid delimiter \"{raw}\". Valid delimiters are: comma (,), tab (\\t), pipe (|)"
         )),
     }
+}
+
+fn parse_indent(raw: &str) -> Result<usize, String> {
+    let value: usize = raw
+        .parse()
+        .map_err(|_| format!("Invalid indent \"{raw}\": expected a positive integer"))?;
+    if value == 0 {
+        return Err("indent size must be greater than zero".to_string());
+    }
+    Ok(value)
 }
 
 #[derive(Clone, Debug)]
