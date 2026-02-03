@@ -38,11 +38,13 @@ Input is optional; omit it or pass `-` to read from stdin.
 - `--delimiter <char>` Array delimiter: , (comma), \t (tab), | (pipe)
 - `--indent <number>` Indentation size (default: 2)
 - `--stats` Show token count estimates and savings (encode only)
-- `--no-strict` Disable strict validation when decoding
+- `--no-strict` Disable strict validation when decoding (tabs in indentation are accepted; lines with tab-indentation drop indentation)
 - `--keyFolding <mode>` Key folding mode: off, safe (default: off)
 - `--flattenDepth <number>` Maximum segments to fold (default: Infinity) - requires --keyFolding safe
 - `--expandPaths <mode>` Path expansion mode: off, safe (default: off)
 
 ## Buffered IO
 
-This CLI currently buffers input and output in memory. It reads the full input into a string and builds the full output before writing. Plan for input size accordingly.
+- Encode: buffers JSON input in memory before encoding.
+- Decode: streams TOON input through the streaming decoder (non-strict mode applies a line-based tab normalizer).
+- Stats: `--stats` buffers the full TOON output to compute token estimates.

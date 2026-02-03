@@ -2,6 +2,7 @@ use std::fs;
 use std::path::Path;
 
 use assert_cmd::cargo::cargo_bin_cmd;
+use assert_cmd::prelude::*;
 use predicates::prelude::PredicateBooleanExt;
 use predicates::str::contains;
 use tempfile::TempDir;
@@ -36,6 +37,40 @@ fn decode_auto_detects_toon() {
         .assert()
         .success()
         .stdout(expected);
+}
+
+#[test]
+fn decode_from_stdin_streams() {
+    let input = "items[3]{id,name}:\n  1,Alice\n  2,Bob\n  3,Cara";
+    let expected = "{\n  \"items\": [\n    {\n      \"id\": 1,\n      \"name\": \"Alice\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Bob\"\n    },\n    {\n      \"id\": 3,\n      \"name\": \"Cara\"\n    }\n  ]\n}";
+
+    cargo_bin_cmd!("toon")
+        .arg("--decode")
+        .write_stdin(input)
+        .assert()
+        .success()
+        .stdout(expected);
+}
+
+#[test]
+fn decode_large_file_streams() {
+    let dir = TempDir::new().expect("tempdir");
+    let input = dir.path().join("input.toon");
+    let mut contents = String::from("items[20]{id,name}:\n");
+    for idx in 0..20 {
+        contents.push_str(&format!("  {idx},Item {idx}\n"));
+    }
+    write_file(&input, &contents);
+
+    cargo_bin_cmd!("toon")
+        .arg(&input)
+        .assert()
+        .success()
+        .stdout(
+            contains("\"items\"")
+                .and(contains("\"id\": 0"))
+                .and(contains("\"id\": 19")),
+        );
 }
 
 #[test]

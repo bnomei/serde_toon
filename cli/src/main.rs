@@ -1,7 +1,6 @@
-use std::borrow::Cow;
 use std::error::Error;
 use std::fs;
-use std::io::{self, Read, Write};
+use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::Path;
 
 use clap::{ArgAction, Parser, ValueEnum};
@@ -108,12 +107,15 @@ fn main() {
 
 fn run() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
-    let (input_text, input_source) = read_input(args.input.as_deref())?;
+    let input_source = input_source_from_arg(args.input.as_deref());
     let mode = resolve_mode(&args, &input_source)?;
 
     match mode {
-        Mode::Encode => run_encode(&args, &input_text, &input_source),
-        Mode::Decode => run_decode(&args, &input_text, &input_source),
+        Mode::Encode => {
+            let input_text = read_input_text(&input_source)?;
+            run_encode(&args, &input_text, &input_source)
+        }
+        Mode::Decode => run_decode(&args, &input_source),
     }
 }
 
@@ -155,19 +157,21 @@ fn run_encode(args: &Args, input: &str, input_source: &InputSource) -> Result<()
     Ok(())
 }
 
-fn run_decode(args: &Args, input: &str, input_source: &InputSource) -> Result<(), Box<dyn Error>> {
+fn run_decode(args: &Args, input_source: &InputSource) -> Result<(), Box<dyn Error>> {
     let options = DecodeOptions::new()
         .with_indent(Indent::Spaces(args.indent))
         .with_strict(args.strict)
         .with_expand_paths(args.expand_paths.into());
 
-    let normalized = if args.strict || !input.contains('\t') {
-        Cow::Borrowed(input)
-    } else {
-        Cow::Owned(normalize_non_strict_tabs(input))
-    };
+    let reader = open_input_reader(input_source)?;
 
-    let value: Value = serde_toon::from_str_with_options(&normalized, &options)?;
+    let value: Value = if args.strict {
+        serde_toon::from_reader_streaming_with_options(reader, &options)?
+    } else {
+        let normalizer = TabNormalizingReader::new(reader);
+        let reader = BufReader::new(normalizer);
+        serde_toon::from_reader_streaming_with_options(reader, &options)?
+    };
     let output_target = OutputTarget::from_arg(args.output.as_deref());
 
     with_output_writer(output_target.path(), |writer| {
@@ -203,17 +207,28 @@ fn resolve_mode(args: &Args, input_source: &InputSource) -> Result<Mode, Box<dyn
     }
 }
 
-fn read_input(input: Option<&str>) -> Result<(String, InputSource), Box<dyn Error>> {
+fn input_source_from_arg(input: Option<&str>) -> InputSource {
     match input {
-        None | Some("-") => {
+        None | Some("-") => InputSource::Stdin,
+        Some(path) => InputSource::File(path.to_string()),
+    }
+}
+
+fn read_input_text(input_source: &InputSource) -> Result<String, Box<dyn Error>> {
+    match input_source {
+        InputSource::Stdin => {
             let mut buf = String::new();
             io::stdin().read_to_string(&mut buf)?;
-            Ok((buf, InputSource::Stdin))
+            Ok(buf)
         }
-        Some(path) => {
-            let buf = fs::read_to_string(path)?;
-            Ok((buf, InputSource::File(path.to_string())))
-        }
+        InputSource::File(path) => Ok(fs::read_to_string(path)?),
+    }
+}
+
+fn open_input_reader(input_source: &InputSource) -> Result<Box<dyn BufRead>, Box<dyn Error>> {
+    match input_source {
+        InputSource::Stdin => Ok(Box::new(BufReader::new(io::stdin().lock()))),
+        InputSource::File(path) => Ok(Box::new(BufReader::new(fs::File::open(path)?))),
     }
 }
 
@@ -376,10 +391,32 @@ fn diff_paths(path: &Path, base: &Path) -> Option<std::path::PathBuf> {
 }
 
 // Match the JS CLI: in non-strict mode, lines with tab-indentation lose indentation entirely.
-fn normalize_non_strict_tabs(input: &str) -> String {
-    let mut out = String::with_capacity(input.len());
+struct TabNormalizingReader<R: BufRead> {
+    inner: R,
+    line_buf: String,
+    out_buf: Vec<u8>,
+    out_pos: usize,
+}
 
-    for line in input.split_inclusive('\n') {
+impl<R: BufRead> TabNormalizingReader<R> {
+    fn new(inner: R) -> Self {
+        Self {
+            inner,
+            line_buf: String::new(),
+            out_buf: Vec::new(),
+            out_pos: 0,
+        }
+    }
+
+    fn refill(&mut self) -> io::Result<bool> {
+        self.out_buf.clear();
+        self.out_pos = 0;
+        self.line_buf.clear();
+        let read = self.inner.read_line(&mut self.line_buf)?;
+        if read == 0 {
+            return Ok(false);
+        }
+        let line = self.line_buf.as_str();
         let (content, newline) = match line.strip_suffix('\n') {
             Some(stripped) => (stripped, "\n"),
             None => (line, ""),
@@ -387,10 +424,10 @@ fn normalize_non_strict_tabs(input: &str) -> String {
 
         let mut saw_tab = false;
         let mut first_non_ws = None;
-        for (idx, ch) in content.char_indices() {
-            match ch {
-                '\t' => saw_tab = true,
-                ' ' => {}
+        for (idx, byte) in content.as_bytes().iter().enumerate() {
+            match byte {
+                b'\t' => saw_tab = true,
+                b' ' => {}
                 _ => {
                     first_non_ws = Some(idx);
                     break;
@@ -398,16 +435,28 @@ fn normalize_non_strict_tabs(input: &str) -> String {
             }
         }
 
-        let trimmed = if saw_tab {
+        if saw_tab {
             let start = first_non_ws.unwrap_or(content.len());
-            &content[start..]
+            self.out_buf.extend_from_slice(&content.as_bytes()[start..]);
         } else {
-            content
-        };
-
-        out.push_str(trimmed);
-        out.push_str(newline);
+            self.out_buf.extend_from_slice(content.as_bytes());
+        }
+        self.out_buf.extend_from_slice(newline.as_bytes());
+        Ok(true)
     }
+}
 
-    out
+impl<R: BufRead> Read for TabNormalizingReader<R> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        if self.out_pos >= self.out_buf.len() {
+            if !self.refill()? {
+                return Ok(0);
+            }
+        }
+        let remaining = self.out_buf.len().saturating_sub(self.out_pos);
+        let to_copy = remaining.min(buf.len());
+        buf[..to_copy].copy_from_slice(&self.out_buf[self.out_pos..self.out_pos + to_copy]);
+        self.out_pos += to_copy;
+        Ok(to_copy)
+    }
 }
