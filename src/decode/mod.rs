@@ -4,7 +4,7 @@ mod scan;
 mod serde;
 
 use std::collections::VecDeque;
-use std::io::{BufRead, BufReader, Cursor, Read};
+use std::io::{BufRead, BufReader, Read};
 
 use ::serde::de::DeserializeOwned;
 use memchr::{memchr, memchr2, memchr3, memchr_iter};
@@ -24,7 +24,6 @@ use rayon::prelude::*;
 
 #[cfg(feature = "parallel")]
 const PARALLEL_ARRAY_MIN_ITEMS: usize = 64;
-const READER_FASTPATH_MAX_BYTES: usize = 256 * 1024;
 
 pub fn from_str<T: DeserializeOwned>(input: &str, options: &DecodeOptions) -> Result<T> {
     if options.expand_paths != ExpandPaths::Off {
@@ -106,37 +105,12 @@ pub fn from_slice<T: DeserializeOwned>(input: &[u8], options: &DecodeOptions) ->
 }
 
 pub fn from_reader<T: DeserializeOwned, R: Read>(reader: R, options: &DecodeOptions) -> Result<T> {
-    if options.expand_paths != ExpandPaths::Off {
-        let reader = BufReader::new(reader);
-        return from_reader_streaming(reader, options);
-    }
-
     let mut reader = BufReader::new(reader);
     let mut buffer = Vec::new();
-    let mut reached_eof = false;
-    let mut chunk = [0u8; 8192];
-
-    loop {
-        let read = reader
-            .read(&mut chunk)
-            .map_err(|err| Error::decode_with_source(format!("read failed: {err}"), err))?;
-        if read == 0 {
-            reached_eof = true;
-            break;
-        }
-        buffer.extend_from_slice(&chunk[..read]);
-        if buffer.len() > READER_FASTPATH_MAX_BYTES {
-            break;
-        }
-    }
-
-    if reached_eof && buffer.len() <= READER_FASTPATH_MAX_BYTES {
-        return from_slice(&buffer, options);
-    }
-
-    let cursor = Cursor::new(buffer);
-    let reader = BufReader::new(cursor.chain(reader));
-    from_reader_streaming(reader, options)
+    reader
+        .read_to_end(&mut buffer)
+        .map_err(|err| Error::decode_with_source(format!("read failed: {err}"), err))?;
+    from_slice(&buffer, options)
 }
 
 pub fn from_reader_streaming<T: DeserializeOwned, R: BufRead>(
