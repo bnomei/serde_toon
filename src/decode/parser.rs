@@ -5,8 +5,8 @@ use smallvec::SmallVec;
 use smol_str::SmolStr;
 
 use crate::arena::{ArenaView, Node, NodeData, NodeKind, Pair, Span, StringRef};
-use crate::text::string::is_canonical_unquoted_key;
 use crate::error::Location;
+use crate::text::string::is_canonical_unquoted_key;
 use crate::{DecodeOptions, Error, Indent, Result};
 
 use super::scan::{scan_lines, ScanLine, ScanResult};
@@ -473,8 +473,7 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                 ));
             }
             let item_content = content[1..].trim_start();
-            let (item, next_idx) =
-                self.parse_list_item(item_content, scan, idx + 1, item_level)?;
+            let (item, next_idx) = self.parse_list_item(item_content, scan, idx + 1, item_level)?;
             items.push(item);
             idx = next_idx;
         }
@@ -505,16 +504,13 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                     .map_err(|err| self.attach_location_for_slice(scan, item_content, err))?;
                 return Ok((parsed.node_id, parsed.next_idx));
             }
-            let key = header
-                .key
-                .clone()
-                .ok_or_else(|| {
-                    self.attach_location_for_slice(
-                        scan,
-                        item_content,
-                        Error::decode("array header missing key in object context"),
-                    )
-                })?;
+            let key = header.key.clone().ok_or_else(|| {
+                self.attach_location_for_slice(
+                    scan,
+                    item_content,
+                    Error::decode("array header missing key in object context"),
+                )
+            })?;
             let array_base_level = if header.fields.is_some() {
                 if self.strict {
                     item_level + 1
@@ -649,16 +645,13 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                 }
             };
             if let Some(header) = header {
-                let key = header
-                    .key
-                    .as_ref()
-                    .ok_or_else(|| {
-                        self.attach_location_for_slice(
-                            scan,
-                            content,
-                            Error::decode("array header missing key in object context"),
-                        )
-                    })?;
+                let key = header.key.as_ref().ok_or_else(|| {
+                    self.attach_location_for_slice(
+                        scan,
+                        content,
+                        Error::decode("array header missing key in object context"),
+                    )
+                })?;
                 let parsed = self
                     .parse_array_from_header(&header, scan, idx + 1, base_level)
                     .map_err(|err| self.attach_location_for_slice(scan, content, err))?;
@@ -1225,11 +1218,7 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
     fn location_from_offset(&self, scan: &ScanResult, offset: usize) -> Option<Location> {
         for (idx, line) in scan.lines.iter().enumerate() {
             if offset <= line.end {
-                let column = if offset >= line.raw_start {
-                    offset - line.raw_start
-                } else {
-                    0
-                };
+                let column = offset.saturating_sub(line.raw_start);
                 return Some(Location {
                     offset,
                     line: idx + 1,
@@ -1240,12 +1229,7 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
         None
     }
 
-    fn attach_location_from_offset(
-        &self,
-        scan: &ScanResult,
-        offset: usize,
-        err: Error,
-    ) -> Error {
+    fn attach_location_from_offset(&self, scan: &ScanResult, offset: usize, err: Error) -> Error {
         if err.location.is_some() {
             return err;
         }
@@ -1255,12 +1239,7 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
         }
     }
 
-    fn attach_location_for_line(
-        &self,
-        scan: &ScanResult,
-        line_idx: usize,
-        err: Error,
-    ) -> Error {
+    fn attach_location_for_line(&self, scan: &ScanResult, line_idx: usize, err: Error) -> Error {
         let offset = scan
             .lines
             .get(line_idx)
@@ -1269,12 +1248,7 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
         self.attach_location_from_offset(scan, offset, err)
     }
 
-    fn attach_location_for_slice(
-        &self,
-        scan: &ScanResult,
-        slice: &str,
-        err: Error,
-    ) -> Error {
+    fn attach_location_for_slice(&self, scan: &ScanResult, slice: &str, err: Error) -> Error {
         let offset = self.span_for(slice).start;
         self.attach_location_from_offset(scan, offset, err)
     }
