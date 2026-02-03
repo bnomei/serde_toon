@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minor: Clarified missing array payload decode error message.
 - Major: Removed the public tabular placeholder module.
 - Minor: Added API smoke tests and parallel feature coverage.
+- Minor: Routed value decoding/validation through the arena parser when path expansion is off.
 
 ## [0.1.1] - 2026-01-20
 - Added a value-only fast path for tabular decoding and routed `decode_to_value` through a direct Value decoder.

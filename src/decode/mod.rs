@@ -11,13 +11,11 @@ use serde_json::{Map, Value};
 use smallvec::SmallVec;
 use smol_str::SmolStr;
 
-use crate::arena::ArenaView;
+use crate::arena::{ArenaView, NodeData, NodeKind};
 use crate::num::number::format_json_number;
 use crate::text::string::{is_canonical_unquoted_key, is_identifier_segment};
 use crate::{DecodeOptions, Error, ExpandPaths, Indent, Location, Result};
 
-#[cfg(feature = "parallel")]
-use crate::arena::NodeKind;
 #[cfg(feature = "parallel")]
 use ::serde::Deserialize;
 #[cfg(feature = "parallel")]
@@ -47,8 +45,17 @@ pub fn from_str<T: DeserializeOwned>(input: &str, options: &DecodeOptions) -> Re
 }
 
 pub fn from_str_value(input: &str, options: &DecodeOptions) -> Result<Value> {
-    let mut decoder = Decoder::new(options);
-    decoder.decode_document(input)
+    if options.expand_paths != ExpandPaths::Off {
+        let mut decoder = Decoder::new(options);
+        return decoder.decode_document(input);
+    }
+    let mut arena = ArenaView::with_parts(input, pool::take_arena_parts());
+    let result = (|| {
+        let root = parser::parse_into(&mut arena, options)?;
+        arena_to_value(&arena, root)
+    })();
+    pool::put_arena_parts(arena.into_parts());
+    result
 }
 
 #[cfg(feature = "parallel")]
@@ -108,8 +115,64 @@ pub fn from_reader<T: DeserializeOwned, R: Read>(
 }
 
 pub fn validate_str(input: &str, options: &DecodeOptions) -> Result<()> {
-    let mut validator = Decoder::new_validator(options);
-    validator.validate_document(input)
+    if options.expand_paths != ExpandPaths::Off {
+        let mut validator = Decoder::new_validator(options);
+        return validator.validate_document(input);
+    }
+    let mut arena = ArenaView::with_parts(input, pool::take_arena_parts());
+    let result = (|| {
+        parser::parse_into_validate(&mut arena, options)?;
+        Ok(())
+    })();
+    pool::put_arena_parts(arena.into_parts());
+    result
+}
+
+fn arena_to_value(arena: &ArenaView<'_>, node_index: usize) -> Result<Value> {
+    let node = &arena.nodes[node_index];
+    match node.kind {
+        NodeKind::Null => Ok(Value::Null),
+        NodeKind::Bool => match node.data {
+            NodeData::Bool(value) => Ok(Value::Bool(value)),
+            _ => Err(Error::decode("invalid bool payload")),
+        },
+        NodeKind::String => match node.data {
+            NodeData::String(index) => arena
+                .get_str(index)
+                .map(|value| Value::String(value.to_string()))
+                .ok_or_else(|| Error::decode("invalid string span")),
+            _ => Err(Error::decode("invalid string payload")),
+        },
+        NodeKind::Number => match node.data {
+            NodeData::Number(index) => {
+                let token = arena
+                    .get_num_str(index)
+                    .ok_or_else(|| Error::decode("invalid number span"))?;
+                let number =
+                    parse_number_token(token).ok_or_else(|| Error::decode("invalid number"))?;
+                Ok(Value::Number(number))
+            }
+            _ => Err(Error::decode("invalid number payload")),
+        },
+        NodeKind::Array => {
+            let mut items = Vec::with_capacity(node.child_len);
+            for &child in arena.children(node) {
+                items.push(arena_to_value(arena, child)?);
+            }
+            Ok(Value::Array(items))
+        }
+        NodeKind::Object => {
+            let mut map = Map::with_capacity(node.child_len);
+            for pair in arena.pairs(node) {
+                let key = arena
+                    .get_key(pair.key)
+                    .ok_or_else(|| Error::decode("invalid object key"))?;
+                let value = arena_to_value(arena, pair.value)?;
+                map.insert(key.to_string(), value);
+            }
+            Ok(Value::Object(map))
+        }
+    }
 }
 
 struct Decoder {

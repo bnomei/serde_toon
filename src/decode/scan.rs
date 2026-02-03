@@ -19,11 +19,19 @@ pub struct ScanResult {
     pub non_blank: usize,
 }
 
-pub fn scan_lines(input: &str, indent_size: usize, strict: bool) -> Result<ScanResult> {
+pub fn scan_lines(
+    input: &str,
+    indent_size: usize,
+    strict: bool,
+    validate: bool,
+) -> Result<ScanResult> {
     if indent_size == 0 {
         return Err(Error::decode("indent size must be greater than zero"));
     }
     let bytes = input.as_bytes();
+    if validate && bytes.last() == Some(&b'\n') {
+        return Err(Error::decode("trailing newline not allowed"));
+    }
     let mut lines = Vec::new();
     let mut non_blank = 0;
     let mut start = 0;
@@ -31,6 +39,12 @@ pub fn scan_lines(input: &str, indent_size: usize, strict: bool) -> Result<ScanR
         let mut end = idx;
         if end > start && bytes[end - 1] == b'\r' {
             end -= 1;
+        }
+        if validate && end > start {
+            let last = bytes[end - 1];
+            if last == b' ' || last == b'\t' {
+                return Err(Error::decode("trailing whitespace not allowed"));
+            }
         }
         let line_idx = lines.len();
         let line = build_line(bytes, start, end, indent_size, strict).map_err(|err| {
@@ -50,6 +64,12 @@ pub fn scan_lines(input: &str, indent_size: usize, strict: bool) -> Result<ScanR
     let mut end = bytes.len();
     if end > start && bytes[end - 1] == b'\r' {
         end -= 1;
+    }
+    if validate && end > start {
+        let last = bytes[end - 1];
+        if last == b' ' || last == b'\t' {
+            return Err(Error::decode("trailing whitespace not allowed"));
+        }
     }
     let line_idx = lines.len();
     let line = build_line(bytes, start, end, indent_size, strict).map_err(|err| {
