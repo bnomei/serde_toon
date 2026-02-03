@@ -417,9 +417,14 @@ impl<R: BufRead> TabNormalizingReader<R> {
             return Ok(false);
         }
         let line = self.line_buf.as_str();
-        let (content, newline) = match line.strip_suffix('\n') {
-            Some(stripped) => (stripped, "\n"),
-            None => (line, ""),
+        let (content, newline) = if let Some(stripped) = line.strip_suffix("\r\n") {
+            (stripped, "\r\n")
+        } else if let Some(stripped) = line.strip_suffix('\n') {
+            let stripped = stripped.strip_suffix('\r').unwrap_or(stripped);
+            (stripped, "\n")
+        } else {
+            let stripped = line.strip_suffix('\r').unwrap_or(line);
+            (stripped, "")
         };
 
         let mut saw_tab = false;
