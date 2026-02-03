@@ -41,7 +41,7 @@ debug = 0
 
 [dev-dependencies]
 serde = { version = "1.0.228", features = ["derive"] }
-criterion = "0.5.1"
+criterion = { version = "4.3.0", package = "codspeed-criterion-compat" }
 rstest = "0.18.2"
 pprof = { version = "0.15.0", features = ["flamegraph"] }
 

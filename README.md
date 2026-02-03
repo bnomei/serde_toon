@@ -2,6 +2,7 @@
 
 [![Crates.io Version](https://img.shields.io/crates/v/serde_toon_format)](https://crates.io/crates/serde_toon_format)
 [![CI](https://img.shields.io/github/actions/workflow/status/bnomei/serde_toon/ci.yml?branch=main)](https://github.com/bnomei/serde_toon/actions/workflows/ci.yml)
+[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/bnomei/serde_toon?utm_source=badge)
 [![Crates.io Downloads](https://img.shields.io/crates/d/serde_toon_format)](https://crates.io/crates/serde_toon_format)
 [![License](https://img.shields.io/crates/l/serde_toon_format)](https://crates.io/crates/serde_toon_format)
 [![Discord](https://flat.badgen.net/badge/discord/bnomei?color=7289da&icon=discord&label)](https://discordapp.com/users/bnomei)
@@ -51,7 +52,7 @@ let toon = toon!(encode: user)?;
 let toon_from_json = toon!(encode_json: r#"{"name":"Grace Hopper"}"#)?;
 let value = toon!("name: Ada Lovelace")?;
 
-assert_eq!(toon, "name: Ada Lovelace\nage: 37");
+assert_eq!(toon, "name: Ada Lovelace\\nage: 37");
 assert_eq!(toon_from_json, "name: Grace Hopper");
 assert_eq!(value, serde_json::json!({"name": "Ada Lovelace"}));
 # Ok::<(), serde_toon::Error>(())
@@ -86,7 +87,7 @@ let user = User {
 
 let toon = to_string(&user)?;
 
-assert_eq!(toon, "name: Ada Lovelace\nage: 37");
+assert_eq!(toon, "name: Ada Lovelace\\nage: 37");
 # Ok::<(), serde_toon::Error>(())
 ```
 
@@ -102,7 +103,7 @@ Decode back:
 ```rust
 use serde_toon::from_str;
 
-let toon = "name: Ada Lovelace\nage: 37";
+let toon = "name: Ada Lovelace\\nage: 37";
 let round_trip: User = from_str(toon)?;
 
 assert_eq!(
@@ -125,7 +126,7 @@ let toon = to_string_from_json_str(json)?;
 
 assert_eq!(
     toon,
-    "name: Grace Hopper\nfield: computer science\nyear: 1952"
+    "name: Grace Hopper\\nfield: computer science\\nyear: 1952"
 );
 
 let back_to_json = serde_json::to_string(&from_str::<serde_json::Value>(&toon)?)?;
@@ -139,7 +140,7 @@ assert_eq!(back_to_json, json);
 ```rust
 use serde_json::Value;
 
-let value: Value = serde_toon::from_str("name: Margaret Hamilton\nage: 32")?;
+let value: Value = serde_toon::from_str("name: Margaret Hamilton\\nage: 32")?;
 
 assert_eq!(value, serde_json::json!({"name": "Margaret Hamilton", "age": 32}));
 # Ok::<(), serde_toon::Error>(())
@@ -211,7 +212,7 @@ This TOON encoder/decoder is well-optimized. You can compare it to other rust-ba
 
 Run with `cargo bench --manifest-path benchmarks/toon/Cargo.toml`.
 
-We split results into **Value-only** and **Typed** to keep comparisons fair and explicit. Value-only uses `serde_json::Value` as a shared denominator so every crate can participate even if it doesn’t offer a typed/serde API. Typed uses `Vec<GitHubRepo>` to show real-world serde integration and the extra cost of struct mapping. This makes it clear whether a library is fast at raw format parsing or fast end-to-end with typed data.
+We split results into **Value-only** and **Typed** to keep comparisons fair and explicit. Value-only uses `serde_json::Value` as a shared denominator so every crate can participate even if it doesn't offer a typed/serde API. Typed uses `Vec<GitHubRepo>` to show real-world serde integration and the extra cost of struct mapping. This makes it clear whether a library is fast at raw format parsing or fast end-to-end with typed data.
 
 The performance tables below use default settings; see the Defaults section for exact options, and any deviations needed for a crate to run are called out in the Notes.
 
@@ -259,7 +260,7 @@ Defaults listed here are the settings applied in the benchmarks (defaults unless
 
 #### Strict + Validated
 
-**Strict + Validated** is a separate pass/fail check. We run each decoder in its strict/validated mode when available, and we do not apply any patches or lenient settings for that table. If a crate can’t parse the dataset under strict validation, it’s marked ❌.
+**Strict + Validated** is a separate pass/fail check. We run each decoder in its strict/validated mode when available, and we do not apply any patches or lenient settings for that table. If a crate can't parse the dataset under strict validation, it's marked ❌.
 
 | Library | Pass (strict+validated) |
 | --- | --- |
