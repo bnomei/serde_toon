@@ -340,7 +340,7 @@ impl Decoder {
             None => Vec::new(),
         };
         if header.inline.is_none() && header.len > 0 {
-            return Err(Error::decode("array payload not implemented"));
+            return Err(Error::decode("array payload required"));
         }
         if self.strict && header.len != items.len() {
             return Err(Error::decode("array length mismatch"));
@@ -1075,6 +1075,9 @@ impl Decoder {
 
             let (items, next_idx) =
                 self.parse_list_block(lines, idx, base_level + 1, header.len)?;
+            if header.len > 0 && items.is_empty() {
+                return Err(Error::decode("array payload required"));
+            }
             if self.strict && items.len() != header.len {
                 return Err(Error::decode("array length mismatch"));
             }
