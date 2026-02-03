@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minor: Routed value decoding/validation through the arena parser when path expansion is off.
 - Minor: Streamed encoder output to writers without buffering the full document.
 - Minor: Streamed reader decoding without buffering the full input.
+- Minor: Added auto-detect heuristics for JSON vs TOON decoding.
+- Minor: Clarified `toon!` macro usage in README.
 
 ## [0.1.1] - 2026-01-20
 - Added a value-only fast path for tabular decoding and routed `decode_to_value` through a direct Value decoder.
