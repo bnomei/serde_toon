@@ -3,7 +3,8 @@ mod pool;
 mod scan;
 mod serde;
 
-use std::io::Read;
+use std::collections::VecDeque;
+use std::io::{BufRead, BufReader, Read};
 
 use ::serde::de::DeserializeOwned;
 use memchr::{memchr, memchr2, memchr3, memchr_iter};
@@ -103,15 +104,19 @@ pub fn from_slice<T: DeserializeOwned>(input: &[u8], options: &DecodeOptions) ->
     from_str(text, options)
 }
 
-pub fn from_reader<T: DeserializeOwned, R: Read>(
-    mut reader: R,
+pub fn from_reader<T: DeserializeOwned, R: Read>(reader: R, options: &DecodeOptions) -> Result<T> {
+    let reader = BufReader::new(reader);
+    from_reader_streaming(reader, options)
+}
+
+pub fn from_reader_streaming<T: DeserializeOwned, R: BufRead>(
+    reader: R,
     options: &DecodeOptions,
 ) -> Result<T> {
-    let mut buf = String::new();
-    reader
-        .read_to_string(&mut buf)
-        .map_err(|err| Error::decode_with_source(format!("read failed: {err}"), err))?;
-    from_str(&buf, options)
+    let mut decoder = Decoder::new(options);
+    let value = decoder.decode_reader_streaming(reader)?;
+    serde_json::from_value(value)
+        .map_err(|err| Error::deserialize_with_source(format!("deserialize failed: {err}"), err))
 }
 
 pub fn validate_str(input: &str, options: &DecodeOptions) -> Result<()> {
@@ -1164,7 +1169,6 @@ impl Decoder {
         expected_len: usize,
     ) -> Result<(Vec<Value>, usize, bool)> {
         let mut rows = Vec::with_capacity(expected_len);
-        let mut tokens = TokenBuf::with_capacity(fields.len());
         let mut field_paths: Vec<Option<Vec<&str>>> = Vec::new();
         let mut fast_path = self.expand_paths != ExpandPaths::Safe;
         if !fast_path {
@@ -1220,6 +1224,7 @@ impl Decoder {
                     row_content = stripped.trim_start();
                 }
             }
+            let mut tokens = TokenBuf::with_capacity(fields.len());
             if !self
                 .split_tabular_row_into(row_content, delimiter, &mut tokens)
                 .map_err(|err| self.attach_location_for_slice(line, idx, row_content, err))?
@@ -1746,6 +1751,733 @@ struct Line {
     level: usize,
     content: String,
     is_blank: bool,
+}
+
+struct StreamLine {
+    idx: usize,
+    line: Line,
+}
+
+struct LineStream<R: BufRead> {
+    reader: R,
+    buffer: String,
+    pending: VecDeque<StreamLine>,
+    line_idx: usize,
+    offset: usize,
+    last_line_had_newline: bool,
+}
+
+impl<R: BufRead> LineStream<R> {
+    fn new(reader: R) -> Self {
+        Self {
+            reader,
+            buffer: String::new(),
+            pending: VecDeque::new(),
+            line_idx: 0,
+            offset: 0,
+            last_line_had_newline: false,
+        }
+    }
+
+    fn push_back(&mut self, line: StreamLine) {
+        self.pending.push_front(line);
+    }
+
+    fn next_line(&mut self, decoder: &Decoder) -> Result<Option<StreamLine>> {
+        if let Some(line) = self.pending.pop_front() {
+            return Ok(Some(line));
+        }
+        self.buffer.clear();
+        let read = self
+            .reader
+            .read_line(&mut self.buffer)
+            .map_err(|err| Error::decode_with_source(format!("read failed: {err}"), err))?;
+        if read == 0 {
+            return Ok(None);
+        }
+        self.last_line_had_newline = self.buffer.ends_with('\n');
+        let raw_len = self.buffer.len();
+        let mut line = self.buffer.as_str();
+        if line.ends_with('\n') {
+            line = &line[..line.len().saturating_sub(1)];
+            if line.ends_with('\r') {
+                line = &line[..line.len().saturating_sub(1)];
+            }
+        }
+        if decoder.validate && !line.is_empty() {
+            if let Some(&last) = line.as_bytes().last() {
+                if last == b' ' || last == b'\t' {
+                    return Err(Error::decode("trailing whitespace not allowed"));
+                }
+            }
+        }
+        let raw_start = self.offset;
+        let line_idx = self.line_idx;
+        self.offset += raw_len;
+        self.line_idx += 1;
+        let built = decoder.build_line(line, raw_start).map_err(|err| {
+            err.with_location(Location {
+                offset: raw_start,
+                line: line_idx + 1,
+                column: 1,
+            })
+        })?;
+        Ok(Some(StreamLine {
+            idx: line_idx,
+            line: built,
+        }))
+    }
+
+    fn next_non_blank(&mut self, decoder: &Decoder) -> Result<Option<StreamLine>> {
+        while let Some(line) = self.next_line(decoder)? {
+            if line.line.is_blank {
+                continue;
+            }
+            return Ok(Some(line));
+        }
+        Ok(None)
+    }
+
+    fn has_more_non_blank(&mut self, decoder: &Decoder) -> Result<bool> {
+        let mut consumed = Vec::new();
+        let mut found = false;
+        while let Some(line) = self.next_line(decoder)? {
+            found = !line.line.is_blank;
+            consumed.push(line);
+            if found {
+                break;
+            }
+        }
+        for line in consumed.into_iter().rev() {
+            self.push_back(line);
+        }
+        Ok(found)
+    }
+
+    fn drain_to_end(&mut self, decoder: &Decoder) -> Result<()> {
+        while self.next_line(decoder)?.is_some() {}
+        Ok(())
+    }
+
+    fn check_trailing_newline(&self, validate: bool) -> Result<()> {
+        if validate && self.last_line_had_newline {
+            return Err(Error::decode("trailing newline not allowed"));
+        }
+        Ok(())
+    }
+}
+
+impl Decoder {
+    fn decode_reader_streaming<R: BufRead>(&mut self, reader: R) -> Result<Value> {
+        if self.indent_size == 0 {
+            return Err(Error::decode("indent size must be greater than zero"));
+        }
+        let mut stream = LineStream::new(reader);
+        let first_non_blank = stream.next_non_blank(self)?;
+        let Some(first) = first_non_blank else {
+            stream.check_trailing_newline(self.validate)?;
+            return Ok(Value::Object(Map::new()));
+        };
+        let first_content = trim_ascii(&first.line.content);
+        if first_content.starts_with('[') {
+            let header = match self.parse_array_header(first_content) {
+                Ok(header) => header,
+                Err(err) => {
+                    return Err(self.attach_location_for_slice(
+                        &first.line,
+                        first.idx,
+                        first_content,
+                        err,
+                    ));
+                }
+            };
+            if let Some(header) = header {
+                if header.key.is_none() {
+                    if first.line.indent != 0 {
+                        return Err(self.attach_location_for_line_meta(
+                            first.idx,
+                            &first.line,
+                            Error::decode("unexpected indentation"),
+                        ));
+                    }
+                    let parsed = self
+                        .parse_array_from_header_stream(&header, &mut stream, 0)
+                        .map_err(|err| {
+                            self.attach_location_for_slice(
+                                &first.line,
+                                first.idx,
+                                first_content,
+                                err,
+                            )
+                        })?;
+                    while let Some(line) = stream.next_line(self)? {
+                        if line.line.is_blank {
+                            continue;
+                        }
+                        return Err(self.attach_location_for_line_meta(
+                            line.idx,
+                            &line.line,
+                            Error::decode("unexpected trailing content"),
+                        ));
+                    }
+                    stream.check_trailing_newline(self.validate)?;
+                    return Ok(parsed.value);
+                }
+            }
+        }
+
+        if !stream.has_more_non_blank(self)? {
+            if self.validate && self.reject_root_unquoted_string(first_content) {
+                return Err(self.attach_location_for_slice(
+                    &first.line,
+                    first.idx,
+                    first_content,
+                    Error::decode("root string must be quoted"),
+                ));
+            }
+            if self.strict && first.line.indent != 0 {
+                return Err(self.attach_location_for_line_meta(
+                    first.idx,
+                    &first.line,
+                    Error::decode("unexpected indentation"),
+                ));
+            }
+            let value = self
+                .decode_single_line(first_content, &first.line, first.idx)
+                .map_err(|err| {
+                    self.attach_location_for_slice(&first.line, first.idx, first_content, err)
+                })?;
+            stream.drain_to_end(self)?;
+            stream.check_trailing_newline(self.validate)?;
+            return Ok(value);
+        }
+
+        stream.push_back(first);
+        let map = self.parse_object_block_stream(&mut stream, 0)?;
+        stream.drain_to_end(self)?;
+        stream.check_trailing_newline(self.validate)?;
+        Ok(Value::Object(map))
+    }
+
+    fn attach_location_for_line_meta(&self, line_idx: usize, line: &Line, err: Error) -> Error {
+        if err.location.is_some() {
+            return err;
+        }
+        let offset = line.raw_start;
+        err.with_location(Location {
+            offset,
+            line: line_idx + 1,
+            column: 1,
+        })
+    }
+
+    fn parse_object_block_stream<R: BufRead>(
+        &mut self,
+        stream: &mut LineStream<R>,
+        base_level: usize,
+    ) -> Result<Map<String, Value>> {
+        let mut map = Map::new();
+        let mut override_level: Option<usize> = None;
+        while let Some(line) = stream.next_line(self)? {
+            if line.line.is_blank {
+                continue;
+            }
+            let actual_level = line.line.level;
+            let level = override_level.take().unwrap_or(actual_level);
+            if level < base_level {
+                stream.push_back(line);
+                break;
+            }
+            if level > base_level {
+                return Err(self.attach_location_for_line_meta(
+                    line.idx,
+                    &line.line,
+                    Error::decode("unexpected indentation"),
+                ));
+            }
+            let content = trim_ascii(&line.line.content);
+            let header = match self.parse_array_header(content) {
+                Ok(header) => header,
+                Err(err) => {
+                    return Err(self.attach_location_for_slice(&line.line, line.idx, content, err));
+                }
+            };
+            if let Some(header) = header {
+                let key = header.key.as_ref().ok_or_else(|| {
+                    self.attach_location_for_slice(
+                        &line.line,
+                        line.idx,
+                        content,
+                        Error::decode("array header missing key in object context"),
+                    )
+                })?;
+                let parsed = self
+                    .parse_array_from_header_stream(&header, stream, base_level)
+                    .map_err(|err| {
+                        self.attach_location_for_slice(&line.line, line.idx, content, err)
+                    })?;
+                self.insert_key_value(&mut map, key.clone(), parsed.value)
+                    .map_err(|err| {
+                        self.attach_location_for_slice(&line.line, line.idx, content, err)
+                    })?;
+                if parsed.deindent_next {
+                    override_level = Some(base_level);
+                }
+                continue;
+            }
+
+            if let Some((key, value)) = self
+                .split_key_value(content)
+                .map_err(|err| self.attach_location_for_slice(&line.line, line.idx, content, err))?
+            {
+                let key = self.parse_key_token(trim_ascii(key)).map_err(|err| {
+                    self.attach_location_for_slice(&line.line, line.idx, key, err)
+                })?;
+                if trim_ascii(value).is_empty() {
+                    let nested = self
+                        .parse_object_block_stream(stream, base_level + 1)
+                        .map_err(|err| {
+                            self.attach_location_for_slice(&line.line, line.idx, content, err)
+                        })?;
+                    self.insert_key_value(&mut map, key, Value::Object(nested))
+                        .map_err(|err| {
+                            self.attach_location_for_slice(&line.line, line.idx, content, err)
+                        })?;
+                } else {
+                    let value_trimmed = trim_ascii(value);
+                    let value = self.parse_value_token(value).map_err(|err| {
+                        self.attach_location_for_slice(&line.line, line.idx, value_trimmed, err)
+                    })?;
+                    self.insert_key_value(&mut map, key, value).map_err(|err| {
+                        self.attach_location_for_slice(&line.line, line.idx, content, err)
+                    })?;
+                }
+                continue;
+            }
+
+            if self.strict {
+                return Err(self.attach_location_for_slice(
+                    &line.line,
+                    line.idx,
+                    content,
+                    Error::decode("bare key not allowed in strict mode"),
+                ));
+            }
+            let key = self.parse_key_token(content).map_err(|err| {
+                self.attach_location_for_slice(&line.line, line.idx, content, err)
+            })?;
+            self.insert_key_value(&mut map, key, Value::Null)
+                .map_err(|err| {
+                    self.attach_location_for_slice(&line.line, line.idx, content, err)
+                })?;
+        }
+        Ok(map)
+    }
+
+    fn parse_array_from_header_stream<R: BufRead>(
+        &mut self,
+        header: &HeaderLine,
+        stream: &mut LineStream<R>,
+        base_level: usize,
+    ) -> Result<ParsedArray> {
+        self.push_delimiter(header.delimiter);
+        let result = (|| {
+            if let Some(inline) = header.inline.as_deref() {
+                let items = self.parse_inline_array(inline, header.delimiter, header.len)?;
+                if self.strict && items.len() != header.len {
+                    return Err(Error::decode("array length mismatch"));
+                }
+                return Ok(ParsedArray {
+                    value: Value::Array(items),
+                    next_idx: 0,
+                    deindent_next: false,
+                });
+            }
+
+            if let Some(fields) = header.fields.as_ref() {
+                let (rows, deindent_next) = self.parse_tabular_block_stream(
+                    stream,
+                    base_level,
+                    fields,
+                    header.delimiter,
+                    header.len,
+                )?;
+                if self.strict && rows.len() != header.len {
+                    return Err(Error::decode("array length mismatch"));
+                }
+                return Ok(ParsedArray {
+                    value: Value::Array(rows),
+                    next_idx: 0,
+                    deindent_next,
+                });
+            }
+
+            if header.len == 0 {
+                return Ok(ParsedArray {
+                    value: Value::Array(Vec::new()),
+                    next_idx: 0,
+                    deindent_next: false,
+                });
+            }
+
+            let items = self.parse_list_block_stream(stream, base_level + 1, header.len)?;
+            if header.len > 0 && items.is_empty() {
+                return Err(Error::decode("array payload required"));
+            }
+            if self.strict && items.len() != header.len {
+                return Err(Error::decode("array length mismatch"));
+            }
+            Ok(ParsedArray {
+                value: Value::Array(items),
+                next_idx: 0,
+                deindent_next: false,
+            })
+        })();
+        self.pop_delimiter();
+        result
+    }
+
+    fn parse_tabular_block_stream<R: BufRead>(
+        &self,
+        stream: &mut LineStream<R>,
+        base_level: usize,
+        fields: &[KeyToken],
+        delimiter: char,
+        expected_len: usize,
+    ) -> Result<(Vec<Value>, bool)> {
+        let mut rows = Vec::with_capacity(expected_len);
+        let mut field_paths: Vec<Option<Vec<String>>> = Vec::new();
+        let mut fast_path = self.expand_paths != ExpandPaths::Safe;
+        if !fast_path {
+            field_paths = Vec::with_capacity(fields.len());
+            for field in fields {
+                let parts = self.expandable_path_parts(field);
+                field_paths
+                    .push(parts.map(|parts| parts.iter().map(|part| part.to_string()).collect()));
+            }
+            fast_path = field_paths.iter().all(|parts| parts.is_none());
+        }
+        let field_names: Vec<String> = fields.iter().map(|field| field.value.to_string()).collect();
+        let mut row_level: Option<usize> = None;
+        while let Some(line) = stream.next_line(self)? {
+            if line.line.is_blank {
+                if !self.strict {
+                    continue;
+                }
+                let next = stream.next_non_blank(self)?;
+                if let Some(next_line) = next {
+                    let next_level = next_line.line.level;
+                    stream.push_back(next_line);
+                    if next_level <= base_level {
+                        return Ok((rows, false));
+                    }
+                    return Err(self.attach_location_for_line_meta(
+                        line.idx,
+                        &line.line,
+                        Error::decode("blank line not allowed in array"),
+                    ));
+                }
+                return Ok((rows, false));
+            }
+            let level = line.line.level;
+            if row_level.is_none() {
+                if level <= base_level {
+                    stream.push_back(line);
+                    return Ok((rows, false));
+                }
+                row_level = Some(level);
+            }
+            let row_level = row_level.unwrap();
+            if level < row_level {
+                stream.push_back(line);
+                return Ok((rows, false));
+            }
+            if level > row_level {
+                return Err(self.attach_location_for_line_meta(
+                    line.idx,
+                    &line.line,
+                    Error::decode("unexpected indentation"),
+                ));
+            }
+            let mut row_content = trim_ascii(&line.line.content);
+            if let Some(stripped) = row_content.strip_prefix('-') {
+                if stripped.starts_with(' ') || stripped.starts_with('\t') {
+                    row_content = stripped.trim_start();
+                }
+            }
+            let mut tokens = TokenBuf::with_capacity(fields.len());
+            if !self
+                .split_tabular_row_into(row_content, delimiter, &mut tokens)
+                .map_err(|err| {
+                    self.attach_location_for_slice(&line.line, line.idx, row_content, err)
+                })?
+            {
+                stream.push_back(StreamLine {
+                    idx: line.idx,
+                    line: line.line.clone(),
+                });
+                return Ok((rows, true));
+            }
+            if tokens.len() != fields.len() {
+                if self.strict {
+                    return Err(self.attach_location_for_slice(
+                        &line.line,
+                        line.idx,
+                        row_content,
+                        Error::decode("tabular row field count mismatch"),
+                    ));
+                }
+                if tokens.len() < fields.len() {
+                    tokens.extend(std::iter::repeat_n("", fields.len() - tokens.len()));
+                } else {
+                    tokens.truncate(fields.len());
+                }
+            }
+            let mut obj = Map::with_capacity(fields.len());
+            if fast_path {
+                for (idx, token) in tokens.iter().enumerate() {
+                    let value = if token.is_empty() {
+                        Value::String(String::new())
+                    } else {
+                        self.parse_value_token(token).map_err(|err| {
+                            self.attach_location_for_slice(&line.line, line.idx, token, err)
+                        })?
+                    };
+                    obj.insert(field_names[idx].clone(), value);
+                }
+            } else {
+                for (idx, token) in tokens.iter().enumerate() {
+                    let value = if token.is_empty() {
+                        Value::String(String::new())
+                    } else {
+                        self.parse_value_token(token).map_err(|err| {
+                            self.attach_location_for_slice(&line.line, line.idx, token, err)
+                        })?
+                    };
+                    if let Some(parts) = field_paths[idx].as_ref() {
+                        let parts: Vec<&str> = parts.iter().map(|part| part.as_str()).collect();
+                        self.insert_path(&mut obj, &parts, value).map_err(|err| {
+                            self.attach_location_for_slice(&line.line, line.idx, token, err)
+                        })?;
+                    } else {
+                        obj.insert(field_names[idx].clone(), value);
+                    }
+                }
+            }
+            rows.push(Value::Object(obj));
+        }
+        Ok((rows, false))
+    }
+
+    fn parse_list_block_stream<R: BufRead>(
+        &mut self,
+        stream: &mut LineStream<R>,
+        item_level: usize,
+        expected_len: usize,
+    ) -> Result<Vec<Value>> {
+        let mut items = Vec::with_capacity(expected_len);
+        while let Some(line) = stream.next_line(self)? {
+            if line.line.is_blank {
+                if !self.strict {
+                    continue;
+                }
+                let next = stream.next_non_blank(self)?;
+                if let Some(next_line) = next {
+                    let next_level = next_line.line.level;
+                    stream.push_back(next_line);
+                    if next_level < item_level {
+                        return Ok(items);
+                    }
+                    return Err(self.attach_location_for_line_meta(
+                        line.idx,
+                        &line.line,
+                        Error::decode("blank line not allowed in array"),
+                    ));
+                }
+                return Ok(items);
+            }
+            let level = line.line.level;
+            if level < item_level {
+                stream.push_back(line);
+                break;
+            }
+            if level > item_level {
+                return Err(self.attach_location_for_line_meta(
+                    line.idx,
+                    &line.line,
+                    Error::decode("unexpected indentation"),
+                ));
+            }
+            let content = trim_ascii(&line.line.content);
+            if !content.starts_with('-') {
+                return Err(self.attach_location_for_slice(
+                    &line.line,
+                    line.idx,
+                    content,
+                    Error::decode("expected list item"),
+                ));
+            }
+            let item_content = content[1..].trim_start();
+            let item = self
+                .parse_list_item_stream(item_content, stream, item_level, &line.line, line.idx)
+                .map_err(|err| {
+                    self.attach_location_for_slice(&line.line, line.idx, item_content, err)
+                })?;
+            items.push(item);
+        }
+        Ok(items)
+    }
+
+    fn parse_list_item_stream<R: BufRead>(
+        &mut self,
+        item_content: &str,
+        stream: &mut LineStream<R>,
+        item_level: usize,
+        line_meta: &Line,
+        line_idx: usize,
+    ) -> Result<Value> {
+        if item_content.is_empty() {
+            return Ok(Value::Object(Map::new()));
+        }
+
+        let header = match self.parse_array_header(item_content) {
+            Ok(header) => header,
+            Err(err) => {
+                return Err(self.attach_location_for_slice(line_meta, line_idx, item_content, err));
+            }
+        };
+        if let Some(header) = header {
+            if header.key.is_none() {
+                let parsed = self
+                    .parse_array_from_header_stream(&header, stream, item_level)
+                    .map_err(|err| {
+                        self.attach_location_for_slice(line_meta, line_idx, item_content, err)
+                    })?;
+                return Ok(parsed.value);
+            }
+            let key = header.key.clone().ok_or_else(|| {
+                self.attach_location_for_slice(
+                    line_meta,
+                    line_idx,
+                    item_content,
+                    Error::decode("array header missing key in object context"),
+                )
+            })?;
+            let array_base_level = if header.fields.is_some() {
+                if self.validate || self.strict {
+                    item_level + 1
+                } else {
+                    item_level
+                }
+            } else {
+                item_level + 1
+            };
+            let parsed = if self.validate && header.fields.is_some() && header.inline.is_none() {
+                let fields = header.fields.as_ref().ok_or_else(|| {
+                    self.attach_location_for_slice(
+                        line_meta,
+                        line_idx,
+                        item_content,
+                        Error::decode("missing tabular fields"),
+                    )
+                })?;
+                let (rows, _) = self
+                    .parse_tabular_block_stream(
+                        stream,
+                        array_base_level,
+                        fields,
+                        header.delimiter,
+                        header.len,
+                    )
+                    .map_err(|err| {
+                        self.attach_location_for_slice(line_meta, line_idx, item_content, err)
+                    })?;
+                if self.strict && rows.len() != header.len {
+                    return Err(Error::decode("array length mismatch"));
+                }
+                ParsedArray {
+                    value: Value::Array(rows),
+                    next_idx: 0,
+                    deindent_next: false,
+                }
+            } else {
+                self.parse_array_from_header_stream(&header, stream, array_base_level)
+                    .map_err(|err| {
+                        self.attach_location_for_slice(line_meta, line_idx, item_content, err)
+                    })?
+            };
+            let mut map = Map::new();
+            self.insert_key_value(&mut map, key, parsed.value)
+                .map_err(|err| {
+                    self.attach_location_for_slice(line_meta, line_idx, item_content, err)
+                })?;
+            let extra = self
+                .parse_object_block_stream(stream, item_level + 1)
+                .map_err(|err| {
+                    self.attach_location_for_slice(line_meta, line_idx, item_content, err)
+                })?;
+            self.merge_objects_owned(&mut map, extra).map_err(|err| {
+                self.attach_location_for_slice(line_meta, line_idx, item_content, err)
+            })?;
+            return Ok(Value::Object(map));
+        }
+
+        if self
+            .split_key_value(item_content)
+            .map_err(|err| self.attach_location_for_slice(line_meta, line_idx, item_content, err))?
+            .is_some()
+        {
+            return self
+                .parse_object_item_from_line_stream(
+                    item_content,
+                    stream,
+                    item_level,
+                    line_meta,
+                    line_idx,
+                )
+                .map_err(|err| {
+                    self.attach_location_for_slice(line_meta, line_idx, item_content, err)
+                });
+        }
+
+        let value = self.parse_value_token(item_content).map_err(|err| {
+            self.attach_location_for_slice(line_meta, line_idx, item_content, err)
+        })?;
+        Ok(value)
+    }
+
+    fn parse_object_item_from_line_stream<R: BufRead>(
+        &mut self,
+        item_content: &str,
+        stream: &mut LineStream<R>,
+        item_level: usize,
+        line_meta: &Line,
+        line_idx: usize,
+    ) -> Result<Value> {
+        let base_level = item_level + 1;
+        let base_ptr = line_meta.content.as_ptr() as usize;
+        let slice_ptr = item_content.as_ptr() as usize;
+        let item_offset =
+            if slice_ptr >= base_ptr && slice_ptr <= base_ptr + line_meta.content.len() {
+                line_meta.content_start + (slice_ptr - base_ptr)
+            } else {
+                line_meta.raw_start
+            };
+        let synthetic = Line {
+            raw_start: item_offset,
+            content_start: item_offset,
+            indent: base_level * self.indent_size,
+            level: base_level,
+            content: item_content.to_string(),
+            is_blank: false,
+        };
+        stream.push_back(StreamLine {
+            idx: line_idx,
+            line: synthetic,
+        });
+        let map = self.parse_object_block_stream(stream, base_level)?;
+        Ok(Value::Object(map))
+    }
 }
 
 pub(super) fn parse_number_token(token: &str) -> Option<serde_json::Number> {
