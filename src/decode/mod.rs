@@ -12,9 +12,9 @@ use smallvec::SmallVec;
 use smol_str::SmolStr;
 
 use crate::arena::ArenaView;
+use crate::error::Location;
 use crate::num::number::format_json_number;
 use crate::text::string::{is_canonical_unquoted_key, is_identifier_segment};
-use crate::error::Location;
 use crate::{DecodeOptions, Error, ExpandPaths, Indent, Result};
 
 #[cfg(feature = "parallel")]
@@ -174,7 +174,12 @@ impl Decoder {
             let header = match self.parse_array_header(first_content) {
                 Ok(header) => header,
                 Err(err) => {
-                    return Err(self.attach_location_for_slice(first_line, first_non_blank_idx, first_content, err));
+                    return Err(self.attach_location_for_slice(
+                        first_line,
+                        first_non_blank_idx,
+                        first_content,
+                        err,
+                    ));
                 }
             };
             if let Some(header) = header {
@@ -189,7 +194,12 @@ impl Decoder {
                     let parsed = self
                         .parse_array_from_header(&header, &lines, first_non_blank_idx + 1, 0)
                         .map_err(|err| {
-                            self.attach_location_for_slice(first_line, first_non_blank_idx, first_content, err)
+                            self.attach_location_for_slice(
+                                first_line,
+                                first_non_blank_idx,
+                                first_content,
+                                err,
+                            )
                         })?;
                     self.ensure_no_trailing_content(&lines, parsed.next_idx)?;
                     return Ok(parsed.value);
@@ -242,7 +252,12 @@ impl Decoder {
         Ok(())
     }
 
-    fn decode_single_line(&mut self, line: &str, line_meta: &Line, line_idx: usize) -> Result<Value> {
+    fn decode_single_line(
+        &mut self,
+        line: &str,
+        line_meta: &Line,
+        line_idx: usize,
+    ) -> Result<Value> {
         if let Some(array) = self
             .parse_array_line(line)
             .map_err(|err| self.attach_location_for_slice(line_meta, line_idx, line, err))?
@@ -256,12 +271,14 @@ impl Decoder {
                     .map_err(|err| self.attach_location_for_slice(line_meta, line_idx, line, err))?
                 {
                     if let Some(key) = header.key.as_ref() {
-                        let value = self
-                            .build_array_value(&header)
-                            .map_err(|err| self.attach_location_for_slice(line_meta, line_idx, line, err))?;
+                        let value = self.build_array_value(&header).map_err(|err| {
+                            self.attach_location_for_slice(line_meta, line_idx, line, err)
+                        })?;
                         let mut map = Map::new();
                         self.insert_key_value(&mut map, key.clone(), value)
-                            .map_err(|err| self.attach_location_for_slice(line_meta, line_idx, line, err))?;
+                            .map_err(|err| {
+                                self.attach_location_for_slice(line_meta, line_idx, line, err)
+                            })?;
                         return Ok(Value::Object(map));
                     }
                 }
@@ -279,8 +296,9 @@ impl Decoder {
                 Value::Object(Map::new())
             } else {
                 let value_trimmed = trim_ascii(value);
-                self.parse_value_token(value)
-                    .map_err(|err| self.attach_location_for_slice(line_meta, line_idx, value_trimmed, err))?
+                self.parse_value_token(value).map_err(|err| {
+                    self.attach_location_for_slice(line_meta, line_idx, value_trimmed, err)
+                })?
             };
             self.insert_key_value(&mut map, key, value)
                 .map_err(|err| self.attach_location_for_slice(line_meta, line_idx, line, err))?;
@@ -944,17 +962,14 @@ impl Decoder {
                 }
             };
             if let Some(header) = header {
-                let key = header
-                    .key
-                    .as_ref()
-                    .ok_or_else(|| {
-                        self.attach_location_for_slice(
-                            line,
-                            idx,
-                            content,
-                            Error::decode("array header missing key in object context"),
-                        )
-                    })?;
+                let key = header.key.as_ref().ok_or_else(|| {
+                    self.attach_location_for_slice(
+                        line,
+                        idx,
+                        content,
+                        Error::decode("array header missing key in object context"),
+                    )
+                })?;
                 let parsed = self
                     .parse_array_from_header(&header, lines, idx + 1, base_level)
                     .map_err(|err| self.attach_location_for_slice(line, idx, content, err))?;
@@ -983,9 +998,9 @@ impl Decoder {
                     idx = next_idx;
                 } else {
                     let value_trimmed = trim_ascii(value);
-                    let value = self
-                        .parse_value_token(value)
-                        .map_err(|err| self.attach_location_for_slice(line, idx, value_trimmed, err))?;
+                    let value = self.parse_value_token(value).map_err(|err| {
+                        self.attach_location_for_slice(line, idx, value_trimmed, err)
+                    })?;
                     self.insert_key_value(&mut map, key, value)
                         .map_err(|err| self.attach_location_for_slice(line, idx, content, err))?;
                     idx += 1;
@@ -1458,9 +1473,9 @@ impl Decoder {
                 ));
             }
             let item_content = content[1..].trim_start();
-            let (item, next_idx) =
-                self.parse_list_item(item_content, lines, idx + 1, item_level)
-                    .map_err(|err| self.attach_location_for_slice(line, idx, item_content, err))?;
+            let (item, next_idx) = self
+                .parse_list_item(item_content, lines, idx + 1, item_level)
+                .map_err(|err| self.attach_location_for_slice(line, idx, item_content, err))?;
             items.push(item);
             idx = next_idx;
         }
@@ -1500,19 +1515,16 @@ impl Decoder {
                     })?;
                 return Ok((parsed.value, parsed.next_idx));
             }
-            let key = header
-                .key
-                .clone()
-                .ok_or_else(|| {
-                    let line_idx = idx.saturating_sub(1);
-                    let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                    self.attach_location_for_slice(
-                        line,
-                        line_idx,
-                        item_content,
-                        Error::decode("array header missing key in object context"),
-                    )
-                })?;
+            let key = header.key.clone().ok_or_else(|| {
+                let line_idx = idx.saturating_sub(1);
+                let line = lines.get(line_idx).unwrap_or(&lines[0]);
+                self.attach_location_for_slice(
+                    line,
+                    line_idx,
+                    item_content,
+                    Error::decode("array header missing key in object context"),
+                )
+            })?;
             let array_base_level = if header.fields.is_some() {
                 if self.validate || self.strict {
                     item_level + 1
@@ -1523,32 +1535,30 @@ impl Decoder {
                 item_level + 1
             };
             let parsed = if self.validate && header.fields.is_some() && header.inline.is_none() {
-                let fields = header
-                    .fields
-                    .as_ref()
-                    .ok_or_else(|| {
-                        let line_idx = idx.saturating_sub(1);
-                        let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                        self.attach_location_for_slice(
-                            line,
-                            line_idx,
-                            item_content,
-                            Error::decode("missing tabular fields"),
-                        )
-                    })?;
-                let (rows, next_idx, _) = self.parse_tabular_block(
-                    lines,
-                    idx,
-                    array_base_level,
-                    fields,
-                    header.delimiter,
-                    header.len,
-                )
-                .map_err(|err| {
+                let fields = header.fields.as_ref().ok_or_else(|| {
                     let line_idx = idx.saturating_sub(1);
                     let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                    self.attach_location_for_slice(line, line_idx, item_content, err)
+                    self.attach_location_for_slice(
+                        line,
+                        line_idx,
+                        item_content,
+                        Error::decode("missing tabular fields"),
+                    )
                 })?;
+                let (rows, next_idx, _) = self
+                    .parse_tabular_block(
+                        lines,
+                        idx,
+                        array_base_level,
+                        fields,
+                        header.delimiter,
+                        header.len,
+                    )
+                    .map_err(|err| {
+                        let line_idx = idx.saturating_sub(1);
+                        let line = lines.get(line_idx).unwrap_or(&lines[0]);
+                        self.attach_location_for_slice(line, line_idx, item_content, err)
+                    })?;
                 if self.strict && rows.len() != header.len {
                     return Err(Error::decode("array length mismatch"));
                 }
@@ -1558,20 +1568,23 @@ impl Decoder {
                     deindent_next: false,
                 }
             } else {
-                self.parse_array_from_header(&header, lines, idx, array_base_level).map_err(|err| {
+                self.parse_array_from_header(&header, lines, idx, array_base_level)
+                    .map_err(|err| {
+                        let line_idx = idx.saturating_sub(1);
+                        let line = lines.get(line_idx).unwrap_or(&lines[0]);
+                        self.attach_location_for_slice(line, line_idx, item_content, err)
+                    })?
+            };
+            let mut map = Map::new();
+            self.insert_key_value(&mut map, key, parsed.value)
+                .map_err(|err| {
                     let line_idx = idx.saturating_sub(1);
                     let line = lines.get(line_idx).unwrap_or(&lines[0]);
                     self.attach_location_for_slice(line, line_idx, item_content, err)
-                })?
-            };
-            let mut map = Map::new();
-            self.insert_key_value(&mut map, key, parsed.value).map_err(|err| {
-                let line_idx = idx.saturating_sub(1);
-                let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                self.attach_location_for_slice(line, line_idx, item_content, err)
-            })?;
-            let (extra, next_idx) =
-                self.parse_object_block(lines, parsed.next_idx, item_level + 1).map_err(|err| {
+                })?;
+            let (extra, next_idx) = self
+                .parse_object_block(lines, parsed.next_idx, item_level + 1)
+                .map_err(|err| {
                     let line_idx = idx.saturating_sub(1);
                     let line = lines.get(line_idx).unwrap_or(&lines[0]);
                     self.attach_location_for_slice(line, line_idx, item_content, err)
