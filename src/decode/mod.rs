@@ -12,10 +12,9 @@ use smallvec::SmallVec;
 use smol_str::SmolStr;
 
 use crate::arena::ArenaView;
-use crate::error::Location;
 use crate::num::number::format_json_number;
 use crate::text::string::{is_canonical_unquoted_key, is_identifier_segment};
-use crate::{DecodeOptions, Error, ExpandPaths, Indent, Result};
+use crate::{DecodeOptions, Error, ExpandPaths, Indent, Location, Result};
 
 #[cfg(feature = "parallel")]
 use crate::arena::NodeKind;
