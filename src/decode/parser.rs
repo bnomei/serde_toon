@@ -6,15 +6,24 @@ use smol_str::SmolStr;
 
 use crate::arena::{ArenaView, Node, NodeData, NodeKind, Pair, Span, StringRef};
 use crate::error::Location;
+use crate::num::number::format_json_number;
 use crate::text::string::is_canonical_unquoted_key;
 use crate::{DecodeOptions, Error, Indent, Result};
 
 use super::scan::{scan_lines, ScanLine, ScanResult};
-use super::{contains_whitespace, parse_number_token, trim_ascii};
+use super::{contains_whitespace, is_numeric_like, parse_number_token, trim_ascii};
 
 type TokenBuf<'a> = SmallVec<[&'a str; 16]>;
 pub fn parse_into<'a>(arena: &mut ArenaView<'a>, options: &DecodeOptions) -> Result<usize> {
-    let mut parser = ArenaParser::new(arena, options);
+    let mut parser = ArenaParser::new(arena, options, false);
+    parser.parse_document()
+}
+
+pub fn parse_into_validate<'a>(
+    arena: &mut ArenaView<'a>,
+    options: &DecodeOptions,
+) -> Result<usize> {
+    let mut parser = ArenaParser::new(arena, options, true);
     parser.parse_document()
 }
 
@@ -27,10 +36,11 @@ struct ArenaParser<'a, 'b> {
     key_lookup: HashMap<SmolStr, usize>,
     null_node: Option<usize>,
     empty_string_node: Option<usize>,
+    validate: bool,
 }
 
 impl<'a, 'b> ArenaParser<'a, 'b> {
-    fn new(arena: &'b mut ArenaView<'a>, options: &DecodeOptions) -> Self {
+    fn new(arena: &'b mut ArenaView<'a>, options: &DecodeOptions, validate: bool) -> Self {
         let Indent::Spaces(indent_size) = options.indent;
         Self {
             arena,
@@ -41,11 +51,17 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
             key_lookup: HashMap::new(),
             null_node: None,
             empty_string_node: None,
+            validate,
         }
     }
 
     fn parse_document(&mut self) -> Result<usize> {
-        let scan = scan_lines(self.arena.input, self.indent_size, self.strict)?;
+        let scan = scan_lines(
+            self.arena.input,
+            self.indent_size,
+            self.strict,
+            self.validate,
+        )?;
         self.reserve_from_scan(&scan);
         if scan.non_blank == 0 {
             return Ok(self.push_object(&[]));
@@ -78,6 +94,13 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
         }
 
         if scan.non_blank == 1 && first_line.indent == 0 {
+            if self.validate && self.reject_root_unquoted_string(first_content) {
+                return Err(self.attach_location_for_slice(
+                    &scan,
+                    first_content,
+                    Error::decode("root string must be quoted"),
+                ));
+            }
             return self
                 .decode_single_line(first_content, &scan)
                 .map_err(|err| self.attach_location_for_slice(&scan, first_content, err));
@@ -515,7 +538,7 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                 )
             })?;
             let array_base_level = if header.fields.is_some() {
-                if self.strict {
+                if self.strict || self.validate {
                     item_level + 1
                 } else {
                     item_level
@@ -729,7 +752,25 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
             "false" => return Ok(self.push_bool(false)),
             _ => {}
         }
-        if parse_number_token(token).is_some() {
+        let number = parse_number_token(token);
+        if self.validate {
+            match token {
+                "NaN" | "Infinity" | "-Infinity" | "+Infinity" => {
+                    return Err(Error::decode("non-finite numbers must be null"));
+                }
+                _ => {}
+            }
+            if is_numeric_like(token) {
+                let number = number
+                    .as_ref()
+                    .ok_or_else(|| Error::decode("invalid number"))?;
+                let canonical = format_json_number(number);
+                if canonical != token {
+                    return Err(Error::decode("non-canonical number"));
+                }
+            }
+        }
+        if number.is_some() {
             let span = self.span_for(token);
             return Ok(self.push_number(span));
         }
@@ -1327,6 +1368,19 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
         let id = self.push_string(StringRef::Owned(String::new()));
         self.empty_string_node = Some(id);
         id
+    }
+
+    fn reject_root_unquoted_string(&self, token: &str) -> bool {
+        if token.starts_with('"') {
+            return false;
+        }
+        if matches!(token, "true" | "false" | "null") {
+            return false;
+        }
+        if is_numeric_like(token) {
+            return false;
+        }
+        token.is_ascii() && is_canonical_unquoted_key(token)
     }
 }
 
