@@ -41,6 +41,11 @@ fn error_locations_value_decoder() {
     let offset = input.find("extra").expect("extra");
     let err = serde_toon::decode_to_value(input).unwrap_err();
     assert_location(input, offset, err);
+
+    let input = "items[1]:\n  - name: \"bad\\q\"";
+    let offset = input.find('"').expect("quote");
+    let err = serde_toon::decode_to_value(input).unwrap_err();
+    assert_location(input, offset, err);
 }
 
 #[test]

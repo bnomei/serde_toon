@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minor: Added content-based CLI auto-detection for unknown extensions.
 - Minor: Clarified `toon!` macro usage in README.
 - Minor: Streamed CLI decode input and documented non-strict tab handling.
+- Minor: Value decoder now borrows line slices to avoid per-line allocation.
 
 ## [0.1.1] - 2026-01-20
 - Added a value-only fast path for tabular decoding and routed `decode_to_value` through a direct Value decoder.
