@@ -78,3 +78,5 @@ jobs:
         run: cargo build --examples --verbose
       - name: Run tests
         run: cargo test --verbose --all-targets
+      - name: Run tests (parallel)
+        run: cargo test --verbose --all-targets --features parallel
