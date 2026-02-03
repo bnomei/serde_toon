@@ -57,6 +57,14 @@ assert_eq!(value, serde_json::json!({"name": "Ada Lovelace"}));
 # Ok::<(), serde_toon::Error>(())
 ```
 
+### `toon!` Macro Forms
+
+The `toon!` macro has three readable entry points:
+
+- `toon!(encode: value)` returns a TOON string.
+- `toon!(encode_json: json_str)` returns a TOON string from JSON input.
+- `toon!(input_str)` auto-detects JSON vs TOON and returns a `serde_json::Value`.
+
 ## Example
 
 Encode to TOON:
