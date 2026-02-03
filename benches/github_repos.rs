@@ -33,26 +33,26 @@ fn bench_github_repos(c: &mut Criterion) {
     let json = serde_json::to_string(&repos).expect("json encode failed");
 
     let mut group = c.benchmark_group("github_repos");
-    group.bench_function("encode_toon", |b| {
+    group.bench_function("github_repos/encode_toon", |b| {
         b.iter(|| {
             let encoded = serde_toon::to_string(black_box(&repos)).expect("encode failed");
             black_box(encoded);
         });
     });
-    group.bench_function("decode_toon", |b| {
+    group.bench_function("github_repos/decode_toon", |b| {
         b.iter(|| {
             let decoded: Vec<GitHubRepo> =
                 serde_toon::from_str(black_box(&toon)).expect("decode failed");
             black_box(decoded);
         });
     });
-    group.bench_function("encode_json", |b| {
+    group.bench_function("github_repos/encode_json", |b| {
         b.iter(|| {
             let encoded = serde_json::to_string(black_box(&repos)).expect("json encode failed");
             black_box(encoded);
         });
     });
-    group.bench_function("decode_json", |b| {
+    group.bench_function("github_repos/decode_json", |b| {
         b.iter(|| {
             let decoded: Vec<GitHubRepo> =
                 serde_json::from_str(black_box(&json)).expect("json decode failed");

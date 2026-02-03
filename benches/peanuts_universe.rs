@@ -101,26 +101,26 @@ fn bench_peanuts_universe(c: &mut Criterion) {
     let json = serde_json::to_string(&dataset).expect("json encode failed");
 
     let mut group = c.benchmark_group("peanuts_universe");
-    group.bench_function("encode_toon", |b| {
+    group.bench_function("peanuts_universe/encode_toon", |b| {
         b.iter(|| {
             let encoded = serde_toon::to_string(black_box(&dataset)).expect("encode failed");
             black_box(encoded);
         });
     });
-    group.bench_function("decode_toon", |b| {
+    group.bench_function("peanuts_universe/decode_toon", |b| {
         b.iter(|| {
             let decoded: UniverseDataset =
                 serde_toon::from_str(black_box(&toon)).expect("decode failed");
             black_box(decoded);
         });
     });
-    group.bench_function("encode_json", |b| {
+    group.bench_function("peanuts_universe/encode_json", |b| {
         b.iter(|| {
             let encoded = serde_json::to_string(black_box(&dataset)).expect("json encode failed");
             black_box(encoded);
         });
     });
-    group.bench_function("decode_json", |b| {
+    group.bench_function("peanuts_universe/decode_json", |b| {
         b.iter(|| {
             let decoded: UniverseDataset =
                 serde_json::from_str(black_box(&json)).expect("json decode failed");
