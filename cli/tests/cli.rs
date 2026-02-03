@@ -40,6 +40,49 @@ fn decode_auto_detects_toon() {
 }
 
 #[test]
+fn auto_detects_json_with_unknown_extension() {
+    let dir = TempDir::new().expect("tempdir");
+    let input = dir.path().join("input.data");
+    write_file(&input, r#"{"name":"Ada","age":37}"#);
+
+    cargo_bin_cmd!("toon")
+        .arg(&input)
+        .assert()
+        .success()
+        .stdout("name: Ada\nage: 37");
+}
+
+#[test]
+fn auto_detects_toon_with_unknown_extension() {
+    let dir = TempDir::new().expect("tempdir");
+    let input = dir.path().join("input.data");
+    write_file(&input, "name: Ada\nage: 37");
+
+    let expected = "{\n  \"name\": \"Ada\",\n  \"age\": 37\n}";
+
+    cargo_bin_cmd!("toon")
+        .arg(&input)
+        .assert()
+        .success()
+        .stdout(expected);
+}
+
+#[test]
+fn auto_detect_is_uncertain_for_ambiguous_input() {
+    let dir = TempDir::new().expect("tempdir");
+    let input = dir.path().join("input.data");
+    write_file(&input, "{}");
+
+    cargo_bin_cmd!("toon")
+        .arg(&input)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "unable to auto-detect mode; use --encode or --decode",
+        ));
+}
+
+#[test]
 fn decode_from_stdin_streams() {
     let input = "items[3]{id,name}:\n  1,Alice\n  2,Bob\n  3,Cara";
     let expected = "{\n  \"items\": [\n    {\n      \"id\": 1,\n      \"name\": \"Alice\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Bob\"\n    },\n    {\n      \"id\": 3,\n      \"name\": \"Cara\"\n    }\n  ]\n}";

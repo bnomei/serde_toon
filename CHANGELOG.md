@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minor: Streamed encoder output to writers without buffering the full document.
 - Minor: Streamed reader decoding without buffering the full input.
 - Minor: Added auto-detect heuristics for JSON vs TOON decoding.
+- Minor: Added content-based CLI auto-detection for unknown extensions.
 - Minor: Clarified `toon!` macro usage in README.
 - Minor: Streamed CLI decode input and documented non-strict tab handling.
 
