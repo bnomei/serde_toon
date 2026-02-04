@@ -29,9 +29,11 @@ const PRECOMPUTE_SAMPLE_ITEMS: usize = 4;
 const PRECOMPUTE_MAX_ROWS: usize = 128;
 const PRECOMPUTE_MAX_STRINGS: usize = 2048;
 const TABULAR_STRING_CACHE_MAX_ITEMS: usize = 512;
+const SCALAR_STRING_CACHE_MAX_ITEMS: usize = 256;
 const NUMBER_CACHE_MAX_LEN: usize = 32;
 const TABULAR_NUMBER_CACHE_MAX_ITEMS: usize = 512;
 const TABULAR_PREFIXED_CACHE_MAX_ITEMS: usize = 512;
+const SCALAR_NUMBER_CACHE_MAX_ITEMS: usize = 256;
 #[cfg(feature = "parallel")]
 const PARALLEL_TABULAR_MIN_ROWS: usize = 256;
 #[cfg(feature = "parallel")]
@@ -274,6 +276,8 @@ struct Encoder<O: OutputSink> {
     delimiter_stack: Vec<char>,
     string_cache: HashMap<char, HashMap<SmolStr, (bool, bool)>>,
     key_cache: HashMap<SmolStr, String>,
+    scalar_string_cache: HashMap<char, HashMap<SmolStr, Vec<u8>>>,
+    scalar_number_cache: HashMap<NumberKey, Vec<u8>>,
     tabular_string_cache: HashMap<char, HashMap<SmolStr, Vec<u8>>>,
     tabular_prefixed_string_cache: HashMap<char, HashMap<SmolStr, Vec<u8>>>,
     tabular_number_cache: HashMap<NumberKey, Vec<u8>>,
@@ -308,6 +312,8 @@ impl<O: OutputSink> Encoder<O> {
             delimiter_stack: Vec::new(),
             string_cache: HashMap::with_capacity(4),
             key_cache: HashMap::with_capacity(KEY_CACHE_MAX_ITEMS),
+            scalar_string_cache: HashMap::with_capacity(4),
+            scalar_number_cache: HashMap::with_capacity(SCALAR_NUMBER_CACHE_MAX_ITEMS),
             tabular_string_cache: HashMap::with_capacity(4),
             tabular_prefixed_string_cache: HashMap::with_capacity(4),
             tabular_number_cache: HashMap::with_capacity(TABULAR_NUMBER_CACHE_MAX_ITEMS),
@@ -789,10 +795,48 @@ impl<O: OutputSink> Encoder<O> {
                 Ok(())
             }
             Value::Number(number) => {
+                if let Some(key) = number_cache_key(number) {
+                    if let Some(encoded) = self.scalar_number_cache.get(&key) {
+                        buf.extend_bytes(encoded);
+                        return Ok(());
+                    }
+                    let start = buf.len();
+                    append_json_number_bytes(buf, number);
+                    let len = buf.len() - start;
+                    if len <= NUMBER_CACHE_MAX_LEN
+                        && self.scalar_number_cache.len() < SCALAR_NUMBER_CACHE_MAX_ITEMS
+                    {
+                        self.scalar_number_cache
+                            .insert(key, buf.as_slice()[start..].to_vec());
+                    }
+                    return Ok(());
+                }
                 append_json_number_bytes(buf, number);
                 Ok(())
             }
             Value::String(value) => {
+                if value.len() <= STRING_CACHE_MAX_LEN {
+                    let cached = self
+                        .scalar_string_cache
+                        .get(&delimiter)
+                        .and_then(|cache| cache.get(value.as_str()));
+                    if let Some(encoded) = cached {
+                        buf.extend_bytes(encoded);
+                        return Ok(());
+                    }
+                    let start = buf.len();
+                    self.append_string(buf, value, delimiter);
+                    let cache = self
+                        .scalar_string_cache
+                        .entry(delimiter)
+                        .or_insert_with(|| {
+                            HashMap::with_capacity(SCALAR_STRING_CACHE_MAX_ITEMS)
+                        });
+                    if cache.len() < SCALAR_STRING_CACHE_MAX_ITEMS {
+                        cache.insert(SmolStr::new(value), buf.as_slice()[start..].to_vec());
+                    }
+                    return Ok(());
+                }
                 self.append_string(buf, value, delimiter);
                 Ok(())
             }
