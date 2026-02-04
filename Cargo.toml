@@ -77,3 +77,8 @@ harness = false
 name = "peanuts_jsonld"
 path = "benches/peanuts_jsonld.rs"
 harness = false
+
+[[bench]]
+name = "reader_vs_str"
+path = "benches/reader_vs_str.rs"
+harness = false
