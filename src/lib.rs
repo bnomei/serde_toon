@@ -241,10 +241,23 @@ pub fn from_slice_with_options<T: DeserializeOwned>(
     decode::from_slice(input, options)
 }
 
+/// Decode a value from a reader by buffering the entire input into memory.
+///
+/// `from_reader` reads all bytes from `reader` into a `Vec<u8>` before decoding, so
+/// large or untrusted inputs can exhaust memory. For incremental, bounded-memory
+/// processing, prefer [`from_reader_streaming`] or
+/// [`from_reader_streaming_with_options`]. See [`DecodeOptions`] for alternate
+/// decoding behavior.
 pub fn from_reader<T: DeserializeOwned, R: Read>(reader: R) -> Result<T> {
     from_reader_with_options(reader, &DecodeOptions::default())
 }
 
+/// Decode a value from a reader with explicit [`DecodeOptions`].
+///
+/// This buffers the entire input into memory, so large or untrusted inputs can
+/// exhaust memory. If you need incremental, bounded-memory processing, prefer
+/// [`from_reader_streaming_with_options`] (or [`from_reader_streaming`] with
+/// defaults).
 pub fn from_reader_with_options<T: DeserializeOwned, R: Read>(
     reader: R,
     options: &DecodeOptions,
