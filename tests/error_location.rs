@@ -25,17 +25,29 @@ fn assert_location(input: &str, offset: usize, err: serde_toon::Error) {
     assert_eq!(loc.column, column);
 }
 
+fn assert_streaming_location(input: &str, offset: usize) {
+    let cursor = std::io::Cursor::new(input.as_bytes());
+    let err = serde_toon::from_reader_streaming_with_options::<serde_json::Value, _>(
+        cursor,
+        &serde_toon::DecodeOptions::new(),
+    )
+    .unwrap_err();
+    assert_location(input, offset, err);
+}
+
 #[test]
 fn error_locations_value_decoder() {
     let input = "name: \"unterminated";
     let offset = input.find('"').expect("quote");
     let err = serde_toon::decode_to_value(input).unwrap_err();
     assert_location(input, offset, err);
+    assert_streaming_location(input, offset);
 
     let input = "a:\n   b: 1";
     let offset = input.find('\n').expect("newline") + 1;
     let err = serde_toon::decode_to_value(input).unwrap_err();
     assert_location(input, offset, err);
+    assert_streaming_location(input, offset);
 
     let input = "[1]: 1\nextra: 2";
     let offset = input.find("extra").expect("extra");
@@ -64,4 +76,19 @@ fn error_locations_arena_decoder() {
     let offset = input.find("extra").expect("extra");
     let err = serde_toon::from_str::<Value>(input).unwrap_err();
     assert_location(input, offset, err);
+}
+
+#[test]
+fn error_locations_streaming_decoder() {
+    let input = "name: \"unterminated";
+    let offset = input.find('"').expect("quote");
+    assert_streaming_location(input, offset);
+
+    let input = "a:\n   b: 1";
+    let offset = input.find('\n').expect("newline") + 1;
+    assert_streaming_location(input, offset);
+
+    let input = "[1]: 1\nextra: 2";
+    let offset = input.find("extra").expect("extra");
+    assert_streaming_location(input, offset);
 }
