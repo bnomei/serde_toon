@@ -105,9 +105,19 @@ pub fn from_slice<T: DeserializeOwned>(input: &[u8], options: &DecodeOptions) ->
     from_str(text, options)
 }
 
+/// Decode a value from a reader by buffering the entire input into memory.
+///
+/// This reads all bytes from `reader` into a `Vec<u8>` before decoding, so large or
+/// untrusted inputs can exhaust memory. Prefer [`from_reader_streaming`] for
+/// incremental, bounded-memory processing. For alternate decoding behavior, see
+/// [`DecodeOptions`].
 pub fn from_reader<T: DeserializeOwned, R: Read>(reader: R, options: &DecodeOptions) -> Result<T> {
-    let reader = BufReader::new(reader);
-    from_reader_streaming(reader, options)
+    let mut reader = BufReader::new(reader);
+    let mut buffer = Vec::new();
+    reader
+        .read_to_end(&mut buffer)
+        .map_err(|err| Error::decode_with_source(format!("read failed: {err}"), err))?;
+    from_slice(&buffer, options)
 }
 
 pub fn from_reader_streaming<T: DeserializeOwned, R: BufRead>(
