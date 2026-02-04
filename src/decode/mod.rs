@@ -3,6 +3,7 @@ mod pool;
 mod scan;
 mod serde;
 
+use std::borrow::Cow;
 use std::collections::VecDeque;
 use std::io::{BufRead, BufReader, Read};
 
@@ -228,7 +229,7 @@ impl Decoder {
     fn decode_document(&mut self, input: &str) -> Result<Value> {
         let lines = self.collect_lines(input)?;
 
-        let non_blank: Vec<&Line> = lines.iter().filter(|line| !line.is_blank).collect();
+        let non_blank: Vec<&Line<'_>> = lines.iter().filter(|line| !line.is_blank).collect();
 
         if non_blank.is_empty() {
             return Ok(Value::Object(Map::new()));
@@ -303,7 +304,7 @@ impl Decoder {
         Ok(Value::Object(map))
     }
 
-    fn ensure_no_trailing_content(&self, lines: &[Line], start_idx: usize) -> Result<()> {
+    fn ensure_no_trailing_content(&self, lines: &[Line<'_>], start_idx: usize) -> Result<()> {
         if let Some((idx, _)) = lines
             .iter()
             .enumerate()
@@ -322,7 +323,7 @@ impl Decoder {
     fn decode_single_line(
         &mut self,
         line: &str,
-        line_meta: &Line,
+        line_meta: &Line<'_>,
         line_idx: usize,
     ) -> Result<Value> {
         if let Some(array) = self
@@ -820,7 +821,7 @@ impl Decoder {
         }))
     }
 
-    fn collect_lines(&self, input: &str) -> Result<Vec<Line>> {
+    fn collect_lines<'a>(&self, input: &'a str) -> Result<Vec<Line<'a>>> {
         if self.indent_size == 0 {
             return Err(Error::decode("indent size must be greater than zero"));
         }
@@ -844,7 +845,7 @@ impl Decoder {
             }
             let line_idx = lines.len();
             let line = &input[start..end];
-            let built = self.build_line(line, start).map_err(|err| {
+            let built = self.build_line_borrowed(line, start).map_err(|err| {
                 err.with_location(Location {
                     offset: start,
                     line: line_idx + 1,
@@ -867,7 +868,7 @@ impl Decoder {
         }
         let line_idx = lines.len();
         let line = &input[start..end];
-        let built = self.build_line(line, start).map_err(|err| {
+        let built = self.build_line_borrowed(line, start).map_err(|err| {
             err.with_location(Location {
                 offset: start,
                 line: line_idx + 1,
@@ -879,16 +880,55 @@ impl Decoder {
         Ok(lines)
     }
 
-    fn build_line(&self, line: &str, raw_start: usize) -> Result<Line> {
-        if is_blank_line(line) {
+    fn build_line_borrowed<'a>(&self, line: &'a str, raw_start: usize) -> Result<Line<'a>> {
+        let Some((indent_columns, indent_chars, level)) = self.build_line_parts(line)? else {
             return Ok(Line {
                 raw_start,
                 content_start: raw_start,
                 indent: 0,
                 level: 0,
-                content: String::new(),
+                content: Cow::Borrowed(""),
                 is_blank: true,
             });
+        };
+        let content_start = raw_start + indent_chars;
+        let content = Cow::Borrowed(&line[indent_chars..]);
+        Ok(Line {
+            raw_start,
+            content_start,
+            indent: indent_columns,
+            level,
+            content,
+            is_blank: false,
+        })
+    }
+
+    fn build_line_owned(&self, line: &str, raw_start: usize) -> Result<Line<'static>> {
+        let Some((indent_columns, indent_chars, level)) = self.build_line_parts(line)? else {
+            return Ok(Line {
+                raw_start,
+                content_start: raw_start,
+                indent: 0,
+                level: 0,
+                content: Cow::Borrowed(""),
+                is_blank: true,
+            });
+        };
+        let content_start = raw_start + indent_chars;
+        let content = Cow::Owned(line[indent_chars..].to_string());
+        Ok(Line {
+            raw_start,
+            content_start,
+            indent: indent_columns,
+            level,
+            content,
+            is_blank: false,
+        })
+    }
+
+    fn build_line_parts(&self, line: &str) -> Result<Option<(usize, usize, usize)>> {
+        if is_blank_line(line) {
+            return Ok(None);
         }
         let mut indent_columns: usize = 0;
         let mut indent_chars: usize = 0;
@@ -912,19 +952,10 @@ impl Decoder {
             return Err(Error::decode("invalid indentation"));
         }
         let level = indent_columns / self.indent_size;
-        let content_start = raw_start + indent_chars;
-        let content = line[indent_chars..].to_string();
-        Ok(Line {
-            raw_start,
-            content_start,
-            indent: indent_columns,
-            level,
-            content,
-            is_blank: false,
-        })
+        Ok(Some((indent_columns, indent_chars, level)))
     }
 
-    fn location_for_line(&self, lines: &[Line], line_idx: usize) -> Option<Location> {
+    fn location_for_line(&self, lines: &[Line<'_>], line_idx: usize) -> Option<Location> {
         let line = lines.get(line_idx)?;
         let offset = line.raw_start;
         Some(Location {
@@ -934,7 +965,12 @@ impl Decoder {
         })
     }
 
-    fn location_for_slice(&self, line: &Line, line_idx: usize, slice: &str) -> Option<Location> {
+    fn location_for_slice(
+        &self,
+        line: &Line<'_>,
+        line_idx: usize,
+        slice: &str,
+    ) -> Option<Location> {
         let base = line.content.as_ptr() as usize;
         let slice_ptr = slice.as_ptr() as usize;
         if slice_ptr < base || slice_ptr > base + line.content.len() {
@@ -949,7 +985,7 @@ impl Decoder {
         })
     }
 
-    fn attach_location_for_line(&self, lines: &[Line], line_idx: usize, err: Error) -> Error {
+    fn attach_location_for_line(&self, lines: &[Line<'_>], line_idx: usize, err: Error) -> Error {
         if err.location.is_some() {
             return err;
         }
@@ -961,7 +997,7 @@ impl Decoder {
 
     fn attach_location_for_slice(
         &self,
-        line: &Line,
+        line: &Line<'_>,
         line_idx: usize,
         slice: &str,
         err: Error,
@@ -982,7 +1018,7 @@ impl Decoder {
         }
     }
 
-    fn decode_object_lines(&mut self, lines: &[Line]) -> Result<Map<String, Value>> {
+    fn decode_object_lines(&mut self, lines: &[Line<'_>]) -> Result<Map<String, Value>> {
         let (map, idx) = self.parse_object_block(lines, 0, 0)?;
         if idx < lines.len() {
             return Err(self.attach_location_for_line(
@@ -996,7 +1032,7 @@ impl Decoder {
 
     fn parse_object_block(
         &mut self,
-        lines: &[Line],
+        lines: &[Line<'_>],
         mut idx: usize,
         base_level: usize,
     ) -> Result<(Map<String, Value>, usize)> {
@@ -1096,7 +1132,7 @@ impl Decoder {
     fn parse_array_from_header(
         &mut self,
         header: &HeaderLine,
-        lines: &[Line],
+        lines: &[Line<'_>],
         idx: usize,
         base_level: usize,
     ) -> Result<ParsedArray> {
@@ -1161,7 +1197,7 @@ impl Decoder {
 
     fn parse_tabular_block(
         &self,
-        lines: &[Line],
+        lines: &[Line<'_>],
         mut idx: usize,
         base_level: usize,
         fields: &[KeyToken],
@@ -1496,7 +1532,7 @@ impl Decoder {
 
     fn parse_list_block(
         &mut self,
-        lines: &[Line],
+        lines: &[Line<'_>],
         mut idx: usize,
         item_level: usize,
         expected_len: usize,
@@ -1555,7 +1591,7 @@ impl Decoder {
     fn parse_list_item(
         &mut self,
         item_content: &str,
-        lines: &[Line],
+        lines: &[Line<'_>],
         idx: usize,
         item_level: usize,
     ) -> Result<(Value, usize)> {
@@ -1698,10 +1734,10 @@ impl Decoder {
         Ok((value, idx))
     }
 
-    fn parse_object_item_from_line(
+    fn parse_object_item_from_line<'a>(
         &mut self,
-        first_content: &str,
-        lines: &[Line],
+        first_content: &'a str,
+        lines: &'a [Line<'a>],
         idx: usize,
         item_level: usize,
         item_offset: usize,
@@ -1713,7 +1749,7 @@ impl Decoder {
             content_start: item_offset,
             indent: base_level * self.indent_size,
             level: base_level,
-            content: first_content.to_string(),
+            content: Cow::Borrowed(first_content),
             is_blank: false,
         });
         combined.extend_from_slice(&lines[idx..]);
@@ -1744,18 +1780,18 @@ struct ParsedArray {
 }
 
 #[derive(Clone)]
-struct Line {
+struct Line<'a> {
     raw_start: usize,
     content_start: usize,
     indent: usize,
     level: usize,
-    content: String,
+    content: Cow<'a, str>,
     is_blank: bool,
 }
 
 struct StreamLine {
     idx: usize,
-    line: Line,
+    line: Line<'static>,
 }
 
 struct LineStream<R: BufRead> {
@@ -1815,7 +1851,7 @@ impl<R: BufRead> LineStream<R> {
         let line_idx = self.line_idx;
         self.offset += raw_len;
         self.line_idx += 1;
-        let built = decoder.build_line(line, raw_start).map_err(|err| {
+        let built = decoder.build_line_owned(line, raw_start).map_err(|err| {
             err.with_location(Location {
                 offset: raw_start,
                 line: line_idx + 1,
@@ -1959,7 +1995,7 @@ impl Decoder {
         Ok(Value::Object(map))
     }
 
-    fn attach_location_for_line_meta(&self, line_idx: usize, line: &Line, err: Error) -> Error {
+    fn attach_location_for_line_meta(&self, line_idx: usize, line: &Line<'_>, err: Error) -> Error {
         if err.location.is_some() {
             return err;
         }
@@ -2333,7 +2369,7 @@ impl Decoder {
         item_content: &str,
         stream: &mut LineStream<R>,
         item_level: usize,
-        line_meta: &Line,
+        line_meta: &Line<'_>,
         line_idx: usize,
     ) -> Result<Value> {
         if item_content.is_empty() {
@@ -2451,7 +2487,7 @@ impl Decoder {
         item_content: &str,
         stream: &mut LineStream<R>,
         item_level: usize,
-        line_meta: &Line,
+        line_meta: &Line<'_>,
         line_idx: usize,
     ) -> Result<Value> {
         let base_level = item_level + 1;
@@ -2468,7 +2504,7 @@ impl Decoder {
             content_start: item_offset,
             indent: base_level * self.indent_size,
             level: base_level,
-            content: item_content.to_string(),
+            content: Cow::Owned(item_content.to_string()),
             is_blank: false,
         };
         stream.push_back(StreamLine {
