@@ -829,9 +829,7 @@ impl<O: OutputSink> Encoder<O> {
                     let cache = self
                         .scalar_string_cache
                         .entry(delimiter)
-                        .or_insert_with(|| {
-                            HashMap::with_capacity(SCALAR_STRING_CACHE_MAX_ITEMS)
-                        });
+                        .or_insert_with(|| HashMap::with_capacity(SCALAR_STRING_CACHE_MAX_ITEMS));
                     if cache.len() < SCALAR_STRING_CACHE_MAX_ITEMS {
                         cache.insert(SmolStr::new(value), buf.as_slice()[start..].to_vec());
                     }
