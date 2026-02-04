@@ -10,12 +10,30 @@ fn auto_detect_prefers_json_for_json_input() {
 }
 
 #[test]
+fn auto_detect_prefers_json_for_json_array_input() {
+    let input = "[1,2,3]";
+    let value =
+        serde_toon::decode_to_value_auto_with_options(input, &serde_toon::DecodeOptions::default())
+            .expect("decode_to_value_auto_with_options");
+    assert_eq!(value, json!([1, 2, 3]));
+}
+
+#[test]
 fn auto_detect_prefers_toon_for_toon_input() {
     let input = "name: Ada\nage: 37";
     let value =
         serde_toon::decode_to_value_auto_with_options(input, &serde_toon::DecodeOptions::default())
             .expect("decode_to_value_auto_with_options");
     assert_eq!(value, json!({"name": "Ada", "age": 37}));
+}
+
+#[test]
+fn auto_detect_prefers_toon_for_quoted_keys() {
+    let input = "\"@id\": \"abc\"\nname: Ada";
+    let value =
+        serde_toon::decode_to_value_auto_with_options(input, &serde_toon::DecodeOptions::default())
+            .expect("decode_to_value_auto_with_options");
+    assert_eq!(value, json!({"@id": "abc", "name": "Ada"}));
 }
 
 #[test]
