@@ -2,7 +2,6 @@ use std::fs;
 use std::path::Path;
 
 use assert_cmd::cargo::cargo_bin_cmd;
-use assert_cmd::prelude::*;
 use predicates::prelude::PredicateBooleanExt;
 use predicates::str::contains;
 use tempfile::TempDir;
@@ -65,6 +64,19 @@ fn auto_detects_toon_with_unknown_extension() {
         .assert()
         .success()
         .stdout(expected);
+}
+
+#[test]
+fn auto_detects_json_array_with_unknown_extension() {
+    let dir = TempDir::new().expect("tempdir");
+    let input = dir.path().join("input.data");
+    write_file(&input, "[1,2]");
+
+    cargo_bin_cmd!("toon")
+        .arg(&input)
+        .assert()
+        .success()
+        .stdout("[2]: 1,2");
 }
 
 #[test]

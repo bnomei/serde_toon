@@ -272,7 +272,7 @@ fn decode_value_from_reader(
 }
 
 fn decode_value_from_str(args: &Args, input: &str) -> Result<Value, Box<dyn Error>> {
-    let cursor = Cursor::new(input.as_bytes());
+    let cursor = Cursor::new(input.as_bytes().to_vec());
     let reader = Box::new(BufReader::new(cursor));
     decode_value_from_reader(args, reader)
 }
@@ -288,14 +288,19 @@ fn detect_auto_kind(input: &str) -> AutoDetectKind {
     let first_non_ws = input.chars().find(|ch| !ch.is_whitespace());
     let toon_key_pos = find_toon_key_token(input);
     if let Some(ch) = first_non_ws {
-        if ch == '{' || ch == '[' {
+        if ch == '[' {
+            if looks_like_toon_header(input) {
+                return AutoDetectKind::Toon;
+            }
+            return AutoDetectKind::Json;
+        }
+        if ch == '{' {
             if let Some(json_key_pos) = find_json_quoted_key(input) {
                 if toon_key_pos.is_none() || Some(json_key_pos) < toon_key_pos {
                     return AutoDetectKind::Json;
                 }
             }
-        }
-        if ch.is_ascii_alphabetic() || ch == '_' {
+        } else if ch.is_ascii_alphabetic() || ch == '_' {
             return AutoDetectKind::Toon;
         }
     } else {
@@ -305,6 +310,30 @@ fn detect_auto_kind(input: &str) -> AutoDetectKind {
         return AutoDetectKind::Toon;
     }
     AutoDetectKind::Uncertain
+}
+
+fn looks_like_toon_header(input: &str) -> bool {
+    let Some(line) = input.lines().next() else {
+        return false;
+    };
+    let line = line.trim_start();
+    if !line.starts_with('[') {
+        return false;
+    }
+    let Some(close_idx) = line.find(']') else {
+        return false;
+    };
+    let tail = line[close_idx + 1..].trim_start();
+    if tail.starts_with(':') {
+        return true;
+    }
+    if tail.starts_with('{') {
+        if let Some(end_brace) = tail.find('}') {
+            let after_brace = tail[end_brace + 1..].trim_start();
+            return after_brace.starts_with(':');
+        }
+    }
+    false
 }
 
 fn find_json_quoted_key(input: &str) -> Option<usize> {
