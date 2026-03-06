@@ -389,6 +389,14 @@ JSON-LD graph uses `@` keys and a large `@graph` list; TOON quotes the `@` keys 
     sameAs[1]: "https://en.wikipedia.org/wiki/Woodstock_(Peanuts)"
 ```
 
+## Local Pre-commit
+
+```bash
+prek validate-config prek.toml
+prek run --all-files
+prek install
+```
+
 ## License
 
 MIT. See `LICENSE`.
