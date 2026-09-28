@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
+
+step() {
+  printf '\n==> %s\n' "$1"
+}
+
+step "Install the stable Rust toolchain"
+if ! command -v rustup >/dev/null 2>&1; then
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
+    sh -s -- -y --profile minimal --default-toolchain none
+fi
+
+# shellcheck disable=SC1091
+source "$HOME/.cargo/env"
+rustup toolchain install stable --profile minimal --component rustfmt,clippy
+rustup default stable
+
+step "Install the repository hook runner"
+uv tool install --upgrade prek
+
+step "Fetch and build locked workspace dependencies"
+cargo fetch --locked
+cargo build --workspace --all-targets --all-features --locked
+
+step "Orb setup complete"

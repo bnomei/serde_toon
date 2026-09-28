@@ -253,10 +253,7 @@ fn build_decode_options(args: &Args) -> DecodeOptions {
         .with_expand_paths(args.expand_paths.into())
 }
 
-fn decode_value_from_reader(
-    args: &Args,
-    reader: Box<dyn BufRead>,
-) -> Result<Value, Box<dyn Error>> {
+fn decode_value_from_reader<R: BufRead>(args: &Args, reader: R) -> Result<Value, Box<dyn Error>> {
     let options = build_decode_options(args);
     if args.strict {
         Ok(serde_toon::from_reader_streaming_with_options(
