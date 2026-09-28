@@ -1,9 +1,6 @@
 use rstest::rstest;
 use serde_json::{json, Value};
-use serde_toon::{
-    DecodeOptions, Delimiter, EncodeOptions, ExpandPaths as ToonExpandPaths, Indent,
-    KeyFolding as ToonKeyFolding,
-};
+use serde_toon::{DecodeOptions, Delimiter, EncodeOptions, Indent};
 
 #[allow(dead_code)]
 #[derive(Clone, Debug, Default)]
@@ -95,10 +92,6 @@ fn map_encode_options(options: &SpecOptions) -> EncodeOptions {
     if let Some(indent) = options.indent {
         encoded.indent = Indent::Spaces(indent);
     }
-    if let Some(KeyFolding::Safe) = options.key_folding {
-        encoded.key_folding = ToonKeyFolding::Safe;
-    }
-    encoded.flatten_depth = options.flatten_depth;
     encoded
 }
 
@@ -109,9 +102,6 @@ fn map_decode_options(options: &SpecOptions) -> DecodeOptions {
     }
     if let Some(strict) = options.strict {
         decoded.strict = strict;
-    }
-    if let Some(ExpandPaths::Safe) = options.expand_paths {
-        decoded.expand_paths = ToonExpandPaths::Safe;
     }
     decoded
 }
@@ -170,8 +160,8 @@ fn spec02_data_model_decode(
 
 #[rstest]
 #[case("items[1]: 1", true)]
-#[case("n: 05", false)]
-#[case("n: 1e3", false)]
+#[case("n: 05", true)]
+#[case("n: 1e3", true)]
 fn spec02_data_model_validate(#[case] input: &str, #[case] valid: bool) {
     let result = Spec02Adapter::validate(input);
     if valid {

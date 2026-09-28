@@ -149,36 +149,6 @@ fn encode_with_stats_writes_output_and_stdout() {
 }
 
 #[test]
-fn key_folding_and_flatten_depth() {
-    let dir = TempDir::new().expect("tempdir");
-    let input = dir.path().join("input.json");
-    write_file(&input, r#"{"data":{"meta":{"items":[1,2]}}}"#);
-
-    cargo_bin_cmd!("toon")
-        .arg(&input)
-        .args(["--keyFolding", "safe", "--flattenDepth", "3"])
-        .assert()
-        .success()
-        .stdout("data.meta.items[2]: 1,2");
-}
-
-#[test]
-fn expand_paths_safe_decodes_folded_keys() {
-    let dir = TempDir::new().expect("tempdir");
-    let input = dir.path().join("input.toon");
-    write_file(&input, "data.meta.items[2]: 1,2");
-
-    let expected = "{\n  \"data\": {\n    \"meta\": {\n      \"items\": [\n        1,\n        2\n      ]\n    }\n  }\n}";
-
-    cargo_bin_cmd!("toon")
-        .arg(&input)
-        .args(["--expandPaths", "safe"])
-        .assert()
-        .success()
-        .stdout(expected);
-}
-
-#[test]
 fn no_strict_allows_tabs_in_indentation() {
     let dir = TempDir::new().expect("tempdir");
     let input = dir.path().join("input.toon");
@@ -190,7 +160,7 @@ fn no_strict_allows_tabs_in_indentation() {
         .failure()
         .stderr(contains("tabs not allowed in indentation"));
 
-    let expected = "{\n  \"a\": {},\n  \"b\": 1\n}";
+    let expected = "{\n  \"a\": {\n    \"b\": 1\n  }\n}";
 
     cargo_bin_cmd!("toon")
         .arg(&input)
@@ -223,17 +193,13 @@ fn writes_to_output_file() {
 }
 
 #[test]
-fn flatten_depth_without_key_folding_is_ignored() {
-    let dir = TempDir::new().expect("tempdir");
-    let input = dir.path().join("input.json");
-    write_file(&input, r#"{"a":{"b":1}}"#);
-
+fn tab_prefixed_hash_is_data_not_a_comment() {
     cargo_bin_cmd!("toon")
-        .arg(&input)
-        .args(["--flattenDepth", "2"])
+        .args(["--decode", "--no-strict"])
+        .write_stdin("items[1]{x}:\n\t#x")
         .assert()
         .success()
-        .stdout("a:\n  b: 1");
+        .stdout("{\n  \"items\": [\n    {\n      \"x\": \"#x\"\n    }\n  ]\n}");
 }
 
 #[test]

@@ -1,33 +1,13 @@
 use rstest::rstest;
 use serde_json::{json, Value};
-use serde_toon::{
-    DecodeOptions, Delimiter, EncodeOptions, ExpandPaths as ToonExpandPaths, Indent,
-    KeyFolding as ToonKeyFolding,
-};
+use serde_toon::{DecodeOptions, Delimiter, EncodeOptions, Indent};
 
 #[allow(dead_code)]
 #[derive(Clone, Debug, Default)]
 struct SpecOptions {
     delimiter: Option<char>,
     indent: Option<usize>,
-    key_folding: Option<KeyFolding>,
-    flatten_depth: Option<usize>,
     strict: Option<bool>,
-    expand_paths: Option<ExpandPaths>,
-}
-
-#[allow(dead_code)]
-#[derive(Clone, Debug)]
-enum KeyFolding {
-    Off,
-    Safe,
-}
-
-#[allow(dead_code)]
-#[derive(Clone, Debug)]
-enum ExpandPaths {
-    Off,
-    Safe,
 }
 
 #[allow(dead_code)]
@@ -42,23 +22,8 @@ impl SpecOptions {
         self
     }
 
-    fn with_key_folding_safe(mut self) -> Self {
-        self.key_folding = Some(KeyFolding::Safe);
-        self
-    }
-
-    fn with_flatten_depth(mut self, depth: usize) -> Self {
-        self.flatten_depth = Some(depth);
-        self
-    }
-
     fn with_strict(mut self, strict: bool) -> Self {
         self.strict = Some(strict);
-        self
-    }
-
-    fn with_expand_paths_safe(mut self) -> Self {
-        self.expand_paths = Some(ExpandPaths::Safe);
         self
     }
 }
@@ -95,10 +60,6 @@ fn map_encode_options(options: &SpecOptions) -> EncodeOptions {
     if let Some(indent) = options.indent {
         encoded.indent = Indent::Spaces(indent);
     }
-    if let Some(KeyFolding::Safe) = options.key_folding {
-        encoded.key_folding = ToonKeyFolding::Safe;
-    }
-    encoded.flatten_depth = options.flatten_depth;
     encoded
 }
 
@@ -109,9 +70,6 @@ fn map_decode_options(options: &SpecOptions) -> DecodeOptions {
     }
     if let Some(strict) = options.strict {
         decoded.strict = strict;
-    }
-    if let Some(ExpandPaths::Safe) = options.expand_paths {
-        decoded.expand_paths = ToonExpandPaths::Safe;
     }
     decoded
 }
@@ -143,21 +101,6 @@ fn map_decode_options(options: &SpecOptions) -> DecodeOptions {
     Some("a:\n  b: 1\n  c: 2"),
     SpecOptions::default()
 )]
-#[case(
-    json!({"a": {"b": {"c": 1}}}),
-    Some("a.b.c: 1"),
-    SpecOptions::default().with_key_folding_safe()
-)]
-#[case(
-    json!({"a": {"b": 1}, "a.b": 2}),
-    Some("a:\n  b: 1\na.b: 2"),
-    SpecOptions::default().with_key_folding_safe()
-)]
-#[case(
-    json!({"a": {"b": {"c": 1}}}),
-    Some("a.b:\n  c: 1"),
-    SpecOptions::default().with_key_folding_safe().with_flatten_depth(2)
-)]
 fn spec13_encoder_conformance(
     #[case] input: Value,
     #[case] expected: Option<&'static str>,
@@ -180,7 +123,7 @@ fn spec13_encoder_conformance(
 #[case("items[2|]: a|b", Some(json!({"items": ["a", "b"]})), SpecOptions::default())]
 #[case(
     "items[2]{a,b}:\n  - 1,2\n  - 3,4",
-    Some(json!({"items": [{"a": 1, "b": 2}, {"a": 3, "b": 4}]})),
+    Some(json!({"items": [{"a": "- 1", "b": 2}, {"a": "- 3", "b": 4}]})),
     SpecOptions::default()
 )]
 #[case(
@@ -208,21 +151,7 @@ fn spec13_encoder_conformance(
 )]
 #[case("items[2]: 1", None, SpecOptions::default().with_strict(true))]
 #[case("b: 1\na: 2", Some(json!({"b": 1, "a": 2})), SpecOptions::default())]
-#[case(
-    "a.b: 1\na.c: 2",
-    Some(json!({"a": {"b": 1, "c": 2}})),
-    SpecOptions::default().with_expand_paths_safe()
-)]
-#[case(
-    "a.b: 1\na: 2",
-    None,
-    SpecOptions::default().with_expand_paths_safe().with_strict(true)
-)]
-#[case(
-    "a.b: 1\na: 2",
-    Some(json!({"a": 2})),
-    SpecOptions::default().with_expand_paths_safe().with_strict(false)
-)]
+#[case("a.b: 1", Some(json!({"a.b": 1})), SpecOptions::default())]
 fn spec13_decoder_conformance(
     #[case] input: &str,
     #[case] expected: Option<Value>,
@@ -242,9 +171,9 @@ fn spec13_decoder_conformance(
 
 #[rstest]
 #[case("a: 1", true)]
-#[case("a 1", false)]
+#[case("a 1", true)]
 #[case("a: 1 ", false)]
-#[case("a: 1\n", false)]
+#[case("a: 1\n", true)]
 #[case("items[2]: 1", false)]
 #[case("items[1]{a,b}:\n  - 1", false)]
 #[case("a:\n\tb: 1", false)]

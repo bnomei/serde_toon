@@ -1,4 +1,4 @@
-//! Serde-compatible TOON v3.0 encoder/decoder with optional v1.5 features.
+//! Serde-compatible TOON v4.1 encoder/decoder.
 //!
 //! # Examples
 //!
@@ -103,27 +103,13 @@
 //! Custom options:
 //!
 //! ```rust
-//! use serde_toon::{Delimiter, EncodeOptions, Indent, KeyFolding};
+//! use serde_toon::{Delimiter, EncodeOptions, Indent};
 //!
 //! let opts = EncodeOptions::new()
 //!     .with_indent(Indent::spaces(4))
-//!     .with_delimiter(Delimiter::Pipe)
-//!     .with_key_folding(KeyFolding::Safe)
-//!     .with_flatten_depth(Some(2));
+//!     .with_delimiter(Delimiter::Pipe);
 //! let toon = serde_toon::to_string_with_options(&serde_json::json!({"items": ["a", "b"]}), &opts)?;
 //! assert_eq!(toon, "items[2|]: a|b");
-//! # Ok::<(), serde_toon::Error>(())
-//! ```
-//!
-//! ```rust
-//! use serde_toon::{DecodeOptions, ExpandPaths, Indent};
-//!
-//! let opts = DecodeOptions::new()
-//!     .with_indent(Indent::spaces(4))
-//!     .with_strict(false)
-//!     .with_expand_paths(ExpandPaths::Safe);
-//! let value: serde_json::Value = serde_toon::from_str_with_options("a.b: 1", &opts)?;
-//! assert_eq!(value, serde_json::json!({"a": {"b": 1}}));
 //! # Ok::<(), serde_toon::Error>(())
 //! ```
 //!
@@ -145,9 +131,7 @@ pub mod text;
 use std::io::{BufRead, Read, Write};
 
 pub use crate::error::{Error, ErrorKind, ErrorStage, Location};
-pub use crate::options::{
-    DecodeOptions, Delimiter, EncodeOptions, ExpandPaths, Indent, KeyFolding,
-};
+pub use crate::options::{DecodeOptions, Delimiter, EncodeOptions, Indent};
 pub use canonical::{encode_canonical, CanonicalProfile};
 use serde::de::DeserializeOwned;
 use serde::Serialize;

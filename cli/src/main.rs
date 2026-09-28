@@ -3,10 +3,10 @@ use std::fs;
 use std::io::{self, BufRead, BufReader, Cursor, Read, Write};
 use std::path::Path;
 
-use clap::{ArgAction, Parser, ValueEnum};
+use clap::{ArgAction, Parser};
 use serde::Serialize;
 use serde_json::Value;
-use serde_toon::{DecodeOptions, Delimiter, EncodeOptions, ExpandPaths, Indent, KeyFolding};
+use serde_toon::{DecodeOptions, Delimiter, EncodeOptions, Indent};
 use tiktoken_rs::cl100k_base;
 
 #[derive(Parser, Debug)]
@@ -32,58 +32,16 @@ struct Args {
     delimiter: Option<Delimiter>,
 
     /// Indentation size (default: 2).
-    #[arg(long, value_name = "number", default_value_t = 2, value_parser = parse_indent)]
+    #[arg(long = "indentSize", alias = "indent", alias = "indent-size", value_name = "number", default_value_t = 2, value_parser = parse_indent)]
     indent: usize,
 
     /// Show token statistics.
     #[arg(long)]
     stats: bool,
 
-    /// Key folding mode: off, safe (default: off).
-    #[arg(long = "keyFolding", alias = "key-folding", value_enum, value_name = "mode", default_value_t = KeyFoldingArg::Off)]
-    key_folding: KeyFoldingArg,
-
-    /// Maximum folded segment count when key folding is enabled (default: Infinity).
-    #[arg(long = "flattenDepth", alias = "flatten-depth", value_name = "number")]
-    flatten_depth: Option<usize>,
-
-    /// Path expansion mode: off, safe (default: off).
-    #[arg(long = "expandPaths", alias = "expand-paths", value_enum, value_name = "mode", default_value_t = ExpandPathsArg::Off)]
-    expand_paths: ExpandPathsArg,
-
     /// Disable strict validation when decoding.
     #[arg(long = "no-strict", action = ArgAction::SetFalse, default_value_t = true)]
     strict: bool,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
-enum KeyFoldingArg {
-    Off,
-    Safe,
-}
-
-impl From<KeyFoldingArg> for KeyFolding {
-    fn from(value: KeyFoldingArg) -> Self {
-        match value {
-            KeyFoldingArg::Off => KeyFolding::Off,
-            KeyFoldingArg::Safe => KeyFolding::Safe,
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
-enum ExpandPathsArg {
-    Off,
-    Safe,
-}
-
-impl From<ExpandPathsArg> for ExpandPaths {
-    fn from(value: ExpandPathsArg) -> Self {
-        match value {
-            ExpandPathsArg::Off => ExpandPaths::Off,
-            ExpandPathsArg::Safe => ExpandPaths::Safe,
-        }
-    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -237,12 +195,6 @@ fn build_encode_options(args: &Args) -> EncodeOptions {
         options = options.with_delimiter(delimiter);
     }
 
-    options = options.with_key_folding(args.key_folding.into());
-
-    if let Some(flatten_depth) = args.flatten_depth {
-        options = options.with_flatten_depth(Some(flatten_depth));
-    }
-
     options
 }
 
@@ -250,22 +202,13 @@ fn build_decode_options(args: &Args) -> DecodeOptions {
     DecodeOptions::new()
         .with_indent(Indent::Spaces(args.indent))
         .with_strict(args.strict)
-        .with_expand_paths(args.expand_paths.into())
 }
 
 fn decode_value_from_reader<R: BufRead>(args: &Args, reader: R) -> Result<Value, Box<dyn Error>> {
     let options = build_decode_options(args);
-    if args.strict {
-        Ok(serde_toon::from_reader_streaming_with_options(
-            reader, &options,
-        )?)
-    } else {
-        let normalizer = TabNormalizingReader::new(reader);
-        let reader = BufReader::new(normalizer);
-        Ok(serde_toon::from_reader_streaming_with_options(
-            reader, &options,
-        )?)
-    }
+    Ok(serde_toon::from_reader_streaming_with_options(
+        reader, &options,
+    )?)
 }
 
 fn decode_value_from_str(args: &Args, input: &str) -> Result<Value, Box<dyn Error>> {
@@ -572,80 +515,4 @@ fn diff_paths(path: &Path, base: &Path) -> Option<std::path::PathBuf> {
     }
 
     Some(result)
-}
-
-// Match the JS CLI: in non-strict mode, lines with tab-indentation lose indentation entirely.
-struct TabNormalizingReader<R: BufRead> {
-    inner: R,
-    line_buf: String,
-    out_buf: Vec<u8>,
-    out_pos: usize,
-}
-
-impl<R: BufRead> TabNormalizingReader<R> {
-    fn new(inner: R) -> Self {
-        Self {
-            inner,
-            line_buf: String::new(),
-            out_buf: Vec::new(),
-            out_pos: 0,
-        }
-    }
-
-    fn refill(&mut self) -> io::Result<bool> {
-        self.out_buf.clear();
-        self.out_pos = 0;
-        self.line_buf.clear();
-        let read = self.inner.read_line(&mut self.line_buf)?;
-        if read == 0 {
-            return Ok(false);
-        }
-        let line = self.line_buf.as_str();
-        let (content, newline) = if let Some(stripped) = line.strip_suffix("\r\n") {
-            (stripped, "\r\n")
-        } else if let Some(stripped) = line.strip_suffix('\n') {
-            let stripped = stripped.strip_suffix('\r').unwrap_or(stripped);
-            (stripped, "\n")
-        } else {
-            let stripped = line.strip_suffix('\r').unwrap_or(line);
-            (stripped, "")
-        };
-
-        let mut saw_tab = false;
-        let mut first_non_ws = None;
-        for (idx, byte) in content.as_bytes().iter().enumerate() {
-            match byte {
-                b'\t' => saw_tab = true,
-                b' ' => {}
-                _ => {
-                    first_non_ws = Some(idx);
-                    break;
-                }
-            }
-        }
-
-        if saw_tab {
-            let start = first_non_ws.unwrap_or(content.len());
-            self.out_buf.extend_from_slice(&content.as_bytes()[start..]);
-        } else {
-            self.out_buf.extend_from_slice(content.as_bytes());
-        }
-        self.out_buf.extend_from_slice(newline.as_bytes());
-        Ok(true)
-    }
-}
-
-impl<R: BufRead> Read for TabNormalizingReader<R> {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        if self.out_pos >= self.out_buf.len() {
-            if !self.refill()? {
-                return Ok(0);
-            }
-        }
-        let remaining = self.out_buf.len().saturating_sub(self.out_pos);
-        let to_copy = remaining.min(buf.len());
-        buf[..to_copy].copy_from_slice(&self.out_buf[self.out_pos..self.out_pos + to_copy]);
-        self.out_pos += to_copy;
-        Ok(to_copy)
-    }
 }

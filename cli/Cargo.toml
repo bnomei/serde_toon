@@ -1,9 +1,12 @@
 [package]
 name = "serde_toon_format_cli"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 description = "Command-line interface for TOON encoding/decoding"
+readme = "README.md"
+repository = "https://github.com/bnomei/serde_toon"
+homepage = "https://toonformat.dev"
 
 [[bin]]
 name = "toon"
@@ -13,7 +16,7 @@ path = "src/main.rs"
 clap = { version = "4.5.29", features = ["derive"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.149", features = ["preserve_order"] }
-serde_toon = { package = "serde_toon_format", path = "..", version = "0.1.1" }
+serde_toon = { package = "serde_toon_format", path = "..", version = "0.2.0" }
 tiktoken-rs = "0.9.1"
 
 [dev-dependencies]
