@@ -67,6 +67,19 @@ fn auto_detects_toon_with_unknown_extension() {
 }
 
 #[test]
+fn auto_detects_json_array_with_unknown_extension() {
+    let dir = TempDir::new().expect("tempdir");
+    let input = dir.path().join("input.data");
+    write_file(&input, "[1,2]");
+
+    cargo_bin_cmd!("toon")
+        .arg(&input)
+        .assert()
+        .success()
+        .stdout("[2]: 1,2");
+}
+
+#[test]
 fn auto_detect_is_uncertain_for_ambiguous_input() {
     let dir = TempDir::new().expect("tempdir");
     let input = dir.path().join("input.data");

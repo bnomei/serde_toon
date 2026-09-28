@@ -13,13 +13,13 @@ cargo install --path cli
 Or from the repo root (explicit package selection):
 
 ```bash
-cargo install --path . --package toon-cli
+cargo install --path . --package serde_toon_format_cli
 ```
 
 Run from the workspace without install:
 
 ```bash
-cargo run -p toon-cli -- <input> [options]
+cargo run -p serde_toon_format_cli -- <input> [options]
 ```
 
 ## Usage
