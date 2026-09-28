@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3](https://github.com/bnomei/serde_toon/compare/serde_toon_format-v0.1.2...serde_toon_format-v0.1.3) - 2026-09-28
+
+### Other
+
+- Optimize fresh Amp orb setup
+- improve CI
+
 ### [0.1.2] - 2026-02-04
 - Added small scalar encode caches for non-tabular strings and numbers.
 - Added byte-offset, line, and column locations for decode/validation errors.
