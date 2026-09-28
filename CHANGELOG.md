@@ -38,6 +38,7 @@ targets [spec revision d6db4b0](https://github.com/toon-format/spec/commit/d6db4
 - Scope termination, exact list markers, nested-field last-write-wins behavior, and comment/blank-line handling across arena and streaming decoding.
 - Quoted-token termination, invalid escapes and literal controls, malformed headers, empty tab-separated cells, and strict/non-strict API parity.
 - Float parsing now uses correctly rounded conversion. Declared lengths no longer drive unbounded preallocation.
+- Avoid repeated header-key hashing for strict flat tabular rows and skip the header-span prepass when no interior blank lines exist, recovering decode performance without relaxing validation.
 
 ### Migration
 

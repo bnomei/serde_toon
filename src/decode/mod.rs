@@ -2051,15 +2051,11 @@ pub(super) fn parse_number_token(token: &str) -> Option<serde_json::Number> {
         if let Ok(value) = token.parse::<u64>() {
             return Some(serde_json::Number::from(value));
         }
-        return token
-            .parse::<f64>()
-            .ok()
-            .and_then(serde_json::Number::from_f64);
     }
-    let value: Value = serde_json::from_str(token).ok()?;
-    let number = value.as_number()?;
-    let float = number.as_f64()?;
-    serde_json::Number::from_f64(float)
+    token
+        .parse::<f64>()
+        .ok()
+        .and_then(serde_json::Number::from_f64)
 }
 
 fn matches_number_grammar(token: &str) -> bool {

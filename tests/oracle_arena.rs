@@ -55,3 +55,38 @@ fn oracle_headers_whitespace_and_validator() {
     validate_str("hello").unwrap();
     validate_str("1e2").unwrap();
 }
+
+#[test]
+fn flat_table_keys_and_values_stay_aligned_across_rows() {
+    for width in [1, 16, 17] {
+        let keys: Vec<_> = (0..width).rev().map(|i| format!("k{i}")).collect();
+        let mut input = format!("[3]{{{}}}:\n", keys.join(","));
+        let mut expected = Vec::new();
+        for row in 0..3 {
+            let values: Vec<_> = (0..width).map(|col| row * 100 + col).collect();
+            input.push_str(&format!(
+                "  {}\n",
+                values
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ));
+            expected.push(Value::Object(
+                keys.iter()
+                    .cloned()
+                    .zip(values.into_iter().map(Value::from))
+                    .collect(),
+            ));
+        }
+        input.push_str("# trailing comment\n\n");
+        let decoded = decode(&input).unwrap();
+        assert_eq!(decoded, Value::Array(expected));
+        for row in decoded.as_array().unwrap() {
+            assert_eq!(
+                row.as_object().unwrap().keys().collect::<Vec<_>>(),
+                keys.iter().collect::<Vec<_>>()
+            );
+        }
+    }
+}

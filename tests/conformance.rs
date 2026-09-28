@@ -328,3 +328,24 @@ fn root_scalars_round_trip_across_apis() {
         serde_toon::validate_str(&encoded).unwrap();
     }
 }
+
+#[test]
+fn finite_float_bits_survive_decimal_round_trips() {
+    let mut bits = 0x1234_5678_9abc_def0_u64;
+    for _ in 0..1024 {
+        bits = bits.wrapping_mul(6364136223846793005).wrapping_add(1);
+        let value = f64::from_bits(bits);
+        if !value.is_finite() || value == 0.0 {
+            continue;
+        }
+        let encoded = serde_toon::to_string(&value).unwrap();
+        let arena: f64 = serde_toon::from_str(&encoded).unwrap();
+        let streamed: f64 = serde_toon::from_reader_streaming_with_options(
+            std::io::BufReader::with_capacity(1, encoded.as_bytes()),
+            &DecodeOptions::default(),
+        )
+        .unwrap();
+        assert_eq!(arena.to_bits(), bits, "arena: {encoded}");
+        assert_eq!(streamed.to_bits(), bits, "streaming: {encoded}");
+    }
+}

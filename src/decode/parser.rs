@@ -450,6 +450,16 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
         let mut tokens = TokenBuf::with_capacity(fields.len());
         let mut value_ids: SmallVec<[usize; 16]> = SmallVec::with_capacity(fields.len());
         let leaf_count: usize = fields.iter().map(FieldEntry::leaf_count).sum();
+        // Strict headers have already rejected duplicate fields. Intern a flat
+        // table's keys once instead of rebuilding the same lookup for every row.
+        let flat_keys: Option<SmallVec<[usize; 16]>> =
+            (self.strict && fields.iter().all(|field| field.children.is_empty())).then(|| {
+                fields
+                    .iter()
+                    .map(|field| self.intern_key(&field.key.value))
+                    .collect()
+            });
+        let mut flat_pairs: SmallVec<[Pair; 16]> = SmallVec::new();
         let mut row_level = None;
         while idx < scan.lines.len() {
             let line = &scan.lines[idx];
@@ -530,8 +540,18 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
                 };
                 value_ids.push(value_id);
             }
-            let mut cursor = 0;
-            let row_node = self.build_field_object(fields, &value_ids, &mut cursor);
+            let row_node = if let Some(keys) = &flat_keys {
+                flat_pairs.clear();
+                flat_pairs.extend(
+                    keys.iter()
+                        .zip(&value_ids)
+                        .map(|(&key, &value)| Pair { key, value }),
+                );
+                self.push_object(&flat_pairs)
+            } else {
+                let mut cursor = 0;
+                self.build_field_object(fields, &value_ids, &mut cursor)
+            };
             rows.push(row_node);
             idx += 1;
         }
@@ -1458,6 +1478,17 @@ impl<'a, 'b> ArenaParser<'a, 'b> {
 
     fn reject_blanks_in_header_spans(&self, scan: &ScanResult) -> Result<()> {
         if !self.strict {
+            return Ok(());
+        }
+        // Trailing blank lines cannot interrupt a header span. Most encoder
+        // output has no other blanks, so avoid reparsing every line as a header.
+        let Some(last_content) = scan.lines.iter().rposition(|line| !line.is_blank) else {
+            return Ok(());
+        };
+        if !scan.lines[..last_content]
+            .iter()
+            .any(|line| line.is_blank && !line.is_comment)
+        {
             return Ok(());
         }
         for (header_idx, line) in scan.lines.iter().enumerate() {
