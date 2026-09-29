@@ -97,7 +97,7 @@ pub fn analyze_string(value: &str, delimiter: char) -> (bool, bool) {
     let mut needs_quote = false;
     let mut needs_escape = false;
 
-    if first.is_ascii_whitespace() || first == b'-' {
+    if matches!(first, b' ' | b'\t' | b'-' | b'#') || first < 0x20 {
         needs_quote = true;
     }
     if is_structural_byte(first, delimiter)
@@ -107,7 +107,7 @@ pub fn analyze_string(value: &str, delimiter: char) -> (bool, bool) {
     {
         needs_quote = true;
     }
-    if matches!(first, b'\\' | b'"' | b'\n' | b'\r' | b'\t') {
+    if matches!(first, b'\\' | b'"') || first < 0x20 {
         needs_escape = true;
     }
     if first == b'0' && bytes.len() > 1 && bytes[1].is_ascii_digit() {
@@ -118,7 +118,7 @@ pub fn analyze_string(value: &str, delimiter: char) -> (bool, bool) {
     }
 
     if let Some(&last) = bytes.last() {
-        if last.is_ascii_whitespace() {
+        if matches!(last, b' ' | b'\t') {
             needs_quote = true;
         }
     }
@@ -141,6 +141,10 @@ pub fn analyze_string(value: &str, delimiter: char) -> (bool, bool) {
     if has_structural {
         needs_quote = true;
     }
+    if bytes.iter().any(|byte| *byte < 0x20) {
+        needs_quote = true;
+        needs_escape = true;
+    }
 
     (needs_quote, needs_escape)
 }
@@ -155,6 +159,15 @@ pub fn escape_string_into(out: &mut String, value: &str) {
             b'\t' => "\\t",
             b'"' => "\\\"",
             b'\\' => "\\\\",
+            0x00..=0x1f => {
+                if start < idx {
+                    out.push_str(&value[start..idx]);
+                }
+                use std::fmt::Write as _;
+                let _ = write!(out, "\\u{byte:04x}");
+                start = idx + 1;
+                continue;
+            }
             _ => continue,
         };
         if start < idx {
@@ -175,11 +188,16 @@ pub fn escape_string_into_bytes<B: ByteSink>(out: &mut B, value: &str) {
         let slice = &bytes[start..];
         let idx_a = memchr3(b'\\', b'"', b'\n', slice);
         let idx_b = memchr2(b'\r', b'\t', slice);
-        let idx = match (idx_a, idx_b) {
-            (Some(a), Some(b)) => Some(a.min(b)),
-            (Some(a), None) => Some(a),
-            (None, Some(b)) => Some(b),
-            (None, None) => None,
+        let idx_control = slice.iter().position(|byte| *byte < 0x20);
+        let idx = match (idx_a, idx_b, idx_control) {
+            (Some(a), Some(b), Some(c)) => Some(a.min(b).min(c)),
+            (Some(a), Some(b), None) => Some(a.min(b)),
+            (Some(a), None, Some(c)) => Some(a.min(c)),
+            (None, Some(b), Some(c)) => Some(b.min(c)),
+            (Some(a), None, None) => Some(a),
+            (None, Some(b), None) => Some(b),
+            (None, None, Some(c)) => Some(c),
+            (None, None, None) => None,
         };
 
         let Some(rel_idx) = idx else {
@@ -196,10 +214,21 @@ pub fn escape_string_into_bytes<B: ByteSink>(out: &mut B, value: &str) {
             b'\t' => b"\\t",
             b'"' => b"\\\"",
             b'\\' => b"\\\\",
-            _ => {
+            byte @ 0x00..=0x1f => {
+                const HEX: &[u8; 16] = b"0123456789abcdef";
+                let escaped = [
+                    b'\\',
+                    b'u',
+                    b'0',
+                    b'0',
+                    HEX[(byte >> 4) as usize],
+                    HEX[(byte & 15) as usize],
+                ];
+                out.extend_bytes(&escaped);
                 start = idx + 1;
                 continue;
             }
+            _ => unreachable!(),
         };
         out.extend_bytes(escaped);
         start = idx + 1;
@@ -248,7 +277,7 @@ fn is_numeric_like(value: &str) -> bool {
         return false;
     }
     let mut i = 0;
-    if bytes[0] == b'-' {
+    if matches!(bytes[0], b'-' | b'+') {
         i = 1;
     }
     if i >= bytes.len() {
@@ -281,7 +310,7 @@ fn analyze_string_unicode(value: &str, delimiter: char) -> (bool, bool) {
     let mut needs_quote = false;
     let mut needs_escape = false;
 
-    if first.is_whitespace() || first == '-' {
+    if matches!(first, ' ' | '\t' | '-' | '#' | '\u{feff}') || first < '\u{20}' {
         needs_quote = true;
     }
 
@@ -289,7 +318,7 @@ fn analyze_string_unicode(value: &str, delimiter: char) -> (bool, bool) {
         needs_quote = true;
     }
 
-    if matches!(first, '\\' | '"' | '\n' | '\r' | '\t') {
+    if matches!(first, '\\' | '"') || first < '\u{20}' {
         needs_escape = true;
     }
 
@@ -306,16 +335,17 @@ fn analyze_string_unicode(value: &str, delimiter: char) -> (bool, bool) {
             || ch == '\n'
             || ch == '\r'
             || ch == '\t'
+            || ch < '\u{20}'
         {
             needs_quote = true;
         }
-        if matches!(ch, '\\' | '"' | '\n' | '\r' | '\t') {
+        if matches!(ch, '\\' | '"') || ch < '\u{20}' {
             needs_escape = true;
         }
         last = ch;
     }
 
-    if last.is_whitespace() {
+    if matches!(last, ' ' | '\t') {
         needs_quote = true;
     }
 

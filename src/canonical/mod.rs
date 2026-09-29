@@ -14,7 +14,6 @@ pub fn encode_canonical(value: &Value, profile: CanonicalProfile) -> Result<Stri
             CanonicalDelimiter::Tab => Delimiter::Tab,
             CanonicalDelimiter::Pipe => Delimiter::Pipe,
         },
-        ..EncodeOptions::default()
     };
     encode::to_string(value, &options)
 }

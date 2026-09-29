@@ -1,9 +1,6 @@
 use rstest::rstest;
 use serde_json::{json, Value};
-use serde_toon::{
-    DecodeOptions, Delimiter, EncodeOptions, ExpandPaths as ToonExpandPaths, Indent,
-    KeyFolding as ToonKeyFolding,
-};
+use serde_toon::{DecodeOptions, Delimiter, EncodeOptions, Indent};
 
 #[allow(dead_code)]
 #[derive(Clone, Debug, Default)]
@@ -95,10 +92,6 @@ fn map_encode_options(options: &SpecOptions) -> EncodeOptions {
     if let Some(indent) = options.indent {
         encoded.indent = Indent::Spaces(indent);
     }
-    if let Some(KeyFolding::Safe) = options.key_folding {
-        encoded.key_folding = ToonKeyFolding::Safe;
-    }
-    encoded.flatten_depth = options.flatten_depth;
     encoded
 }
 
@@ -110,9 +103,6 @@ fn map_decode_options(options: &SpecOptions) -> DecodeOptions {
     if let Some(strict) = options.strict {
         decoded.strict = strict;
     }
-    if let Some(ExpandPaths::Safe) = options.expand_paths {
-        decoded.expand_paths = ToonExpandPaths::Safe;
-    }
     decoded
 }
 
@@ -122,7 +112,7 @@ fn map_decode_options(options: &SpecOptions) -> DecodeOptions {
     Some("items[2]: \"a,b\",c"),
     SpecOptions::default()
 )]
-#[case(json!({"items": []}), Some("items[0]:"), SpecOptions::default())]
+#[case(json!({"items": []}), Some("items: []"), SpecOptions::default())]
 #[case(json!([1, 2]), Some("[2]: 1,2"), SpecOptions::default())]
 #[case(
     json!({"items": [[1, 2]]}),
@@ -146,7 +136,7 @@ fn map_decode_options(options: &SpecOptions) -> DecodeOptions {
 )]
 #[case(
     json!({"items": [{"a": {"b": 1}}, {"a": {"b": 2}}]}),
-    Some("items[2]:\n  - a:\n    b: 1\n  - a:\n    b: 2"),
+    Some("items[2]{a{b}}:\n  1\n  2"),
     SpecOptions::default()
 )]
 #[case(
@@ -257,19 +247,11 @@ fn spec09_arrays_encode(
     Some(json!({"items": [{"a": "a", "b": "b:1"}]})),
     SpecOptions::default()
 )]
-#[case(
-    "items[1]{a,b}:\n  x,y\n  z: a,b",
-    Some(json!({"items": [{"a": "x", "b": "y"}], "z": "a,b"})),
-    SpecOptions::default()
-)]
-#[case(
-    "items[1]{a,b}:\n  x,y\n  other: 1",
-    Some(json!({"items": [{"a": "x", "b": "y"}], "other": 1})),
-    SpecOptions::default()
-)]
+#[case("items[1]{a,b}:\n  x,y\n  z: a,b", None, SpecOptions::default())]
+#[case("items[1]{a,b}:\n  x,y\n  other: 1", None, SpecOptions::default())]
 #[case(
     "items[1]:\n  - table[2]{a,b}:\n    1,2\n    3,4",
-    Some(json!({"items": [{"table": [{"a": 1, "b": 2}, {"a": 3, "b": 4}]}]})),
+    None,
     SpecOptions::default().with_strict(false)
 )]
 #[case(

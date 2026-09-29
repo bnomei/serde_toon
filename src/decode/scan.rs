@@ -11,6 +11,7 @@ pub struct ScanLine {
     pub start: usize,
     pub end: usize,
     pub is_blank: bool,
+    pub is_comment: bool,
 }
 
 #[derive(Debug)]
@@ -29,20 +30,26 @@ pub fn scan_lines(
         return Err(Error::decode("indent size must be greater than zero"));
     }
     let bytes = input.as_bytes();
-    if validate && bytes.last() == Some(&b'\n') {
-        return Err(Error::decode("trailing newline not allowed"));
-    }
     let mut lines = Vec::new();
     let mut non_blank = 0;
-    let mut start = 0;
+    // A BOM is syntax only at byte zero. Keeping offsets in the original input
+    // lets arena spans and diagnostics continue to refer to the caller's text.
+    let mut start = if bytes.starts_with(b"\xEF\xBB\xBF") {
+        3
+    } else {
+        0
+    };
     for idx in memchr_iter(b'\n', bytes) {
         let mut end = idx;
         if end > start && bytes[end - 1] == b'\r' {
             end -= 1;
         }
-        if validate && end > start {
+        if validate
+            && end > start
+            && bytes[start..end].iter().find(|&&byte| byte != b' ') != Some(&b'#')
+        {
             let last = bytes[end - 1];
-            if last == b' ' || last == b'\t' {
+            if last == b' ' {
                 return Err(Error::decode("trailing whitespace not allowed"));
             }
         }
@@ -65,9 +72,12 @@ pub fn scan_lines(
     if end > start && bytes[end - 1] == b'\r' {
         end -= 1;
     }
-    if validate && end > start {
+    if validate
+        && end > start
+        && bytes[start..end].iter().find(|&&byte| byte != b' ') != Some(&b'#')
+    {
         let last = bytes[end - 1];
-        if last == b' ' || last == b'\t' {
+        if last == b' ' {
             return Err(Error::decode("trailing whitespace not allowed"));
         }
     }
@@ -94,6 +104,10 @@ fn build_line(
     indent_size: usize,
     strict: bool,
 ) -> Result<ScanLine> {
+    let mut end = end;
+    while end > start && bytes[end - 1] == b' ' {
+        end -= 1;
+    }
     if start >= end {
         return Ok(ScanLine {
             raw_start: start,
@@ -102,16 +116,24 @@ fn build_line(
             start,
             end,
             is_blank: true,
+            is_comment: false,
         });
     }
     let mut only_whitespace = true;
     for &byte in &bytes[start..end] {
-        if !byte.is_ascii_whitespace() {
+        if byte != b' ' && byte != b'\t' {
             only_whitespace = false;
             break;
         }
     }
-    if only_whitespace {
+    let spaces = bytes[start..end]
+        .iter()
+        .take_while(|&&byte| byte == b' ')
+        .count();
+    let possible_tsv = spaces > 0
+        && spaces.is_multiple_of(indent_size)
+        && bytes.get(start + spaces) == Some(&b'\t');
+    if only_whitespace && !possible_tsv {
         return Ok(ScanLine {
             raw_start: start,
             indent: 0,
@@ -119,6 +141,7 @@ fn build_line(
             start,
             end,
             is_blank: true,
+            is_comment: false,
         });
     }
     let mut indent_columns: usize = 0;
@@ -130,6 +153,18 @@ fn build_line(
                 indent_chars += 1;
             }
             b'\t' => {
+                // Once a complete space indentation prefix has been consumed,
+                // HTAB may be the first (empty) cell of a tabular row.  Keep it
+                // in the content; the scope-aware parser decides whether it is
+                // a delimiter. A leading tab remains illegal indentation.
+                if indent_columns > 0
+                    && indent_columns.is_multiple_of(indent_size)
+                    && bytes[start..start + indent_chars]
+                        .iter()
+                        .all(|&byte| byte == b' ')
+                {
+                    break;
+                }
                 if strict {
                     return Err(Error::decode("tabs not allowed in indentation"));
                 }
@@ -138,6 +173,24 @@ fn build_line(
             }
             _ => break,
         }
+    }
+    // Comments are removed before indentation and every structural operation.
+    // In particular, oddly-indented comments are valid and do not become blank
+    // lines inside an array scope.
+    if bytes[start..start + indent_chars]
+        .iter()
+        .all(|&b| b == b' ')
+        && bytes.get(start + indent_chars) == Some(&b'#')
+    {
+        return Ok(ScanLine {
+            raw_start: start,
+            indent: 0,
+            level: 0,
+            start: end,
+            end,
+            is_blank: true,
+            is_comment: true,
+        });
     }
     if strict && !indent_columns.is_multiple_of(indent_size) {
         return Err(Error::decode("invalid indentation"));
@@ -151,5 +204,6 @@ fn build_line(
         start: content_start,
         end,
         is_blank: false,
+        is_comment: false,
     })
 }

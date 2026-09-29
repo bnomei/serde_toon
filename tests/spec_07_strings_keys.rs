@@ -1,9 +1,6 @@
 use rstest::rstest;
 use serde_json::{json, Value};
-use serde_toon::{
-    DecodeOptions, Delimiter, EncodeOptions, ExpandPaths as ToonExpandPaths, Indent,
-    KeyFolding as ToonKeyFolding,
-};
+use serde_toon::{DecodeOptions, Delimiter, EncodeOptions, Indent};
 
 #[allow(dead_code)]
 #[derive(Clone, Debug, Default)]
@@ -95,10 +92,6 @@ fn map_encode_options(options: &SpecOptions) -> EncodeOptions {
     if let Some(indent) = options.indent {
         encoded.indent = Indent::Spaces(indent);
     }
-    if let Some(KeyFolding::Safe) = options.key_folding {
-        encoded.key_folding = ToonKeyFolding::Safe;
-    }
-    encoded.flatten_depth = options.flatten_depth;
     encoded
 }
 
@@ -109,9 +102,6 @@ fn map_decode_options(options: &SpecOptions) -> DecodeOptions {
     }
     if let Some(strict) = options.strict {
         decoded.strict = strict;
-    }
-    if let Some(ExpandPaths::Safe) = options.expand_paths {
-        decoded.expand_paths = ToonExpandPaths::Safe;
     }
     decoded
 }
@@ -167,8 +157,8 @@ fn spec07_strings_keys_encode(
 #[case("v: \"\\q\"", None, SpecOptions::default())]
 #[case("\"a-b\": 1", Some(json!({"a-b": 1})), SpecOptions::default())]
 #[case("a.b: 1", Some(json!({"a.b": 1})), SpecOptions::default())]
-#[case("a-b: 1", None, SpecOptions::default().with_strict(true))]
-#[case("key value", None, SpecOptions::default())]
+#[case("a-b: 1", Some(json!({"a-b": 1})), SpecOptions::default().with_strict(true))]
+#[case("key value", Some(json!("key value")), SpecOptions::default())]
 fn spec07_strings_keys_decode(
     #[case] input: &str,
     #[case] expected: Option<Value>,
@@ -189,7 +179,7 @@ fn spec07_strings_keys_decode(
 #[rstest]
 #[case("v: \"ok\"", true)]
 #[case("v: \"\\q\"", false)]
-#[case("a-b: 1", false)]
+#[case("a-b: 1", true)]
 fn spec07_strings_keys_validate(#[case] input: &str, #[case] valid: bool) {
     let result = Spec07Adapter::validate(input);
     if valid {

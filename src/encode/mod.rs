@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::io::Write;
 
 use serde::Serialize;
@@ -14,7 +14,7 @@ use rayon::prelude::*;
 use crate::num::number::append_json_number_bytes;
 use crate::text::string::{
     analyze_string, escape_string_into, escape_string_into_bytes, is_canonical_unquoted_key,
-    is_identifier_segment, ByteSink,
+    ByteSink,
 };
 use crate::{EncodeOptions, Error, Indent, Result};
 
@@ -269,8 +269,6 @@ fn encode_value(value: &Value, options: &EncodeOptions) -> Result<Vec<u8>> {
 
 struct Encoder<O: OutputSink> {
     document_delimiter: char,
-    key_folding: bool,
-    flatten_depth: usize,
     indent_unit: Vec<u8>,
     indent_cache: Vec<Vec<u8>>,
     delimiter_stack: Vec<char>,
@@ -283,10 +281,24 @@ struct Encoder<O: OutputSink> {
     tabular_number_cache: HashMap<NumberKey, Vec<u8>>,
     tabular_prefixed_number_cache: HashMap<char, HashMap<NumberKey, Vec<u8>>>,
     tabular_last_values: Vec<TabularLastCache>,
-    key_intern: HashMap<String, usize>,
-    interned_keys: Vec<String>,
     line_buf: Vec<u8>,
     out: O,
+}
+
+#[derive(Clone)]
+struct TabularField {
+    name: String,
+    children: Vec<TabularField>,
+}
+
+impl TabularField {
+    fn leaf_count(&self) -> usize {
+        if self.children.is_empty() {
+            1
+        } else {
+            self.children.iter().map(Self::leaf_count).sum()
+        }
+    }
 }
 
 impl Encoder<VecOutput> {
@@ -305,8 +317,6 @@ impl<O: OutputSink> Encoder<O> {
         let indent_unit = vec![b' '; indent_size];
         Self {
             document_delimiter: options.delimiter.as_char(),
-            key_folding: matches!(options.key_folding, crate::options::KeyFolding::Safe),
-            flatten_depth: options.flatten_depth.unwrap_or(usize::MAX),
             indent_unit,
             indent_cache: vec![Vec::new()],
             delimiter_stack: Vec::new(),
@@ -319,8 +329,6 @@ impl<O: OutputSink> Encoder<O> {
             tabular_number_cache: HashMap::with_capacity(TABULAR_NUMBER_CACHE_MAX_ITEMS),
             tabular_prefixed_number_cache: HashMap::with_capacity(4),
             tabular_last_values: Vec::new(),
-            key_intern: HashMap::new(),
-            interned_keys: Vec::new(),
             line_buf: Vec::with_capacity(128),
             out,
         }
@@ -329,8 +337,6 @@ impl<O: OutputSink> Encoder<O> {
     fn reset(&mut self, options: &EncodeOptions) {
         let Indent::Spaces(indent_size) = options.indent;
         self.document_delimiter = options.delimiter.as_char();
-        self.key_folding = matches!(options.key_folding, crate::options::KeyFolding::Safe);
-        self.flatten_depth = options.flatten_depth.unwrap_or(usize::MAX);
         if self.indent_unit.len() != indent_size {
             self.indent_unit.clear();
             self.indent_unit.resize(indent_size, b' ');
@@ -338,8 +344,6 @@ impl<O: OutputSink> Encoder<O> {
             self.indent_cache.push(Vec::new());
         }
         self.delimiter_stack.clear();
-        self.key_intern.clear();
-        self.interned_keys.clear();
         self.line_buf.clear();
         self.out.clear();
         self.tabular_last_values.clear();
@@ -495,6 +499,9 @@ impl<O: OutputSink> Encoder<O> {
 
     fn encode_root(&mut self, value: &Value) -> Result<()> {
         match value {
+            Value::Object(map) if self.tabular_fields_for_map_values(map).is_some() => {
+                self.encode_keyed_object(map, 0, None, b"")
+            }
             Value::Object(map) => self.encode_object(map, 0),
             Value::Array(array) => self.encode_array_value(array, 0, None, b""),
             _ => self.with_line_buf(|encoder, line| -> Result<()> {
@@ -512,16 +519,8 @@ impl<O: OutputSink> Encoder<O> {
         indent_level: usize,
     ) -> Result<()> {
         self.reserve_object_entries(map.len());
-        let mut siblings = HashSet::with_capacity(map.len());
-        for key in map.keys() {
-            siblings.insert(key.as_str());
-        }
         for (key, value) in map.iter() {
-            if let Some((folded_key, folded_value)) = self.fold_key_value(key, value, &siblings) {
-                self.encode_object_entry(&folded_key, folded_value, indent_level)?;
-            } else {
-                self.encode_object_entry(key, value, indent_level)?;
-            }
+            self.encode_object_entry(key, value, indent_level)?;
         }
         Ok(())
     }
@@ -529,6 +528,9 @@ impl<O: OutputSink> Encoder<O> {
     fn encode_object_entry(&mut self, key: &str, value: &Value, indent_level: usize) -> Result<()> {
         match value {
             Value::Array(array) => self.encode_array_value(array, indent_level, Some(key), b""),
+            Value::Object(map) if self.tabular_fields_for_map_values(map).is_some() => {
+                self.encode_keyed_object(map, indent_level, Some(key), b"")
+            }
             Value::Object(map) => {
                 self.with_line_buf(|encoder, line| -> Result<()> {
                     line.clear();
@@ -548,57 +550,6 @@ impl<O: OutputSink> Encoder<O> {
                 Ok(())
             }),
         }
-    }
-
-    fn fold_key_value<'a>(
-        &self,
-        key: &str,
-        value: &'a Value,
-        siblings: &HashSet<&str>,
-    ) -> Option<(String, &'a Value)> {
-        if !self.key_folding || self.flatten_depth < 2 {
-            return None;
-        }
-
-        let mut segments = vec![key];
-        let mut cursor = value;
-        while let Value::Object(map) = cursor {
-            if map.len() != 1 {
-                break;
-            }
-            let (next_key, next_val) = map.iter().next()?;
-            segments.push(next_key.as_str());
-            cursor = next_val;
-        }
-
-        let chain_len = segments.len();
-        let depth = std::cmp::min(chain_len, self.flatten_depth);
-        if depth < 2 {
-            return None;
-        }
-        if !segments[..depth]
-            .iter()
-            .all(|segment| is_identifier_segment(segment))
-        {
-            return None;
-        }
-
-        let folded = segments[..depth].join(".");
-        if siblings.contains(folded.as_str()) {
-            return None;
-        }
-
-        let mut folded_value = value;
-        for _ in 1..depth {
-            if let Value::Object(map) = folded_value {
-                let (_, next_val) = map.iter().next()?;
-                folded_value = next_val;
-            } else {
-                return None;
-            }
-        }
-
-        Some((folded, folded_value))
     }
 
     fn encode_array_value(
@@ -621,7 +572,23 @@ impl<O: OutputSink> Encoder<O> {
         key: Option<&str>,
         prefix: &[u8],
     ) -> Result<()> {
-        if let Some(fields) = self.tabular_fields(array) {
+        if array.is_empty() && key.is_some() {
+            return self.with_line_buf(|encoder, line| -> Result<()> {
+                line.clear();
+                encoder.append_encoded_key(line, key.unwrap());
+                line.extend_from_slice(b": []");
+                encoder.write_line_with_prefix_bytes(indent_level, prefix, line)
+            });
+        }
+        if array.is_empty() && key.is_none() && prefix.is_empty() {
+            return self.write_line_bytes(indent_level, b"[]");
+        }
+        let fields = if prefix == b"- " && key.is_none() {
+            None
+        } else {
+            self.tabular_fields(array)
+        };
+        if let Some(fields) = fields {
             self.with_line_buf(|encoder, line| -> Result<()> {
                 line.clear();
                 encoder.append_array_header(line, array.len(), key, Some(&fields));
@@ -629,17 +596,20 @@ impl<O: OutputSink> Encoder<O> {
                 encoder.write_line_with_prefix_bytes(indent_level, prefix, line)?;
                 Ok(())
             })?;
-            self.reserve_tabular_rows(array.len(), fields.len());
+            let leaf_count: usize = fields.iter().map(TabularField::leaf_count).sum();
+            self.reserve_tabular_rows(array.len(), leaf_count);
             let mut row_indent = indent_level + 1;
             if prefix == b"- " && key.is_some() {
                 row_indent += 1;
             }
             let delimiter_char = self.active_delimiter();
             #[cfg(feature = "parallel")]
-            if self.should_parallel_tabular(array.len(), fields.len()) {
+            if fields.iter().all(|field| field.children.is_empty())
+                && self.should_parallel_tabular(array.len(), fields.len())
+            {
                 let field_names: Vec<SmolStr> = fields
                     .iter()
-                    .map(|field| SmolStr::new(self.interned_key(*field)))
+                    .map(|field| SmolStr::new(&field.name))
                     .collect();
                 let results: Vec<Result<RowBuf>> = array
                     .par_iter()
@@ -655,31 +625,21 @@ impl<O: OutputSink> Encoder<O> {
                 return Ok(());
             }
 
-            let field_names: Vec<SmolStr> = fields
-                .iter()
-                .map(|field| SmolStr::new(self.interned_key(*field)))
-                .collect();
-            self.reset_tabular_last_values(field_names.len());
+            self.reset_tabular_last_values(leaf_count);
             let mut row = Vec::with_capacity(128);
             for item in array {
                 let obj = item
                     .as_object()
                     .ok_or_else(|| Error::encode("tabular row is not an object"))?;
-                let mut iter = field_names.iter().enumerate();
-                let Some((_, first_field)) = iter.next() else {
-                    continue;
-                };
                 row.clear();
-                let value = obj
-                    .get(first_field.as_str())
-                    .ok_or_else(|| Error::encode("tabular row missing field"))?;
-                self.append_scalar_tabular(&mut row, value, delimiter_char)?;
-                for (idx, field) in iter {
-                    let value = obj
-                        .get(field.as_str())
-                        .ok_or_else(|| Error::encode("tabular row missing field"))?;
-                    self.append_scalar_tabular_prefixed(&mut row, value, delimiter_char, idx)?;
-                }
+                let mut column = 0;
+                self.append_tabular_object_cells(
+                    &mut row,
+                    obj,
+                    &fields,
+                    delimiter_char,
+                    &mut column,
+                )?;
                 self.write_line_bytes(row_indent, &row)?;
             }
             return Ok(());
@@ -747,6 +707,9 @@ impl<O: OutputSink> Encoder<O> {
             Value::Array(array) => {
                 self.encode_array_value(array, indent_level, Some(first_key), b"- ")?;
             }
+            Value::Object(nested) if self.tabular_fields_for_map_values(nested).is_some() => {
+                self.encode_keyed_object(nested, indent_level, Some(first_key), b"- ")?;
+            }
             Value::Object(nested) => {
                 self.with_line_buf(|encoder, line| -> Result<()> {
                     line.clear();
@@ -755,7 +718,7 @@ impl<O: OutputSink> Encoder<O> {
                     encoder.write_line_with_prefix_bytes(indent_level, b"- ", line)?;
                     Ok(())
                 })?;
-                self.encode_object(nested, indent_level + 1)?;
+                self.encode_object(nested, indent_level + 2)?;
             }
             _ => {
                 self.with_line_buf(|encoder, line| -> Result<()> {
@@ -771,6 +734,90 @@ impl<O: OutputSink> Encoder<O> {
 
         for (key, value) in iter {
             self.encode_object_entry(key, value, indent_level + 1)?;
+        }
+        Ok(())
+    }
+
+    fn encode_keyed_object(
+        &mut self,
+        map: &serde_json::Map<String, Value>,
+        indent_level: usize,
+        key: Option<&str>,
+        prefix: &[u8],
+    ) -> Result<()> {
+        let fields = self
+            .tabular_fields_for_map_values(map)
+            .ok_or_else(|| Error::encode("keyed tabular object is not uniform"))?;
+        let delimiter = self.document_delimiter;
+        self.with_line_buf(|encoder, line| -> Result<()> {
+            line.clear();
+            if let Some(key) = key {
+                encoder.append_encoded_key(line, key);
+            }
+            line.push(b'[');
+            let mut num = itoa::Buffer::new();
+            line.extend_from_slice(num.format(map.len()).as_bytes());
+            line.push(b':');
+            if delimiter != ',' {
+                line.push(delimiter as u8);
+            }
+            line.extend_from_slice(b"]{");
+            for (index, field) in fields.iter().enumerate() {
+                if index != 0 {
+                    line.push(delimiter as u8);
+                }
+                encoder.append_tabular_field(line, field, delimiter);
+            }
+            line.extend_from_slice(b"}:");
+            encoder.write_line_with_prefix_bytes(indent_level, prefix, line)
+        })?;
+
+        let mut row_indent = indent_level + 1;
+        if prefix == b"- " && key.is_some() {
+            row_indent += 1;
+        }
+        let leaf_count: usize = fields.iter().map(TabularField::leaf_count).sum();
+        self.reset_tabular_last_values(leaf_count);
+        let mut row = Vec::with_capacity(128);
+        for (entry_key, value) in map {
+            row.clear();
+            self.append_encoded_key(&mut row, entry_key);
+            row.extend_from_slice(b": ");
+            let object = value
+                .as_object()
+                .ok_or_else(|| Error::encode("keyed tabular entry is not an object"))?;
+            let mut column = 0;
+            self.append_tabular_object_cells(&mut row, object, &fields, delimiter, &mut column)?;
+            self.write_line_bytes(row_indent, &row)?;
+        }
+        Ok(())
+    }
+
+    fn append_tabular_object_cells(
+        &mut self,
+        row: &mut Vec<u8>,
+        object: &serde_json::Map<String, Value>,
+        fields: &[TabularField],
+        delimiter: char,
+        column: &mut usize,
+    ) -> Result<()> {
+        for field in fields {
+            let value = object
+                .get(&field.name)
+                .ok_or_else(|| Error::encode("tabular row missing field"))?;
+            if field.children.is_empty() {
+                if *column == 0 {
+                    self.append_scalar_tabular(row, value, delimiter)?;
+                } else {
+                    self.append_scalar_tabular_prefixed(row, value, delimiter, *column)?;
+                }
+                *column += 1;
+            } else {
+                let nested = value
+                    .as_object()
+                    .ok_or_else(|| Error::encode("nested tabular value is not an object"))?;
+                self.append_tabular_object_cells(row, nested, &field.children, delimiter, column)?;
+            }
         }
         Ok(())
     }
@@ -1152,30 +1199,12 @@ impl<O: OutputSink> Encoder<O> {
         buf.extend_from_slice(encoded.as_bytes());
     }
 
-    fn intern_key_id(&mut self, key: &str) -> usize {
-        if let Some(&id) = self.key_intern.get(key) {
-            return id;
-        }
-        let id = self.interned_keys.len();
-        let owned = key.to_string();
-        self.interned_keys.push(owned.clone());
-        self.key_intern.insert(owned, id);
-        id
-    }
-
-    fn interned_key(&self, id: usize) -> &str {
-        self.interned_keys
-            .get(id)
-            .expect("interned key id missing")
-            .as_str()
-    }
-
     fn append_array_header(
         &mut self,
         buf: &mut Vec<u8>,
         len: usize,
         key: Option<&str>,
-        fields: Option<&[usize]>,
+        fields: Option<&[TabularField]>,
     ) {
         let delimiter = self.active_delimiter();
         if let Some(key) = key {
@@ -1190,12 +1219,25 @@ impl<O: OutputSink> Encoder<O> {
         buf.push(b']');
         if let Some(fields) = fields {
             buf.push(b'{');
-            for (idx, field_id) in fields.iter().enumerate() {
+            for (idx, field) in fields.iter().enumerate() {
                 if idx > 0 {
                     buf.push(delimiter as u8);
                 }
-                let field = self.interned_key(*field_id);
-                self.append_encoded_key_no_cache(buf, field);
+                self.append_tabular_field(buf, field, delimiter);
+            }
+            buf.push(b'}');
+        }
+    }
+
+    fn append_tabular_field(&self, buf: &mut Vec<u8>, field: &TabularField, delimiter: char) {
+        self.append_encoded_key_no_cache(buf, &field.name);
+        if !field.children.is_empty() {
+            buf.push(b'{');
+            for (index, child) in field.children.iter().enumerate() {
+                if index != 0 {
+                    buf.push(delimiter as u8);
+                }
+                self.append_tabular_field(buf, child, delimiter);
             }
             buf.push(b'}');
         }
@@ -1227,26 +1269,55 @@ impl<O: OutputSink> Encoder<O> {
             && rows.saturating_mul(fields) >= PARALLEL_TABULAR_MIN_CELLS
     }
 
-    fn tabular_fields(&mut self, array: &[Value]) -> Option<Vec<usize>> {
+    fn tabular_fields(&mut self, array: &[Value]) -> Option<Vec<TabularField>> {
         let first = array.first()?.as_object()?;
+        Self::tabular_fields_for_objects(first, array.iter().map(Value::as_object).collect())
+    }
+
+    fn tabular_fields_for_map_values(
+        &self,
+        map: &serde_json::Map<String, Value>,
+    ) -> Option<Vec<TabularField>> {
+        if map.len() < 2 {
+            return None;
+        }
+        let first = map.values().next()?.as_object()?;
+        Self::tabular_fields_for_objects(first, map.values().map(Value::as_object).collect())
+    }
+
+    fn tabular_fields_for_objects<'a>(
+        first: &'a serde_json::Map<String, Value>,
+        rows: Option<Vec<&'a serde_json::Map<String, Value>>>,
+    ) -> Option<Vec<TabularField>> {
         if first.is_empty() {
             return None;
         }
-        let fields: Vec<usize> = first.keys().map(|key| self.intern_key_id(key)).collect();
-        for item in array {
-            let row = item.as_object()?;
-            if row.len() != fields.len() {
-                return None;
-            }
-            for field in &fields {
-                let key = self.interned_key(*field);
-                let value = row.get(key)?;
-                if !is_scalar(value) {
-                    return None;
-                }
-            }
+        let rows = rows?;
+        if rows.iter().any(|row| row.len() != first.len()) {
+            return None;
         }
-        Some(fields)
+        first
+            .iter()
+            .map(|(name, first_value)| {
+                let values: Vec<_> = rows
+                    .iter()
+                    .map(|row| row.get(name))
+                    .collect::<Option<_>>()?;
+                let children = if values.iter().all(|value| is_scalar(value)) {
+                    Vec::new()
+                } else {
+                    let first_child = first_value.as_object()?;
+                    Self::tabular_fields_for_objects(
+                        first_child,
+                        values.iter().map(|value| value.as_object()).collect(),
+                    )?
+                };
+                Some(TabularField {
+                    name: name.clone(),
+                    children,
+                })
+            })
+            .collect()
     }
 
     fn write_line_bytes(&mut self, indent_level: usize, content: &[u8]) -> Result<()> {

@@ -1,9 +1,6 @@
 use rstest::rstest;
 use serde_json::{json, Value};
-use serde_toon::{
-    DecodeOptions, Delimiter, EncodeOptions, ExpandPaths as ToonExpandPaths, Indent,
-    KeyFolding as ToonKeyFolding,
-};
+use serde_toon::{DecodeOptions, Delimiter, EncodeOptions, Indent};
 
 #[allow(dead_code)]
 #[derive(Clone, Debug, Default)]
@@ -95,10 +92,6 @@ fn map_encode_options(options: &SpecOptions) -> EncodeOptions {
     if let Some(indent) = options.indent {
         encoded.indent = Indent::Spaces(indent);
     }
-    if let Some(KeyFolding::Safe) = options.key_folding {
-        encoded.key_folding = ToonKeyFolding::Safe;
-    }
-    encoded.flatten_depth = options.flatten_depth;
     encoded
 }
 
@@ -109,9 +102,6 @@ fn map_decode_options(options: &SpecOptions) -> DecodeOptions {
     }
     if let Some(strict) = options.strict {
         decoded.strict = strict;
-    }
-    if let Some(ExpandPaths::Safe) = options.expand_paths {
-        decoded.expand_paths = ToonExpandPaths::Safe;
     }
     decoded
 }
@@ -139,16 +129,16 @@ fn spec14_strict_mode_encode(
 #[case("items[2]: 1", None, SpecOptions::default().with_strict(true))]
 #[case("items[1]{a,b}:\n  1", None, SpecOptions::default().with_strict(true))]
 #[case("items[2]{a,b}:\n  1,2", None, SpecOptions::default().with_strict(true))]
-#[case("a 1", None, SpecOptions::default().with_strict(true))]
+#[case("a 1", Some(json!("a 1")), SpecOptions::default().with_strict(true))]
 #[case("value: \"\\q\"", None, SpecOptions::default().with_strict(true))]
 #[case("items[1|]{a,b}:\n  1,2", None, SpecOptions::default().with_strict(true))]
 #[case("a:\n   b: 1", None, SpecOptions::default().with_strict(true))]
 #[case("a:\n\tb: 1", None, SpecOptions::default().with_strict(true))]
 #[case("items[2]:\n  - 1\n\n  - 2", None, SpecOptions::default().with_strict(true))]
 #[case(
-    "a.b: 1\na: 2",
-    None,
-    SpecOptions::default().with_expand_paths_safe().with_strict(true)
+    "a.b: 1",
+    Some(json!({"a.b": 1})),
+    SpecOptions::default().with_strict(true)
 )]
 fn spec14_strict_mode_decode(
     #[case] input: &str,
@@ -171,7 +161,7 @@ fn spec14_strict_mode_decode(
 #[case("items[2]: 1", false)]
 #[case("items[1]{a,b}:\n  1", false)]
 #[case("items[2]{a,b}:\n  1,2", false)]
-#[case("a 1", false)]
+#[case("a 1", true)]
 #[case("value: \"\\q\"", false)]
 #[case("a:\n\tb: 1", false)]
 #[case("items[2]:\n  - 1\n\n  - 2", false)]

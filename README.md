@@ -8,11 +8,11 @@
 [![Discord](https://flat.badgen.net/badge/discord/bnomei?color=7289da&icon=discord&label)](https://discordapp.com/users/bnomei)
 [![Buymecoffee](https://flat.badgen.net/badge/icon/donate?icon=buymeacoffee&color=FF813F&label)](https://www.buymeacoffee.com/bnomei)
 
-Serde-compatible [TOON](https://toonformat.dev) v3.0 encoder/decoder with optional v1.5 features, validated by the [spec fixture suite](https://github.com/toon-format/spec) (275 tests).
+Serde-compatible [TOON](https://toonformat.dev) v4.1 encoder/decoder, validated by the [spec fixture suite](https://github.com/toon-format/spec) (179 encode fixtures and 359 decode fixtures, synced from `d6db4b04303bdea132351ce45aed612311c850b2`). The 4.1 specification is a Working Draft and may change.
 
 ```toml
 [dependencies]
-serde_toon_format = "0.1"
+serde_toon_format = "0.2"
 # library name `serde_toon`
 ```
 
@@ -25,7 +25,8 @@ serde_toon_format = "0.1"
 
 ## Why serde_toon_format crate
 
-- TOON v3.0 implementation with optional v1.5 features (key folding and path expansion).
+- TOON v4.1 Working Draft implementation. Dotted keys are always literal; the key-folding, path-expansion, and flatten-depth options were removed by spec 4.
+- Supports 4.1 syntax including full-line `#` comments on decode, nested tabular field groups, and keyed tabular objects. Inline and trailing comments are not supported, and encoders never emit comments.
 - Conformance-first: spec fixtures in `tests/fixtures` executed by `tests/conformance.rs`, plus sectioned spec tests in `tests/spec_*`.
 - Performance-first: optimized encoder/decoder, streaming APIs (`to_writer`, `from_reader`), buffer APIs (`to_vec`, `from_slice`), optional parallel decode via `parallel`.
 - Serde-native API, auto-detect macro (`toon!`), canonical encoding (`encode_canonical`), and strict validation (`validate_str`).
@@ -149,31 +150,28 @@ assert_eq!(value, serde_json::json!({"name": "Margaret Hamilton", "age": 32}));
 ## Custom options
 
 ```rust
-use serde_toon::{Delimiter, EncodeOptions, Indent, KeyFolding};
+use serde_toon::{Delimiter, EncodeOptions, Indent};
 
 let opts = EncodeOptions::new()
     .with_indent(Indent::spaces(4))
-    .with_delimiter(Delimiter::Pipe)
-    .with_key_folding(KeyFolding::Safe)
-    .with_flatten_depth(Some(2));
+    .with_delimiter(Delimiter::Pipe);
 let toon = serde_toon::to_string_with_options(&serde_json::json!({"items": ["a", "b"]}), &opts)?;
 
 assert_eq!(toon, "items[2|]: a|b");
 # Ok::<(), serde_toon::Error>(())
 ```
 
-```rust
-use serde_toon::{DecodeOptions, ExpandPaths, Indent};
+Migration from pre-4 releases: remove `KeyFolding`, `ExpandPaths`, `with_key_folding`, `with_flatten_depth`, and `with_expand_paths` usage (and the corresponding CLI flags). A document containing `a.b: 1` now decodes to the literal key `"a.b"`, not a nested object.
 
-let opts = DecodeOptions::new()
-    .with_indent(Indent::spaces(4))
-    .with_strict(false)
-    .with_expand_paths(ExpandPaths::Safe);
-let value: serde_json::Value = serde_toon::from_str_with_options("a.b: 1", &opts)?;
+Scan stored v3 documents for lines matching `^ *#`: v4 interprets these as comments. Decode those documents with a v3 decoder, then re-encode the resulting values with this encoder. Strict mode now rejects duplicate keys and indentation depth jumps. Encoders emit canonical empty arrays (`[]`), nested tabular field groups, and keyed tabular objects; upgrade decoders before sharing newly encoded documents.
 
-assert_eq!(value, serde_json::json!({"a": {"b": 1}}));
-# Ok::<(), serde_toon::Error>(())
-```
+## Numeric, host-value, and whitespace policies
+
+- Host values are normalized through `serde::Serialize` into `serde_json::Value`; custom serialization takes precedence. Unsupported Serde values produce an error. Rust strings contain Unicode scalar values, so unpaired surrogates cannot be supplied as strings. No Unicode normalization is performed.
+- The value model stores exact `i64`/`u64` integers and finite IEEE-754 `f64` numbers. Decoding checks the complete TOON number grammar first. Integers outside the 64-bit integer range fall back to a finite `f64`, potentially rounding; decimal/exponent tokens use correctly rounded `f64` parsing. Overflow beyond finite `f64` becomes a string, and underflow may round to zero. A typed Serde target can impose narrower range/type requirements.
+- Encoding uses plain decimal notation, including outside the spec's canonical-decimal magnitude range. Negative zero becomes `0`; Serde normalizes non-finite floats to `null`. Use strings for arbitrary-precision decimals that must not round.
+- Token trimming removes only U+0020 spaces. NBSP and other Unicode whitespace remain string data. Strict mode rejects indentation tabs; non-strict mode counts leading tabs as one indentation unit each. A tab after a complete space-indentation prefix is reserved for a tab-delimited row's empty first cell and is rejected outside that context. The CLI uses the same policy.
+- `validate_str` checks the requested decoding rules and additionally rejects trailing U+0020 spaces on non-comment lines. It accepts valid root strings and exponent spellings; it is not an encoder-canonicality check.
 
 ## Performance tips
 
@@ -215,6 +213,8 @@ Run with `cargo bench --manifest-path benchmarks/toon/Cargo.toml`.
 We split results into **Value-only** and **Typed** to keep comparisons fair and explicit. Value-only uses `serde_json::Value` as a shared denominator so every crate can participate even if it doesn't offer a typed/serde API. Typed uses `Vec<GitHubRepo>` to show real-world serde integration and the extra cost of struct mapping. This makes it clear whether a library is fast at raw format parsing or fast end-to-end with typed data.
 
 The performance tables below use default settings; see the Defaults section for exact options, and any deviations needed for a crate to run are called out in the Notes.
+
+These measurements were taken with the v3.0 implementation, not the current v4.1 implementation.
 
 #### Value-only (`serde_json::Value`):
 

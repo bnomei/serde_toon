@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 use serde_json::Value;
-use serde_toon::{decode_to_value_with_options, DecodeOptions, ExpandPaths};
+use serde_toon::{decode_to_value_with_options, DecodeOptions};
 
 #[derive(Debug, Deserialize)]
 struct FixtureFile {
@@ -17,7 +17,14 @@ struct FixtureCase {
     input: Value,
     expected: Value,
     #[serde(default)]
+    options: FixtureOptions,
+    #[serde(default)]
     should_error: bool,
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct FixtureOptions {
+    strict: Option<bool>,
 }
 
 fn fixture_root() -> PathBuf {
@@ -35,10 +42,12 @@ fn load_fixture_file(path: &Path) -> FixtureFile {
 fn arena_decode_matches_tabular_fixtures() {
     let path = fixture_root().join("decode/arrays-tabular.json");
     let fixture = load_fixture_file(&path);
-    let options = DecodeOptions::new().with_expand_paths(ExpandPaths::Off);
-
     for case in fixture.tests {
         let name = format!("{}::{}", path.display(), case.name);
+        let mut options = DecodeOptions::new();
+        if let Some(strict) = case.options.strict {
+            options.strict = strict;
+        }
         let input = case
             .input
             .as_str()

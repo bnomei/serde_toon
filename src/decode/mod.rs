@@ -4,7 +4,7 @@ mod scan;
 mod serde;
 
 use std::borrow::Cow;
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::io::{BufRead, BufReader, Read};
 
 use ::serde::de::DeserializeOwned;
@@ -14,9 +14,7 @@ use smallvec::SmallVec;
 use smol_str::SmolStr;
 
 use crate::arena::{ArenaView, NodeData, NodeKind};
-use crate::num::number::format_json_number;
-use crate::text::string::{is_canonical_unquoted_key, is_identifier_segment};
-use crate::{DecodeOptions, Error, ExpandPaths, Indent, Location, Result};
+use crate::{DecodeOptions, Error, Indent, Location, Result};
 
 #[cfg(feature = "parallel")]
 use ::serde::Deserialize;
@@ -27,13 +25,6 @@ use rayon::prelude::*;
 const PARALLEL_ARRAY_MIN_ITEMS: usize = 64;
 
 pub fn from_str<T: DeserializeOwned>(input: &str, options: &DecodeOptions) -> Result<T> {
-    if options.expand_paths != ExpandPaths::Off {
-        let mut decoder = Decoder::new(options);
-        let value = decoder.decode_document(input)?;
-        return serde_json::from_value(value).map_err(|err| {
-            Error::deserialize_with_source(format!("deserialize failed: {err}"), err)
-        });
-    }
     let mut arena = ArenaView::with_parts(input, pool::take_arena_parts());
     let result = (|| {
         let root = parser::parse_into(&mut arena, options)?;
@@ -47,10 +38,6 @@ pub fn from_str<T: DeserializeOwned>(input: &str, options: &DecodeOptions) -> Re
 }
 
 pub fn from_str_value(input: &str, options: &DecodeOptions) -> Result<Value> {
-    if options.expand_paths != ExpandPaths::Off {
-        let mut decoder = Decoder::new(options);
-        return decoder.decode_document(input);
-    }
     let mut arena = ArenaView::with_parts(input, pool::take_arena_parts());
     let result = (|| {
         let root = parser::parse_into(&mut arena, options)?;
@@ -65,9 +52,6 @@ pub fn from_str_parallel<T: DeserializeOwned + Send>(
     input: &str,
     options: &DecodeOptions,
 ) -> Result<Vec<T>> {
-    if options.expand_paths != ExpandPaths::Off {
-        return from_str::<Vec<T>>(input, options);
-    }
     let mut arena = ArenaView::with_parts(input, pool::take_arena_parts());
     let result = (|| {
         let root = parser::parse_into(&mut arena, options)?;
@@ -131,10 +115,6 @@ pub fn from_reader_streaming<T: DeserializeOwned, R: BufRead>(
 }
 
 pub fn validate_str(input: &str, options: &DecodeOptions) -> Result<()> {
-    if options.expand_paths != ExpandPaths::Off {
-        let mut validator = Decoder::new_validator(options);
-        return validator.validate_document(input);
-    }
     let mut arena = ArenaView::with_parts(input, pool::take_arena_parts());
     let result = (|| {
         parser::parse_into_validate(&mut arena, options)?;
@@ -194,10 +174,9 @@ fn arena_to_value(arena: &ArenaView<'_>, node_index: usize) -> Result<Value> {
 struct Decoder {
     indent_size: usize,
     strict: bool,
-    expand_paths: ExpandPaths,
-    validate: bool,
     active_delimiter: char,
     delimiter_stack: Vec<char>,
+    header_depths: Vec<usize>,
 }
 
 type TokenBuf<'a> = SmallVec<[&'a str; 16]>;
@@ -208,21 +187,10 @@ impl Decoder {
         Self {
             indent_size,
             strict: options.strict,
-            expand_paths: options.expand_paths,
-            validate: false,
             active_delimiter: ',',
             delimiter_stack: Vec::new(),
+            header_depths: Vec::new(),
         }
-    }
-
-    fn new_validator(options: &DecodeOptions) -> Self {
-        let mut decoder = Self::new(options);
-        decoder.validate = true;
-        decoder
-    }
-
-    fn validate_document(&mut self, input: &str) -> Result<()> {
-        self.decode_document(input).map(|_| ())
     }
 
     fn push_delimiter(&mut self, delimiter: char) {
@@ -234,100 +202,6 @@ impl Decoder {
         if let Some(previous) = self.delimiter_stack.pop() {
             self.active_delimiter = previous;
         }
-    }
-
-    fn decode_document(&mut self, input: &str) -> Result<Value> {
-        let lines = self.collect_lines(input)?;
-
-        let non_blank: Vec<&Line<'_>> = lines.iter().filter(|line| !line.is_blank).collect();
-
-        if non_blank.is_empty() {
-            return Ok(Value::Object(Map::new()));
-        }
-
-        let first_non_blank_idx = lines.iter().position(|line| !line.is_blank).unwrap_or(0);
-        let first_line = &lines[first_non_blank_idx];
-        let first_content = trim_ascii(&first_line.content);
-        if first_content.starts_with('[') {
-            let header = match self.parse_array_header(first_content) {
-                Ok(header) => header,
-                Err(err) => {
-                    return Err(self.attach_location_for_slice(
-                        first_line,
-                        first_non_blank_idx,
-                        first_content,
-                        err,
-                    ));
-                }
-            };
-            if let Some(header) = header {
-                if header.key.is_none() {
-                    if first_line.indent != 0 {
-                        return Err(self.attach_location_for_line(
-                            &lines,
-                            first_non_blank_idx,
-                            Error::decode("unexpected indentation"),
-                        ));
-                    }
-                    let parsed = self
-                        .parse_array_from_header(&header, &lines, first_non_blank_idx + 1, 0)
-                        .map_err(|err| {
-                            self.attach_location_for_slice(
-                                first_line,
-                                first_non_blank_idx,
-                                first_content,
-                                err,
-                            )
-                        })?;
-                    self.ensure_no_trailing_content(&lines, parsed.next_idx)?;
-                    return Ok(parsed.value);
-                }
-            }
-        }
-
-        if non_blank.len() == 1 && non_blank[0].indent == 0 {
-            let content = trim_ascii(&non_blank[0].content);
-            if self.validate && self.reject_root_unquoted_string(content) {
-                return Err(self.attach_location_for_slice(
-                    first_line,
-                    first_non_blank_idx,
-                    content,
-                    Error::decode("root string must be quoted"),
-                ));
-            }
-            return self
-                .decode_single_line(content, first_line, first_non_blank_idx)
-                .map_err(|err| {
-                    self.attach_location_for_slice(first_line, first_non_blank_idx, content, err)
-                });
-        }
-
-        if non_blank.len() == 1 && self.strict && non_blank[0].indent != 0 {
-            return Err(self.attach_location_for_line(
-                &lines,
-                first_non_blank_idx,
-                Error::decode("unexpected indentation"),
-            ));
-        }
-
-        let map = self.decode_object_lines(&lines)?;
-        Ok(Value::Object(map))
-    }
-
-    fn ensure_no_trailing_content(&self, lines: &[Line<'_>], start_idx: usize) -> Result<()> {
-        if let Some((idx, _)) = lines
-            .iter()
-            .enumerate()
-            .skip(start_idx)
-            .find(|(_, line)| !line.is_blank)
-        {
-            return Err(self.attach_location_for_line(
-                lines,
-                idx,
-                Error::decode("unexpected trailing content"),
-            ));
-        }
-        Ok(())
     }
 
     fn decode_single_line(
@@ -342,24 +216,20 @@ impl Decoder {
         {
             return Ok(array);
         }
-        if let (Some(bracket_idx), Some(colon_idx)) = (line.find('['), line.find(':')) {
-            if bracket_idx < colon_idx {
-                if let Some(header) = self
-                    .parse_array_header(line)
-                    .map_err(|err| self.attach_location_for_slice(line_meta, line_idx, line, err))?
-                {
-                    if let Some(key) = header.key.as_ref() {
-                        let value = self.build_array_value(&header).map_err(|err| {
-                            self.attach_location_for_slice(line_meta, line_idx, line, err)
-                        })?;
-                        let mut map = Map::new();
-                        self.insert_key_value(&mut map, key.clone(), value)
-                            .map_err(|err| {
-                                self.attach_location_for_slice(line_meta, line_idx, line, err)
-                            })?;
-                        return Ok(Value::Object(map));
-                    }
-                }
+        if let Some(header) = self
+            .parse_array_header(line)
+            .map_err(|err| self.attach_location_for_slice(line_meta, line_idx, line, err))?
+        {
+            if let Some(key) = header.key.as_ref() {
+                let value = self.build_array_value(&header).map_err(|err| {
+                    self.attach_location_for_slice(line_meta, line_idx, line, err)
+                })?;
+                let mut map = Map::new();
+                self.insert_key_value(&mut map, key.clone(), value)
+                    .map_err(|err| {
+                        self.attach_location_for_slice(line_meta, line_idx, line, err)
+                    })?;
+                return Ok(Value::Object(map));
             }
         }
         if let Some((key, value)) = self
@@ -386,14 +256,6 @@ impl Decoder {
             self.parse_array_header(line)
                 .map_err(|err| self.attach_location_for_slice(line_meta, line_idx, line, err))?;
         }
-        if self.strict && line.is_ascii() && !line.starts_with('"') && contains_whitespace(line) {
-            return Err(self.attach_location_for_slice(
-                line_meta,
-                line_idx,
-                line,
-                Error::decode("unquoted primitive contains whitespace"),
-            ));
-        }
         self.parse_value_token(line)
             .map_err(|err| self.attach_location_for_slice(line_meta, line_idx, line, err))
     }
@@ -414,11 +276,17 @@ impl Decoder {
     }
 
     fn build_array_value(&self, header: &HeaderLine) -> Result<Value> {
+        if header.keyed {
+            if self.strict && header.len != 0 {
+                return Err(Error::decode("array length mismatch"));
+            }
+            return Ok(Value::Object(Map::new()));
+        }
         let items = match header.inline.as_deref() {
             Some(inline) => self.parse_inline_array(inline, header.delimiter, header.len)?,
             None => Vec::new(),
         };
-        if header.inline.is_none() && header.len > 0 {
+        if self.strict && header.inline.is_none() && header.len > 0 {
             return Err(Error::decode("array payload required"));
         }
         if self.strict && header.len != items.len() {
@@ -434,10 +302,12 @@ impl Decoder {
         expected_len: usize,
     ) -> Result<Vec<Value>> {
         let tokens = self.split_delimited_with_capacity(inline, delimiter, expected_len)?;
-        let mut values = Vec::with_capacity(expected_len.max(tokens.len()));
+        let mut values = Vec::new();
         for token in tokens {
             if token.is_empty() {
                 values.push(Value::String(String::new()));
+            } else if token == "[]" {
+                values.push(Value::String("[]".into()));
             } else {
                 values.push(self.parse_value_token(token)?);
             }
@@ -453,13 +323,9 @@ impl Decoder {
         &self,
         input: &'a str,
         delimiter: char,
-        expected_len: usize,
+        _expected_len: usize,
     ) -> Result<TokenBuf<'a>> {
-        let mut tokens = if expected_len > 0 {
-            TokenBuf::with_capacity(expected_len)
-        } else {
-            TokenBuf::new()
-        };
+        let mut tokens = TokenBuf::new();
         self.split_delimited_into(input, delimiter, &mut tokens)?;
         Ok(tokens)
     }
@@ -552,15 +418,15 @@ impl Decoder {
     }
 
     fn parse_value_token(&self, token: &str) -> Result<Value> {
-        if self.validate {
-            self.validate_value_token(token)?;
-        }
         let token = trim_ascii(token);
         if token.is_empty() {
             return Err(Error::decode("empty value"));
         }
         if token.starts_with('"') {
             return Ok(Value::String(self.parse_quoted(token)?));
+        }
+        if token == "[]" {
+            return Ok(Value::Array(Vec::new()));
         }
         match token {
             "null" => return Ok(Value::Null),
@@ -574,47 +440,6 @@ impl Decoder {
         Ok(Value::String(token.to_string()))
     }
 
-    fn validate_value_token(&self, token: &str) -> Result<()> {
-        let token = trim_ascii(token);
-        if token.is_empty() {
-            return Err(Error::decode("empty value"));
-        }
-        if token.starts_with('"') {
-            self.parse_quoted(token)?;
-            return Ok(());
-        }
-        match token {
-            "true" | "false" | "null" => return Ok(()),
-            "NaN" | "Infinity" | "-Infinity" | "+Infinity" => {
-                return Err(Error::decode("non-finite numbers must be null"))
-            }
-            _ => {}
-        }
-        if is_numeric_like(token) {
-            let number = self
-                .parse_number(token)
-                .ok_or_else(|| Error::decode("invalid number"))?;
-            let canonical = format_json_number(&number);
-            if canonical != token {
-                return Err(Error::decode("non-canonical number"));
-            }
-        }
-        Ok(())
-    }
-
-    fn reject_root_unquoted_string(&self, token: &str) -> bool {
-        if token.starts_with('"') {
-            return false;
-        }
-        if matches!(token, "true" | "false" | "null") {
-            return false;
-        }
-        if is_numeric_like(token) {
-            return false;
-        }
-        token.is_ascii() && is_canonical_unquoted_key(token)
-    }
-
     fn parse_number(&self, token: &str) -> Option<serde_json::Number> {
         parse_number_token(token)
     }
@@ -625,20 +450,10 @@ impl Decoder {
             let value = self.parse_quoted(token)?;
             Ok(KeyToken {
                 value: SmolStr::new(value.as_str()),
-                quoted: true,
             })
         } else {
-            if self.strict {
-                if contains_whitespace(token) {
-                    return Err(Error::decode("invalid unquoted key"));
-                }
-                if token.is_ascii() && !is_canonical_unquoted_key(token) {
-                    return Err(Error::decode("invalid unquoted key"));
-                }
-            }
             Ok(KeyToken {
                 value: SmolStr::new(token),
-                quoted: false,
             })
         }
     }
@@ -651,12 +466,24 @@ impl Decoder {
         let inner = &token[1..token.len() - 1];
         let bytes = inner.as_bytes();
         if memchr(b'\\', bytes).is_none() {
+            if memchr(b'"', bytes).is_some() {
+                return Err(Error::decode("characters after quoted token"));
+            }
+            if inner.chars().any(|ch| ch < ' ' && ch != '\t') {
+                return Err(Error::decode("unescaped control character"));
+            }
             return Ok(inner.to_string());
         }
         let mut out = String::with_capacity(inner.len());
         let mut idx = 0;
         while let Some(offset) = memchr(b'\\', &bytes[idx..]) {
             let esc_pos = idx + offset;
+            if memchr(b'"', &bytes[idx..esc_pos]).is_some() {
+                return Err(Error::decode("characters after quoted token"));
+            }
+            if inner[idx..esc_pos].chars().any(|ch| ch < ' ' && ch != '\t') {
+                return Err(Error::decode("unescaped control character"));
+            }
             out.push_str(&inner[idx..esc_pos]);
             let next_idx = esc_pos + 1;
             let next = bytes
@@ -668,9 +495,35 @@ impl Decoder {
                 b't' => out.push('\t'),
                 b'"' => out.push('"'),
                 b'\\' => out.push('\\'),
+                b'u' => {
+                    let hex_end = next_idx + 5;
+                    let hex = inner
+                        .get(next_idx + 1..hex_end)
+                        .ok_or_else(|| Error::decode("unterminated unicode escape"))?;
+                    if !hex.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+                        return Err(Error::decode("invalid unicode escape"));
+                    }
+                    let code = u16::from_str_radix(hex, 16)
+                        .map_err(|_| Error::decode("invalid unicode escape"))?;
+                    if (0xd800..=0xdfff).contains(&code) {
+                        return Err(Error::decode("unicode surrogate escapes not allowed"));
+                    }
+                    out.push(
+                        char::from_u32(code as u32)
+                            .ok_or_else(|| Error::decode("invalid unicode escape"))?,
+                    );
+                    idx = hex_end;
+                    continue;
+                }
                 _ => return Err(Error::decode("invalid escape")),
             }
             idx = esc_pos + 2;
+        }
+        if memchr(b'"', &bytes[idx..]).is_some() {
+            return Err(Error::decode("characters after quoted token"));
+        }
+        if inner[idx..].chars().any(|ch| ch < ' ' && ch != '\t') {
+            return Err(Error::decode("unescaped control character"));
         }
         out.push_str(&inner[idx..]);
         Ok(out)
@@ -735,6 +588,9 @@ impl Decoder {
                 bracket_start = Some(idx);
                 break;
             }
+            if ch == ':' {
+                return Ok(None);
+            }
         }
         if in_quotes {
             return Err(Error::decode("unterminated string"));
@@ -748,15 +604,25 @@ impl Decoder {
             None => return Err(Error::decode("unterminated array header")),
         };
 
-        let key_part = trim_ascii(&line[..bracket_start]);
+        let raw_key_part = &line[..bracket_start];
+        if raw_key_part.ends_with(' ') || raw_key_part.ends_with('\t') {
+            if self.strict {
+                return Err(Error::decode("whitespace before bracket segment"));
+            }
+            return Ok(None);
+        }
+        let key_part = trim_ascii(raw_key_part);
         let key = if key_part.is_empty() {
             None
         } else {
             Some(self.parse_key_token(key_part)?)
         };
 
-        let inner = line[bracket_start + 1..bracket_end].trim_matches(' ');
+        let inner = &line[bracket_start + 1..bracket_end];
         if inner.is_empty() {
+            if !self.strict {
+                return Ok(None);
+            }
             return Err(Error::decode("array length missing"));
         }
         let mut digits_end = 0;
@@ -768,149 +634,143 @@ impl Decoder {
             }
         }
         if digits_end == 0 {
+            if !self.strict {
+                return Ok(None);
+            }
             return Err(Error::decode("array length missing"));
         }
         let len: usize = inner[..digits_end]
             .parse()
             .map_err(|_| Error::decode("invalid array length"))?;
-        let remainder = &inner[digits_end..];
-        let mut chars = remainder.chars().peekable();
-        while matches!(chars.peek(), Some(' ')) {
-            chars.next();
-        }
-        let delimiter = match chars.next() {
-            None => ',',
-            Some(delimiter) => {
-                if chars.any(|ch| ch != ' ') {
-                    return Err(Error::decode("invalid array delimiter"));
-                }
-                if !matches!(delimiter, ',' | '\t' | '|') {
-                    return Err(Error::decode("invalid array delimiter"));
-                }
-                delimiter
+        if digits_end > 1 && inner.starts_with('0') {
+            if !self.strict {
+                return Ok(None);
             }
+            return Err(Error::decode("invalid array length"));
+        }
+        let mut remainder = &inner[digits_end..];
+        let keyed = remainder.starts_with(':');
+        if keyed {
+            remainder = &remainder[1..];
+        }
+        let delimiter = match remainder {
+            "" => ',',
+            "\t" => '\t',
+            "|" => '|',
+            _ if !self.strict => return Ok(None),
+            _ => return Err(Error::decode("invalid array delimiter")),
         };
 
-        let mut rest = line[bracket_end + 1..].trim_start();
-        let mut fields = None;
-        if rest.starts_with('{') {
-            let end = rest
-                .find('}')
-                .ok_or_else(|| Error::decode("unterminated field list"))?;
-            let field_segment = &rest[1..end];
-            let mut parsed_fields = Vec::new();
-            for token in self.split_delimited(field_segment, delimiter)? {
-                if token.is_empty() {
-                    return Err(Error::decode("empty field name"));
-                }
-                parsed_fields.push(self.parse_key_token(token)?);
+        let mut rest = &line[bracket_end + 1..];
+        if rest.starts_with(char::is_whitespace) {
+            if !self.strict {
+                return Ok(None);
             }
-            fields = Some(parsed_fields);
-            rest = rest[end + 1..].trim_start();
-        }
-
-        let colon_idx = rest
-            .find(':')
-            .ok_or_else(|| Error::decode("array header missing ':'"))?;
-        if !trim_ascii(&rest[..colon_idx]).is_empty() {
             return Err(Error::decode("invalid array header suffix"));
         }
-        let inline = trim_ascii(&rest[colon_idx + 1..]);
+        let mut fields = None;
+        if rest.starts_with('{') {
+            let end =
+                matching_brace(rest).ok_or_else(|| Error::decode("unterminated field list"))?;
+            let field_segment = &rest[1..end];
+            let has_mismatched_delimiter = match delimiter {
+                '|' => {
+                    first_unquoted(field_segment, b',').is_some()
+                        || first_unquoted(field_segment, b'\t').is_some()
+                }
+                '\t' => {
+                    first_unquoted(field_segment, b',').is_some()
+                        || first_unquoted(field_segment, b'|').is_some()
+                }
+                ',' => {
+                    first_unquoted(field_segment, b'|').is_some()
+                        || first_unquoted(field_segment, b'\t').is_some()
+                }
+                _ => false,
+            };
+            if has_mismatched_delimiter {
+                if !self.strict {
+                    return Ok(None);
+                }
+                return Err(Error::decode("field delimiter mismatch"));
+            }
+            fields = Some(self.parse_field_entries(field_segment, delimiter)?);
+            rest = &rest[end + 1..];
+        }
+        if keyed && fields.is_none() {
+            return Err(Error::decode("keyed header requires fields"));
+        }
+
+        if !rest.starts_with(':') {
+            if !self.strict && rest.contains(':') {
+                return Ok(None);
+            }
+            return Err(Error::decode(if rest.contains(':') {
+                "invalid array header suffix"
+            } else {
+                "array header missing ':'"
+            }));
+        }
+        let inline = trim_ascii(&rest[1..]);
         let inline = if inline.is_empty() {
             None
         } else {
             Some(inline.to_string())
         };
+        if fields.is_some() && inline.is_some() {
+            return Err(Error::decode(
+                "fields-bearing header cannot contain inline data",
+            ));
+        }
+        if keyed && inline.is_some() {
+            return Err(Error::decode("keyed header cannot contain inline data"));
+        }
 
         Ok(Some(HeaderLine {
             key,
             len,
             delimiter,
+            keyed,
             fields,
             inline,
         }))
     }
 
-    fn collect_lines<'a>(&self, input: &'a str) -> Result<Vec<Line<'a>>> {
-        if self.indent_size == 0 {
-            return Err(Error::decode("indent size must be greater than zero"));
-        }
-        let bytes = input.as_bytes();
-        if self.validate && bytes.last() == Some(&b'\n') {
-            return Err(Error::decode("trailing newline not allowed"));
-        }
-
-        let mut lines = Vec::new();
-        let mut start = 0;
-        for idx in memchr_iter(b'\n', bytes) {
-            let mut end = idx;
-            if end > start && bytes[end - 1] == b'\r' {
-                end -= 1;
+    fn parse_field_entries(&self, input: &str, delimiter: char) -> Result<Vec<FieldEntry>> {
+        let mut result = Vec::new();
+        let mut names = HashMap::<SmolStr, ()>::new();
+        for token in split_top_level(input, delimiter)? {
+            let token = trim_ascii(token);
+            if token.is_empty() {
+                return Err(Error::decode("empty field name"));
             }
-            if self.validate && end > start {
-                let last = bytes[end - 1];
-                if last == b' ' || last == b'\t' {
-                    return Err(Error::decode("trailing whitespace not allowed"));
+            let (name, children) = if let Some(start) = first_unquoted(token, b'{') {
+                let end = matching_brace(&token[start..])
+                    .ok_or_else(|| Error::decode("unterminated field list"))?;
+                if start + end + 1 != token.len() {
+                    return Err(Error::decode("invalid field name"));
                 }
+                let inner = &token[start + 1..start + end];
+                if inner.is_empty() {
+                    return Err(Error::decode("empty field name"));
+                }
+                (
+                    trim_ascii(&token[..start]),
+                    self.parse_field_entries(inner, delimiter)?,
+                )
+            } else {
+                (token, Vec::new())
+            };
+            let key = self.parse_key_token(name)?;
+            if self.strict && names.insert(key.value.clone(), ()).is_some() {
+                return Err(Error::decode("duplicate field name"));
             }
-            let line_idx = lines.len();
-            let line = &input[start..end];
-            let built = self.build_line_borrowed(line, start).map_err(|err| {
-                err.with_location(Location {
-                    offset: start,
-                    line: line_idx + 1,
-                    column: 1,
-                })
-            })?;
-            lines.push(built);
-            start = idx + 1;
+            result.push(FieldEntry { key, children });
         }
-
-        let mut end = bytes.len();
-        if end > start && bytes[end - 1] == b'\r' {
-            end -= 1;
+        if result.is_empty() {
+            return Err(Error::decode("empty field name"));
         }
-        if self.validate && end > start {
-            let last = bytes[end - 1];
-            if last == b' ' || last == b'\t' {
-                return Err(Error::decode("trailing whitespace not allowed"));
-            }
-        }
-        let line_idx = lines.len();
-        let line = &input[start..end];
-        let built = self.build_line_borrowed(line, start).map_err(|err| {
-            err.with_location(Location {
-                offset: start,
-                line: line_idx + 1,
-                column: 1,
-            })
-        })?;
-        lines.push(built);
-
-        Ok(lines)
-    }
-
-    fn build_line_borrowed<'a>(&self, line: &'a str, raw_start: usize) -> Result<Line<'a>> {
-        let Some((indent_columns, indent_chars, level)) = self.build_line_parts(line)? else {
-            return Ok(Line {
-                raw_start,
-                content_start: raw_start,
-                indent: 0,
-                level: 0,
-                content: Cow::Borrowed(""),
-                is_blank: true,
-            });
-        };
-        let content_start = raw_start + indent_chars;
-        let content = Cow::Borrowed(&line[indent_chars..]);
-        Ok(Line {
-            raw_start,
-            content_start,
-            indent: indent_columns,
-            level,
-            content,
-            is_blank: false,
-        })
+        Ok(result)
     }
 
     fn build_line_owned(&self, line: &str, raw_start: usize) -> Result<Line<'static>> {
@@ -922,6 +782,7 @@ impl Decoder {
                 level: 0,
                 content: Cow::Borrowed(""),
                 is_blank: true,
+                is_comment: false,
             });
         };
         let content_start = raw_start + indent_chars;
@@ -933,11 +794,16 @@ impl Decoder {
             level,
             content,
             is_blank: false,
+            is_comment: false,
         })
     }
 
     fn build_line_parts(&self, line: &str) -> Result<Option<(usize, usize, usize)>> {
-        if is_blank_line(line) {
+        let spaces = line.bytes().take_while(|&byte| byte == b' ').count();
+        let possible_tsv = spaces > 0
+            && spaces.is_multiple_of(self.indent_size)
+            && line.as_bytes().get(spaces) == Some(&b'\t');
+        if is_blank_line(line) && !possible_tsv {
             return Ok(None);
         }
         let mut indent_columns: usize = 0;
@@ -949,6 +815,15 @@ impl Decoder {
                     indent_chars += 1;
                 }
                 b'\t' => {
+                    // Leave possible empty TSV cells for the scope-aware parser.
+                    if indent_columns > 0
+                        && indent_columns.is_multiple_of(self.indent_size)
+                        && line.as_bytes()[..indent_chars]
+                            .iter()
+                            .all(|&byte| byte == b' ')
+                    {
+                        break;
+                    }
                     if self.strict {
                         return Err(Error::decode("tabs not allowed in indentation"));
                     }
@@ -963,16 +838,6 @@ impl Decoder {
         }
         let level = indent_columns / self.indent_size;
         Ok(Some((indent_columns, indent_chars, level)))
-    }
-
-    fn location_for_line(&self, lines: &[Line<'_>], line_idx: usize) -> Option<Location> {
-        let line = lines.get(line_idx)?;
-        let offset = line.raw_start;
-        Some(Location {
-            offset,
-            line: line_idx + 1,
-            column: 1,
-        })
     }
 
     fn location_for_slice(
@@ -993,16 +858,6 @@ impl Decoder {
             line: line_idx + 1,
             column,
         })
-    }
-
-    fn attach_location_for_line(&self, lines: &[Line<'_>], line_idx: usize, err: Error) -> Error {
-        if err.location.is_some() {
-            return err;
-        }
-        match self.location_for_line(lines, line_idx) {
-            Some(location) => err.with_location(location),
-            None => err,
-        }
     }
 
     fn attach_location_for_slice(
@@ -1026,303 +881,6 @@ impl Decoder {
                 })
             }
         }
-    }
-
-    fn decode_object_lines(&mut self, lines: &[Line<'_>]) -> Result<Map<String, Value>> {
-        let (map, idx) = self.parse_object_block(lines, 0, 0)?;
-        if idx < lines.len() {
-            return Err(self.attach_location_for_line(
-                lines,
-                idx,
-                Error::decode("unexpected trailing content"),
-            ));
-        }
-        Ok(map)
-    }
-
-    fn parse_object_block(
-        &mut self,
-        lines: &[Line<'_>],
-        mut idx: usize,
-        base_level: usize,
-    ) -> Result<(Map<String, Value>, usize)> {
-        let mut map = Map::new();
-        let mut override_level: Option<usize> = None;
-        while idx < lines.len() {
-            let line = &lines[idx];
-            if line.is_blank {
-                idx += 1;
-                continue;
-            }
-            let actual_level = line.level;
-            let level = override_level.take().unwrap_or(actual_level);
-            if level < base_level {
-                break;
-            }
-            if level > base_level {
-                return Err(self.attach_location_for_line(
-                    lines,
-                    idx,
-                    Error::decode("unexpected indentation"),
-                ));
-            }
-            let content = trim_ascii(&line.content);
-
-            let header = match self.parse_array_header(content) {
-                Ok(header) => header,
-                Err(err) => {
-                    return Err(self.attach_location_for_slice(line, idx, content, err));
-                }
-            };
-            if let Some(header) = header {
-                let key = header.key.as_ref().ok_or_else(|| {
-                    self.attach_location_for_slice(
-                        line,
-                        idx,
-                        content,
-                        Error::decode("array header missing key in object context"),
-                    )
-                })?;
-                let parsed = self
-                    .parse_array_from_header(&header, lines, idx + 1, base_level)
-                    .map_err(|err| self.attach_location_for_slice(line, idx, content, err))?;
-                self.insert_key_value(&mut map, key.clone(), parsed.value)
-                    .map_err(|err| self.attach_location_for_slice(line, idx, content, err))?;
-                if parsed.deindent_next {
-                    override_level = Some(base_level);
-                }
-                idx = parsed.next_idx;
-                continue;
-            }
-
-            if let Some((key, value)) = self
-                .split_key_value(content)
-                .map_err(|err| self.attach_location_for_slice(line, idx, content, err))?
-            {
-                let key = self
-                    .parse_key_token(trim_ascii(key))
-                    .map_err(|err| self.attach_location_for_slice(line, idx, key, err))?;
-                if trim_ascii(value).is_empty() {
-                    let (nested, next_idx) = self
-                        .parse_object_block(lines, idx + 1, base_level + 1)
-                        .map_err(|err| self.attach_location_for_slice(line, idx, content, err))?;
-                    self.insert_key_value(&mut map, key, Value::Object(nested))
-                        .map_err(|err| self.attach_location_for_slice(line, idx, content, err))?;
-                    idx = next_idx;
-                } else {
-                    let value_trimmed = trim_ascii(value);
-                    let value = self.parse_value_token(value).map_err(|err| {
-                        self.attach_location_for_slice(line, idx, value_trimmed, err)
-                    })?;
-                    self.insert_key_value(&mut map, key, value)
-                        .map_err(|err| self.attach_location_for_slice(line, idx, content, err))?;
-                    idx += 1;
-                }
-                continue;
-            }
-
-            if self.strict {
-                return Err(self.attach_location_for_slice(
-                    line,
-                    idx,
-                    content,
-                    Error::decode("bare key not allowed in strict mode"),
-                ));
-            }
-            let key = self
-                .parse_key_token(content)
-                .map_err(|err| self.attach_location_for_slice(line, idx, content, err))?;
-            self.insert_key_value(&mut map, key, Value::Null)
-                .map_err(|err| self.attach_location_for_slice(line, idx, content, err))?;
-            idx += 1;
-        }
-        Ok((map, idx))
-    }
-
-    fn parse_array_from_header(
-        &mut self,
-        header: &HeaderLine,
-        lines: &[Line<'_>],
-        idx: usize,
-        base_level: usize,
-    ) -> Result<ParsedArray> {
-        self.push_delimiter(header.delimiter);
-        let result = (|| {
-            if let Some(inline) = header.inline.as_deref() {
-                let items = self.parse_inline_array(inline, header.delimiter, header.len)?;
-                if self.strict && items.len() != header.len {
-                    return Err(Error::decode("array length mismatch"));
-                }
-                return Ok(ParsedArray {
-                    value: Value::Array(items),
-                    next_idx: idx,
-                    deindent_next: false,
-                });
-            }
-
-            if let Some(fields) = header.fields.as_ref() {
-                let (rows, next_idx, deindent_next) = self.parse_tabular_block(
-                    lines,
-                    idx,
-                    base_level,
-                    fields,
-                    header.delimiter,
-                    header.len,
-                )?;
-                if self.strict && rows.len() != header.len {
-                    return Err(Error::decode("array length mismatch"));
-                }
-                return Ok(ParsedArray {
-                    value: Value::Array(rows),
-                    next_idx,
-                    deindent_next,
-                });
-            }
-
-            if header.len == 0 {
-                return Ok(ParsedArray {
-                    value: Value::Array(Vec::new()),
-                    next_idx: idx,
-                    deindent_next: false,
-                });
-            }
-
-            let (items, next_idx) =
-                self.parse_list_block(lines, idx, base_level + 1, header.len)?;
-            if header.len > 0 && items.is_empty() {
-                return Err(Error::decode("array payload required"));
-            }
-            if self.strict && items.len() != header.len {
-                return Err(Error::decode("array length mismatch"));
-            }
-            Ok(ParsedArray {
-                value: Value::Array(items),
-                next_idx,
-                deindent_next: false,
-            })
-        })();
-        self.pop_delimiter();
-        result
-    }
-
-    fn parse_tabular_block(
-        &self,
-        lines: &[Line<'_>],
-        mut idx: usize,
-        base_level: usize,
-        fields: &[KeyToken],
-        delimiter: char,
-        expected_len: usize,
-    ) -> Result<(Vec<Value>, usize, bool)> {
-        let mut rows = Vec::with_capacity(expected_len);
-        let mut field_paths: Vec<Option<Vec<&str>>> = Vec::new();
-        let mut fast_path = self.expand_paths != ExpandPaths::Safe;
-        if !fast_path {
-            field_paths = Vec::with_capacity(fields.len());
-            for field in fields {
-                field_paths.push(self.expandable_path_parts(field));
-            }
-            fast_path = field_paths.iter().all(|parts| parts.is_none());
-        }
-        let field_names: Vec<String> = fields.iter().map(|field| field.value.to_string()).collect();
-        let mut row_level = None;
-        while idx < lines.len() {
-            let line = &lines[idx];
-            if line.is_blank {
-                if !self.strict {
-                    idx += 1;
-                    continue;
-                }
-                let mut peek = idx + 1;
-                while peek < lines.len() && lines[peek].is_blank {
-                    peek += 1;
-                }
-                if peek >= lines.len() || lines[peek].level <= base_level {
-                    break;
-                }
-                return Err(self.attach_location_for_line(
-                    lines,
-                    idx,
-                    Error::decode("blank line not allowed in array"),
-                ));
-            }
-            let level = line.level;
-            if row_level.is_none() {
-                if level <= base_level {
-                    return Ok((rows, idx, false));
-                }
-                row_level = Some(level);
-            }
-            let row_level = row_level.unwrap();
-            if level < row_level {
-                return Ok((rows, idx, false));
-            }
-            if level > row_level {
-                return Err(self.attach_location_for_line(
-                    lines,
-                    idx,
-                    Error::decode("unexpected indentation"),
-                ));
-            }
-            let mut row_content = trim_ascii(&line.content);
-            if let Some(stripped) = row_content.strip_prefix('-') {
-                if stripped.starts_with(' ') || stripped.starts_with('\t') {
-                    row_content = stripped.trim_start();
-                }
-            }
-            let mut tokens = TokenBuf::with_capacity(fields.len());
-            if !self
-                .split_tabular_row_into(row_content, delimiter, &mut tokens)
-                .map_err(|err| self.attach_location_for_slice(line, idx, row_content, err))?
-            {
-                return Ok((rows, idx, true));
-            }
-            if tokens.len() != fields.len() {
-                if self.strict {
-                    return Err(self.attach_location_for_slice(
-                        line,
-                        idx,
-                        row_content,
-                        Error::decode("tabular row field count mismatch"),
-                    ));
-                }
-                if tokens.len() < fields.len() {
-                    tokens.extend(std::iter::repeat_n("", fields.len() - tokens.len()));
-                } else {
-                    tokens.truncate(fields.len());
-                }
-            }
-            let mut obj = Map::with_capacity(fields.len());
-            if fast_path {
-                for (idx, token) in tokens.iter().enumerate() {
-                    let value = if token.is_empty() {
-                        Value::String(String::new())
-                    } else {
-                        self.parse_value_token(token)
-                            .map_err(|err| self.attach_location_for_slice(line, idx, token, err))?
-                    };
-                    obj.insert(field_names[idx].clone(), value);
-                }
-            } else {
-                for (idx, token) in tokens.iter().enumerate() {
-                    let value = if token.is_empty() {
-                        Value::String(String::new())
-                    } else {
-                        self.parse_value_token(token)
-                            .map_err(|err| self.attach_location_for_slice(line, idx, token, err))?
-                    };
-                    if let Some(parts) = field_paths[idx].as_deref() {
-                        self.insert_path(&mut obj, parts, value)
-                            .map_err(|err| self.attach_location_for_slice(line, idx, token, err))?;
-                    } else {
-                        obj.insert(field_names[idx].clone(), value);
-                    }
-                }
-            }
-            rows.push(Value::Object(obj));
-            idx += 1;
-        }
-        Ok((rows, idx, false))
     }
 
     fn split_tabular_row_into<'c>(
@@ -1438,33 +996,11 @@ impl Decoder {
         key: KeyToken,
         value: Value,
     ) -> Result<()> {
-        if let Some(parts) = self.expandable_path_parts(&key) {
-            return self.insert_path(map, &parts, value);
-        }
-        if self.expand_paths == ExpandPaths::Safe {
-            if let Some(existing) = map.get(key.value.as_str()) {
-                if self.strict && existing.is_object() != value.is_object() {
-                    return Err(Error::decode("path conflict"));
-                }
-            }
+        if self.strict && map.contains_key(key.value.as_str()) {
+            return Err(Error::decode("duplicate object key"));
         }
         map.insert(key.value.to_string(), value);
         Ok(())
-    }
-
-    fn expandable_path_parts<'a>(&self, key: &'a KeyToken) -> Option<Vec<&'a str>> {
-        if self.expand_paths != ExpandPaths::Safe {
-            return None;
-        }
-        if key.quoted || !key.value.as_str().contains('.') {
-            return None;
-        }
-        let parts: Vec<&str> = key.value.as_str().split('.').collect();
-        if parts.iter().all(|part| is_identifier_segment(part)) {
-            Some(parts)
-        } else {
-            None
-        }
     }
 
     fn merge_objects_owned(
@@ -1477,316 +1013,86 @@ impl Decoder {
                 None => {
                     target.insert(key, value);
                 }
-                Some(existing) => match (existing, value) {
-                    (Value::Object(existing_obj), Value::Object(new_obj)) => {
-                        self.merge_objects_owned(existing_obj, new_obj)?;
+                Some(existing) => {
+                    if self.strict {
+                        return Err(Error::decode("duplicate object key"));
                     }
-                    (existing_value, new_value) => {
-                        if self.expand_paths == ExpandPaths::Safe && self.strict {
-                            return Err(Error::decode("path conflict"));
-                        }
-                        *existing_value = new_value;
-                    }
-                },
+                    *existing = value;
+                }
             }
         }
         Ok(())
     }
 
-    fn insert_path(
+    fn decode_tabular_cells(
         &self,
-        map: &mut Map<String, Value>,
-        parts: &[&str],
-        value: Value,
-    ) -> Result<()> {
-        if parts.is_empty() {
-            return Err(Error::decode("invalid path"));
+        tokens: &[&str],
+        line: &Line<'_>,
+        line_idx: usize,
+    ) -> Result<Vec<Value>> {
+        let mut cells = Vec::new();
+        for token in tokens {
+            let value = if token.is_empty() {
+                Value::String(String::new())
+            } else if *token == "[]" {
+                Value::String("[]".into())
+            } else {
+                self.parse_value_token(token)
+                    .map_err(|err| self.attach_location_for_slice(line, line_idx, token, err))?
+            };
+            cells.push(value);
         }
-        let key = parts[0];
-        if parts.len() == 1 {
-            if let Some(existing) = map.get_mut(key) {
-                match (existing, value) {
-                    (Value::Object(existing_obj), Value::Object(new_obj)) => {
-                        return self.merge_objects_owned(existing_obj, new_obj);
-                    }
-                    (existing_value, new_value) => {
-                        if self.strict {
-                            return Err(Error::decode("path conflict"));
-                        }
-                        *existing_value = new_value;
-                        return Ok(());
-                    }
-                }
-            }
-            map.insert(key.to_string(), value);
-            return Ok(());
-        }
-        match map.get_mut(key) {
-            Some(Value::Object(obj)) => return self.insert_path(obj, &parts[1..], value),
-            Some(_) => {
-                if self.strict {
-                    return Err(Error::decode("path conflict"));
-                }
-                map.insert(key.to_string(), Value::Object(Map::new()));
-            }
-            None => {
-                map.insert(key.to_string(), Value::Object(Map::new()));
-            }
-        }
-        let next = map
-            .get_mut(key)
-            .and_then(|value| value.as_object_mut())
-            .ok_or_else(|| Error::decode("expected object"))?;
-        self.insert_path(next, &parts[1..], value)
+        Ok(cells)
     }
 
-    fn parse_list_block(
-        &mut self,
-        lines: &[Line<'_>],
-        mut idx: usize,
-        item_level: usize,
-        expected_len: usize,
-    ) -> Result<(Vec<Value>, usize)> {
-        let mut items = Vec::with_capacity(expected_len);
-        while idx < lines.len() {
-            let line = &lines[idx];
-            if line.is_blank {
-                if !self.strict {
-                    idx += 1;
-                    continue;
-                }
-                let mut peek = idx + 1;
-                while peek < lines.len() && lines[peek].is_blank {
-                    peek += 1;
-                }
-                if peek >= lines.len() || lines[peek].level < item_level {
-                    break;
-                }
-                return Err(self.attach_location_for_line(
-                    lines,
-                    idx,
-                    Error::decode("blank line not allowed in array"),
-                ));
-            }
-            let level = line.level;
-            if level < item_level {
-                break;
-            }
-            if level > item_level {
-                return Err(self.attach_location_for_line(
-                    lines,
-                    idx,
-                    Error::decode("unexpected indentation"),
-                ));
-            }
-            let content = trim_ascii(&line.content);
-            if !content.starts_with('-') {
-                return Err(self.attach_location_for_slice(
-                    line,
-                    idx,
-                    content,
-                    Error::decode("expected list item"),
-                ));
-            }
-            let item_content = content[1..].trim_start();
-            let (item, next_idx) = self
-                .parse_list_item(item_content, lines, idx + 1, item_level)
-                .map_err(|err| self.attach_location_for_slice(line, idx, item_content, err))?;
-            items.push(item);
-            idx = next_idx;
-        }
-        Ok((items, idx))
-    }
-
-    fn parse_list_item(
-        &mut self,
-        item_content: &str,
-        lines: &[Line<'_>],
-        idx: usize,
-        item_level: usize,
-    ) -> Result<(Value, usize)> {
-        if item_content.is_empty() {
-            return Ok((Value::Object(Map::new()), idx));
-        }
-
-        let header = match self.parse_array_header(item_content) {
-            Ok(header) => header,
-            Err(err) => {
-                return Err(self.attach_location_for_slice(
-                    lines.get(idx.saturating_sub(1)).unwrap_or(&lines[0]),
-                    idx.saturating_sub(1),
-                    item_content,
-                    err,
-                ));
-            }
-        };
-        if let Some(header) = header {
-            if header.key.is_none() {
-                let parsed = self
-                    .parse_array_from_header(&header, lines, idx, item_level)
-                    .map_err(|err| {
-                        let line_idx = idx.saturating_sub(1);
-                        let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                        self.attach_location_for_slice(line, line_idx, item_content, err)
-                    })?;
-                return Ok((parsed.value, parsed.next_idx));
-            }
-            let key = header.key.clone().ok_or_else(|| {
-                let line_idx = idx.saturating_sub(1);
-                let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                self.attach_location_for_slice(
-                    line,
-                    line_idx,
-                    item_content,
-                    Error::decode("array header missing key in object context"),
-                )
-            })?;
-            let array_base_level = if header.fields.is_some() {
-                if self.validate || self.strict {
-                    item_level + 1
-                } else {
-                    item_level
-                }
+    fn materialize_fields(
+        &self,
+        fields: &[FieldEntry],
+        cells: &[Value],
+        cursor: &mut usize,
+    ) -> Result<Map<String, Value>> {
+        let mut map = Map::new();
+        for field in fields {
+            let value = if field.children.is_empty() {
+                let value = cells.get(*cursor).cloned();
+                *cursor = cursor.saturating_add(1);
+                value
             } else {
-                item_level + 1
+                Some(Value::Object(self.materialize_fields(
+                    &field.children,
+                    cells,
+                    cursor,
+                )?))
             };
-            let parsed = if self.validate && header.fields.is_some() && header.inline.is_none() {
-                let fields = header.fields.as_ref().ok_or_else(|| {
-                    let line_idx = idx.saturating_sub(1);
-                    let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                    self.attach_location_for_slice(
-                        line,
-                        line_idx,
-                        item_content,
-                        Error::decode("missing tabular fields"),
-                    )
-                })?;
-                let (rows, next_idx, _) = self
-                    .parse_tabular_block(
-                        lines,
-                        idx,
-                        array_base_level,
-                        fields,
-                        header.delimiter,
-                        header.len,
-                    )
-                    .map_err(|err| {
-                        let line_idx = idx.saturating_sub(1);
-                        let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                        self.attach_location_for_slice(line, line_idx, item_content, err)
-                    })?;
-                if self.strict && rows.len() != header.len {
-                    return Err(Error::decode("array length mismatch"));
-                }
-                ParsedArray {
-                    value: Value::Array(rows),
-                    next_idx,
-                    deindent_next: false,
-                }
-            } else {
-                self.parse_array_from_header(&header, lines, idx, array_base_level)
-                    .map_err(|err| {
-                        let line_idx = idx.saturating_sub(1);
-                        let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                        self.attach_location_for_slice(line, line_idx, item_content, err)
-                    })?
-            };
-            let mut map = Map::new();
-            self.insert_key_value(&mut map, key, parsed.value)
-                .map_err(|err| {
-                    let line_idx = idx.saturating_sub(1);
-                    let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                    self.attach_location_for_slice(line, line_idx, item_content, err)
-                })?;
-            let (extra, next_idx) = self
-                .parse_object_block(lines, parsed.next_idx, item_level + 1)
-                .map_err(|err| {
-                    let line_idx = idx.saturating_sub(1);
-                    let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                    self.attach_location_for_slice(line, line_idx, item_content, err)
-                })?;
-            self.merge_objects_owned(&mut map, extra).map_err(|err| {
-                let line_idx = idx.saturating_sub(1);
-                let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                self.attach_location_for_slice(line, line_idx, item_content, err)
-            })?;
-            return Ok((Value::Object(map), next_idx));
+            if let Some(value) = value {
+                self.insert_key_value(&mut map, field.key.clone(), value)?;
+            }
         }
-
-        if self
-            .split_key_value(item_content)
-            .map_err(|err| {
-                let line_idx = idx.saturating_sub(1);
-                let line = lines.get(line_idx).unwrap_or(&lines[0]);
-                self.attach_location_for_slice(line, line_idx, item_content, err)
-            })?
-            .is_some()
-        {
-            let line_idx = idx.saturating_sub(1);
-            let line = lines.get(line_idx).unwrap_or(&lines[0]);
-            let base = line.content.as_ptr() as usize;
-            let slice_ptr = item_content.as_ptr() as usize;
-            let item_offset = if slice_ptr >= base && slice_ptr <= base + line.content.len() {
-                line.content_start + (slice_ptr - base)
-            } else {
-                line.raw_start
-            };
-            return self
-                .parse_object_item_from_line(item_content, lines, idx, item_level, item_offset)
-                .map_err(|err| self.attach_location_for_slice(line, line_idx, item_content, err));
-        }
-
-        let value = self.parse_value_token(item_content).map_err(|err| {
-            let line_idx = idx.saturating_sub(1);
-            let line = lines.get(line_idx).unwrap_or(&lines[0]);
-            self.attach_location_for_slice(line, line_idx, item_content, err)
-        })?;
-        Ok((value, idx))
-    }
-
-    fn parse_object_item_from_line<'a>(
-        &mut self,
-        first_content: &'a str,
-        lines: &'a [Line<'a>],
-        idx: usize,
-        item_level: usize,
-        item_offset: usize,
-    ) -> Result<(Value, usize)> {
-        let base_level = item_level + 1;
-        let mut combined = Vec::with_capacity(1 + lines.len().saturating_sub(idx));
-        combined.push(Line {
-            raw_start: item_offset,
-            content_start: item_offset,
-            indent: base_level * self.indent_size,
-            level: base_level,
-            content: Cow::Borrowed(first_content),
-            is_blank: false,
-        });
-        combined.extend_from_slice(&lines[idx..]);
-        let (map, consumed) = self.parse_object_block(&combined, 0, base_level)?;
-        let next_idx = idx + consumed.saturating_sub(1);
-        Ok((Value::Object(map), next_idx))
+        Ok(map)
     }
 }
 
 #[derive(Clone)]
 struct KeyToken {
     value: SmolStr,
-    quoted: bool,
 }
 
 struct HeaderLine {
     key: Option<KeyToken>,
     len: usize,
     delimiter: char,
-    fields: Option<Vec<KeyToken>>,
+    keyed: bool,
+    fields: Option<Vec<FieldEntry>>,
     inline: Option<String>,
+}
+
+struct FieldEntry {
+    key: KeyToken,
+    children: Vec<FieldEntry>,
 }
 
 struct ParsedArray {
     value: Value,
-    next_idx: usize,
-    deindent_next: bool,
 }
 
 #[derive(Clone)]
@@ -1797,6 +1103,7 @@ struct Line<'a> {
     level: usize,
     content: Cow<'a, str>,
     is_blank: bool,
+    is_comment: bool,
 }
 
 struct StreamLine {
@@ -1810,7 +1117,6 @@ struct LineStream<R: BufRead> {
     pending: VecDeque<StreamLine>,
     line_idx: usize,
     offset: usize,
-    last_line_had_newline: bool,
 }
 
 impl<R: BufRead> LineStream<R> {
@@ -1821,7 +1127,6 @@ impl<R: BufRead> LineStream<R> {
             pending: VecDeque::new(),
             line_idx: 0,
             offset: 0,
-            last_line_had_newline: false,
         }
     }
 
@@ -1841,7 +1146,6 @@ impl<R: BufRead> LineStream<R> {
         if read == 0 {
             return Ok(None);
         }
-        self.last_line_had_newline = self.buffer.ends_with('\n');
         let raw_len = self.buffer.len();
         let mut line = self.buffer.as_str();
         if line.ends_with('\n') {
@@ -1849,25 +1153,33 @@ impl<R: BufRead> LineStream<R> {
             if line.ends_with('\r') {
                 line = &line[..line.len().saturating_sub(1)];
             }
-        }
-        if decoder.validate && !line.is_empty() {
-            if let Some(&last) = line.as_bytes().last() {
-                if last == b' ' || last == b'\t' {
-                    return Err(Error::decode("trailing whitespace not allowed"));
-                }
-            }
+        } else if line.ends_with('\r') {
+            line = &line[..line.len().saturating_sub(1)];
         }
         let raw_start = self.offset;
         let line_idx = self.line_idx;
         self.offset += raw_len;
         self.line_idx += 1;
-        let built = decoder.build_line_owned(line, raw_start).map_err(|err| {
-            err.with_location(Location {
-                offset: raw_start,
-                line: line_idx + 1,
-                column: 1,
-            })
-        })?;
+        if line_idx == 0 {
+            line = line.strip_prefix('\u{feff}').unwrap_or(line);
+        }
+        let line = line.trim_end_matches(' ');
+        let is_comment = line.trim_start_matches(' ').starts_with('#');
+        let line_to_build = if is_comment { "" } else { line };
+        let mut built = decoder
+            .build_line_owned(line_to_build, raw_start)
+            .map_err(|err| {
+                err.with_location(Location {
+                    offset: raw_start,
+                    line: line_idx + 1,
+                    column: 1,
+                })
+            })?;
+        if is_comment {
+            built.is_blank = true;
+            built.is_comment = true;
+            built.content = Cow::Borrowed("");
+        }
         Ok(Some(StreamLine {
             idx: line_idx,
             line: built,
@@ -1904,13 +1216,6 @@ impl<R: BufRead> LineStream<R> {
         while self.next_line(decoder)?.is_some() {}
         Ok(())
     }
-
-    fn check_trailing_newline(&self, validate: bool) -> Result<()> {
-        if validate && self.last_line_had_newline {
-            return Err(Error::decode("trailing newline not allowed"));
-        }
-        Ok(())
-    }
 }
 
 impl Decoder {
@@ -1921,10 +1226,25 @@ impl Decoder {
         let mut stream = LineStream::new(reader);
         let first_non_blank = stream.next_non_blank(self)?;
         let Some(first) = first_non_blank else {
-            stream.check_trailing_newline(self.validate)?;
             return Ok(Value::Object(Map::new()));
         };
         let first_content = trim_ascii(&first.line.content);
+        if first_content.starts_with('\t') {
+            return Err(Error::decode("tabs not allowed in indentation"));
+        }
+        if first_content == "[]" {
+            if self.strict && first.line.indent != 0 {
+                return Err(Error::decode("unexpected indentation"));
+            }
+            if let Some(line) = stream.next_non_blank(self)? {
+                return Err(self.attach_location_for_line_meta(
+                    line.idx,
+                    &line.line,
+                    Error::decode("unexpected trailing content"),
+                ));
+            }
+            return Ok(Value::Array(Vec::new()));
+        }
         if first_content.starts_with('[') {
             let header = match self.parse_array_header(first_content) {
                 Ok(header) => header,
@@ -1966,21 +1286,12 @@ impl Decoder {
                             Error::decode("unexpected trailing content"),
                         ));
                     }
-                    stream.check_trailing_newline(self.validate)?;
                     return Ok(parsed.value);
                 }
             }
         }
 
         if !stream.has_more_non_blank(self)? {
-            if self.validate && self.reject_root_unquoted_string(first_content) {
-                return Err(self.attach_location_for_slice(
-                    &first.line,
-                    first.idx,
-                    first_content,
-                    Error::decode("root string must be quoted"),
-                ));
-            }
             if self.strict && first.line.indent != 0 {
                 return Err(self.attach_location_for_line_meta(
                     first.idx,
@@ -1994,14 +1305,12 @@ impl Decoder {
                     self.attach_location_for_slice(&first.line, first.idx, first_content, err)
                 })?;
             stream.drain_to_end(self)?;
-            stream.check_trailing_newline(self.validate)?;
             return Ok(value);
         }
 
         stream.push_back(first);
-        let map = self.parse_object_block_stream(&mut stream, 0)?;
+        let map = self.parse_object_block_stream(&mut stream, 0, false)?;
         stream.drain_to_end(self)?;
-        stream.check_trailing_newline(self.validate)?;
         Ok(Value::Object(map))
     }
 
@@ -2021,15 +1330,33 @@ impl Decoder {
         &mut self,
         stream: &mut LineStream<R>,
         base_level: usize,
+        reject_internal_blank: bool,
     ) -> Result<Map<String, Value>> {
         let mut map = Map::new();
-        let mut override_level: Option<usize> = None;
         while let Some(line) = stream.next_line(self)? {
-            if line.line.is_blank {
+            if line.line.is_comment {
                 continue;
             }
-            let actual_level = line.line.level;
-            let level = override_level.take().unwrap_or(actual_level);
+            if line.line.is_blank {
+                if self.strict && reject_internal_blank {
+                    let next = stream.next_non_blank(self)?;
+                    if let Some(next_line) = next {
+                        let next_level = next_line.line.level;
+                        stream.push_back(next_line);
+                        if next_level >= base_level {
+                            return Err(self.attach_location_for_line_meta(
+                                line.idx,
+                                &line.line,
+                                Error::decode("blank line not allowed inside list item"),
+                            ));
+                        }
+                        stream.push_back(line);
+                    }
+                    break;
+                }
+                continue;
+            }
+            let level = line.line.level;
             if level < base_level {
                 stream.push_back(line);
                 break;
@@ -2042,6 +1369,9 @@ impl Decoder {
                 ));
             }
             let content = trim_ascii(&line.line.content);
+            if content.starts_with('\t') {
+                return Err(Error::decode("tabs not allowed in indentation"));
+            }
             let header = match self.parse_array_header(content) {
                 Ok(header) => header,
                 Err(err) => {
@@ -2066,9 +1396,6 @@ impl Decoder {
                     .map_err(|err| {
                         self.attach_location_for_slice(&line.line, line.idx, content, err)
                     })?;
-                if parsed.deindent_next {
-                    override_level = Some(base_level);
-                }
                 continue;
             }
 
@@ -2081,7 +1408,7 @@ impl Decoder {
                 })?;
                 if trim_ascii(value).is_empty() {
                     let nested = self
-                        .parse_object_block_stream(stream, base_level + 1)
+                        .parse_object_block_stream(stream, base_level + 1, reject_internal_blank)
                         .map_err(|err| {
                             self.attach_location_for_slice(&line.line, line.idx, content, err)
                         })?;
@@ -2101,21 +1428,12 @@ impl Decoder {
                 continue;
             }
 
-            if self.strict {
-                return Err(self.attach_location_for_slice(
-                    &line.line,
-                    line.idx,
-                    content,
-                    Error::decode("bare key not allowed in strict mode"),
-                ));
-            }
-            let key = self.parse_key_token(content).map_err(|err| {
-                self.attach_location_for_slice(&line.line, line.idx, content, err)
-            })?;
-            self.insert_key_value(&mut map, key, Value::Null)
-                .map_err(|err| {
-                    self.attach_location_for_slice(&line.line, line.idx, content, err)
-                })?;
+            return Err(self.attach_location_for_slice(
+                &line.line,
+                line.idx,
+                content,
+                Error::decode("scalar line not allowed in object scope"),
+            ));
         }
         Ok(map)
     }
@@ -2127,7 +1445,24 @@ impl Decoder {
         base_level: usize,
     ) -> Result<ParsedArray> {
         self.push_delimiter(header.delimiter);
+        self.header_depths.push(base_level);
         let result = (|| {
+            if header.keyed {
+                let fields = header
+                    .fields
+                    .as_ref()
+                    .ok_or_else(|| Error::decode("keyed header requires fields"))?;
+                let map = self.parse_keyed_block_stream(
+                    stream,
+                    base_level,
+                    fields,
+                    header.delimiter,
+                    header.len,
+                )?;
+                return Ok(ParsedArray {
+                    value: Value::Object(map),
+                });
+            }
             if let Some(inline) = header.inline.as_deref() {
                 let items = self.parse_inline_array(inline, header.delimiter, header.len)?;
                 if self.strict && items.len() != header.len {
@@ -2135,13 +1470,11 @@ impl Decoder {
                 }
                 return Ok(ParsedArray {
                     value: Value::Array(items),
-                    next_idx: 0,
-                    deindent_next: false,
                 });
             }
 
             if let Some(fields) = header.fields.as_ref() {
-                let (rows, deindent_next) = self.parse_tabular_block_stream(
+                let rows = self.parse_tabular_block_stream(
                     stream,
                     base_level,
                     fields,
@@ -2153,21 +1486,17 @@ impl Decoder {
                 }
                 return Ok(ParsedArray {
                     value: Value::Array(rows),
-                    next_idx: 0,
-                    deindent_next,
                 });
             }
 
-            if header.len == 0 {
+            if header.len == 0 && self.strict {
                 return Ok(ParsedArray {
                     value: Value::Array(Vec::new()),
-                    next_idx: 0,
-                    deindent_next: false,
                 });
             }
 
             let items = self.parse_list_block_stream(stream, base_level + 1, header.len)?;
-            if header.len > 0 && items.is_empty() {
+            if self.strict && header.len > 0 && items.is_empty() {
                 return Err(Error::decode("array payload required"));
             }
             if self.strict && items.len() != header.len {
@@ -2175,39 +1504,48 @@ impl Decoder {
             }
             Ok(ParsedArray {
                 value: Value::Array(items),
-                next_idx: 0,
-                deindent_next: false,
             })
         })();
         self.pop_delimiter();
+        self.header_depths.pop();
         result
     }
 
-    fn parse_tabular_block_stream<R: BufRead>(
+    fn check_leading_blank<R: BufRead>(&self, stream: &mut LineStream<R>) -> Result<()> {
+        // Entering a nested header already started every ancestor's payload.
+        // Its leading blanks are therefore internal blanks in those spans.
+        if self.strict && self.header_depths.len() > 1 {
+            if let Some(next) = stream.next_non_blank(self)? {
+                let inside_ancestor = self.header_depths[..self.header_depths.len() - 1]
+                    .iter()
+                    .any(|&depth| next.line.level > depth);
+                stream.push_back(next);
+                if inside_ancestor {
+                    return Err(Error::decode("blank line not allowed in array"));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn parse_keyed_block_stream<R: BufRead>(
         &self,
         stream: &mut LineStream<R>,
         base_level: usize,
-        fields: &[KeyToken],
+        fields: &[FieldEntry],
         delimiter: char,
         expected_len: usize,
-    ) -> Result<(Vec<Value>, bool)> {
-        let mut rows = Vec::with_capacity(expected_len);
-        let mut field_paths: Vec<Option<Vec<String>>> = Vec::new();
-        let mut fast_path = self.expand_paths != ExpandPaths::Safe;
-        if !fast_path {
-            field_paths = Vec::with_capacity(fields.len());
-            for field in fields {
-                let parts = self.expandable_path_parts(field);
-                field_paths
-                    .push(parts.map(|parts| parts.iter().map(|part| part.to_string()).collect()));
-            }
-            fast_path = field_paths.iter().all(|parts| parts.is_none());
-        }
-        let field_names: Vec<String> = fields.iter().map(|field| field.value.to_string()).collect();
-        let mut row_level: Option<usize> = None;
+    ) -> Result<Map<String, Value>> {
+        let leaf_count = count_field_leaves(fields);
+        let mut map = Map::new();
+        let mut entries = 0;
         while let Some(line) = stream.next_line(self)? {
+            if line.line.is_comment {
+                continue;
+            }
             if line.line.is_blank {
-                if !self.strict {
+                if !self.strict || entries == 0 {
+                    self.check_leading_blank(stream)?;
                     continue;
                 }
                 let next = stream.next_non_blank(self)?;
@@ -2215,7 +1553,8 @@ impl Decoder {
                     let next_level = next_line.line.level;
                     stream.push_back(next_line);
                     if next_level <= base_level {
-                        return Ok((rows, false));
+                        stream.push_back(line);
+                        break;
                     }
                     return Err(self.attach_location_for_line_meta(
                         line.idx,
@@ -2223,20 +1562,119 @@ impl Decoder {
                         Error::decode("blank line not allowed in array"),
                     ));
                 }
-                return Ok((rows, false));
+                break;
+            }
+            if line.line.level <= base_level {
+                stream.push_back(line);
+                break;
+            }
+            if line.line.level != base_level + 1 {
+                return Err(self.attach_location_for_line_meta(
+                    line.idx,
+                    &line.line,
+                    Error::decode("unexpected indentation"),
+                ));
+            }
+            let content = trim_ascii(&line.line.content);
+            if content.starts_with('\t') {
+                return Err(Error::decode("tabs not allowed in indentation"));
+            }
+            let Some((key, cells)) = self.split_key_value(content)? else {
+                if self.strict {
+                    return Err(self.attach_location_for_slice(
+                        &line.line,
+                        line.idx,
+                        content,
+                        Error::decode("entry row missing ':'"),
+                    ));
+                }
+                continue;
+            };
+            let key = self.parse_key_token(key)?;
+            let cells = trim_ascii(cells);
+            let tokens = if cells.is_empty() {
+                TokenBuf::new()
+            } else {
+                self.split_delimited(cells, delimiter)?
+            };
+            if self.strict && tokens.len() != leaf_count {
+                return Err(self.attach_location_for_slice(
+                    &line.line,
+                    line.idx,
+                    content,
+                    Error::decode("tabular row field count mismatch"),
+                ));
+            }
+            let cells = self.decode_tabular_cells(&tokens, &line.line, line.idx)?;
+            let mut cursor = 0;
+            let value = self.materialize_fields(fields, &cells, &mut cursor)?;
+            self.insert_key_value(&mut map, key, Value::Object(value))?;
+            entries += 1;
+        }
+        if self.strict && entries != expected_len {
+            return Err(Error::decode("array length mismatch"));
+        }
+        Ok(map)
+    }
+
+    fn parse_tabular_block_stream<R: BufRead>(
+        &self,
+        stream: &mut LineStream<R>,
+        base_level: usize,
+        fields: &[FieldEntry],
+        delimiter: char,
+        _expected_len: usize,
+    ) -> Result<Vec<Value>> {
+        let mut rows = Vec::new();
+        let leaf_count = count_field_leaves(fields);
+        let mut row_level: Option<usize> = None;
+        while let Some(line) = stream.next_line(self)? {
+            if line.line.is_comment {
+                continue;
+            }
+            if line.line.is_blank {
+                if !self.strict {
+                    continue;
+                }
+                if rows.is_empty() {
+                    self.check_leading_blank(stream)?;
+                    continue;
+                }
+                let next = stream.next_non_blank(self)?;
+                if let Some(next_line) = next {
+                    let next_level = next_line.line.level;
+                    stream.push_back(next_line);
+                    if next_level <= base_level {
+                        stream.push_back(line);
+                        return Ok(rows);
+                    }
+                    return Err(self.attach_location_for_line_meta(
+                        line.idx,
+                        &line.line,
+                        Error::decode("blank line not allowed in array"),
+                    ));
+                }
+                return Ok(rows);
             }
             let level = line.line.level;
             if row_level.is_none() {
                 if level <= base_level {
                     stream.push_back(line);
-                    return Ok((rows, false));
+                    return Ok(rows);
+                }
+                if self.strict && level != base_level + 1 {
+                    return Err(self.attach_location_for_line_meta(
+                        line.idx,
+                        &line.line,
+                        Error::decode("unexpected indentation"),
+                    ));
                 }
                 row_level = Some(level);
             }
             let row_level = row_level.unwrap();
             if level < row_level {
                 stream.push_back(line);
-                return Ok((rows, false));
+                return Ok(rows);
             }
             if level > row_level {
                 return Err(self.attach_location_for_line_meta(
@@ -2245,13 +1683,11 @@ impl Decoder {
                     Error::decode("unexpected indentation"),
                 ));
             }
-            let mut row_content = trim_ascii(&line.line.content);
-            if let Some(stripped) = row_content.strip_prefix('-') {
-                if stripped.starts_with(' ') || stripped.starts_with('\t') {
-                    row_content = stripped.trim_start();
-                }
+            let row_content = trim_ascii(&line.line.content);
+            if delimiter != '\t' && row_content.starts_with('\t') {
+                return Err(Error::decode("tabs not allowed in indentation"));
             }
-            let mut tokens = TokenBuf::with_capacity(fields.len());
+            let mut tokens = TokenBuf::new();
             if !self
                 .split_tabular_row_into(row_content, delimiter, &mut tokens)
                 .map_err(|err| {
@@ -2262,69 +1698,41 @@ impl Decoder {
                     idx: line.idx,
                     line: line.line.clone(),
                 });
-                return Ok((rows, true));
+                return Ok(rows);
             }
-            if tokens.len() != fields.len() {
-                if self.strict {
-                    return Err(self.attach_location_for_slice(
-                        &line.line,
-                        line.idx,
-                        row_content,
-                        Error::decode("tabular row field count mismatch"),
-                    ));
-                }
-                if tokens.len() < fields.len() {
-                    tokens.extend(std::iter::repeat_n("", fields.len() - tokens.len()));
-                } else {
-                    tokens.truncate(fields.len());
-                }
+            if tokens.len() != leaf_count && self.strict {
+                return Err(self.attach_location_for_slice(
+                    &line.line,
+                    line.idx,
+                    row_content,
+                    Error::decode("tabular row field count mismatch"),
+                ));
             }
-            let mut obj = Map::with_capacity(fields.len());
-            if fast_path {
-                for (idx, token) in tokens.iter().enumerate() {
-                    let value = if token.is_empty() {
-                        Value::String(String::new())
-                    } else {
-                        self.parse_value_token(token).map_err(|err| {
-                            self.attach_location_for_slice(&line.line, line.idx, token, err)
-                        })?
-                    };
-                    obj.insert(field_names[idx].clone(), value);
-                }
-            } else {
-                for (idx, token) in tokens.iter().enumerate() {
-                    let value = if token.is_empty() {
-                        Value::String(String::new())
-                    } else {
-                        self.parse_value_token(token).map_err(|err| {
-                            self.attach_location_for_slice(&line.line, line.idx, token, err)
-                        })?
-                    };
-                    if let Some(parts) = field_paths[idx].as_ref() {
-                        let parts: Vec<&str> = parts.iter().map(|part| part.as_str()).collect();
-                        self.insert_path(&mut obj, &parts, value).map_err(|err| {
-                            self.attach_location_for_slice(&line.line, line.idx, token, err)
-                        })?;
-                    } else {
-                        obj.insert(field_names[idx].clone(), value);
-                    }
-                }
-            }
+            let cells = self.decode_tabular_cells(&tokens, &line.line, line.idx)?;
+            let mut cursor = 0;
+            let obj = self.materialize_fields(fields, &cells, &mut cursor)?;
             rows.push(Value::Object(obj));
         }
-        Ok((rows, false))
+        Ok(rows)
     }
 
     fn parse_list_block_stream<R: BufRead>(
         &mut self,
         stream: &mut LineStream<R>,
         item_level: usize,
-        expected_len: usize,
+        _expected_len: usize,
     ) -> Result<Vec<Value>> {
-        let mut items = Vec::with_capacity(expected_len);
+        let mut items = Vec::new();
         while let Some(line) = stream.next_line(self)? {
+            if line.line.is_comment {
+                continue;
+            }
             if line.line.is_blank {
                 if !self.strict {
+                    continue;
+                }
+                if items.is_empty() {
+                    self.check_leading_blank(stream)?;
                     continue;
                 }
                 let next = stream.next_non_blank(self)?;
@@ -2332,6 +1740,7 @@ impl Decoder {
                     let next_level = next_line.line.level;
                     stream.push_back(next_line);
                     if next_level < item_level {
+                        stream.push_back(line);
                         return Ok(items);
                     }
                     return Err(self.attach_location_for_line_meta(
@@ -2355,7 +1764,7 @@ impl Decoder {
                 ));
             }
             let content = trim_ascii(&line.line.content);
-            if !content.starts_with('-') {
+            if content != "-" && !content.starts_with("- ") {
                 return Err(self.attach_location_for_slice(
                     &line.line,
                     line.idx,
@@ -2363,7 +1772,11 @@ impl Decoder {
                     Error::decode("expected list item"),
                 ));
             }
-            let item_content = content[1..].trim_start();
+            let item_content = if content == "-" {
+                ""
+            } else {
+                trim_ascii(&content[2..])
+            };
             let item = self
                 .parse_list_item_stream(item_content, stream, item_level, &line.line, line.idx)
                 .map_err(|err| {
@@ -2385,6 +1798,9 @@ impl Decoder {
         if item_content.is_empty() {
             return Ok(Value::Object(Map::new()));
         }
+        if item_content == "[]" {
+            return Ok(Value::Array(Vec::new()));
+        }
 
         let header = match self.parse_array_header(item_content) {
             Ok(header) => header,
@@ -2394,6 +1810,14 @@ impl Decoder {
         };
         if let Some(header) = header {
             if header.key.is_none() {
+                if header.fields.is_some() {
+                    return Err(self.attach_location_for_slice(
+                        line_meta,
+                        line_idx,
+                        item_content,
+                        Error::decode("keyless fields-bearing header not allowed as list item"),
+                    ));
+                }
                 let parsed = self
                     .parse_array_from_header_stream(&header, stream, item_level)
                     .map_err(|err| {
@@ -2409,56 +1833,19 @@ impl Decoder {
                     Error::decode("array header missing key in object context"),
                 )
             })?;
-            let array_base_level = if header.fields.is_some() {
-                if self.validate || self.strict {
-                    item_level + 1
-                } else {
-                    item_level
-                }
-            } else {
-                item_level + 1
-            };
-            let parsed = if self.validate && header.fields.is_some() && header.inline.is_none() {
-                let fields = header.fields.as_ref().ok_or_else(|| {
-                    self.attach_location_for_slice(
-                        line_meta,
-                        line_idx,
-                        item_content,
-                        Error::decode("missing tabular fields"),
-                    )
+            let array_base_level = item_level + 1;
+            let parsed = self
+                .parse_array_from_header_stream(&header, stream, array_base_level)
+                .map_err(|err| {
+                    self.attach_location_for_slice(line_meta, line_idx, item_content, err)
                 })?;
-                let (rows, _) = self
-                    .parse_tabular_block_stream(
-                        stream,
-                        array_base_level,
-                        fields,
-                        header.delimiter,
-                        header.len,
-                    )
-                    .map_err(|err| {
-                        self.attach_location_for_slice(line_meta, line_idx, item_content, err)
-                    })?;
-                if self.strict && rows.len() != header.len {
-                    return Err(Error::decode("array length mismatch"));
-                }
-                ParsedArray {
-                    value: Value::Array(rows),
-                    next_idx: 0,
-                    deindent_next: false,
-                }
-            } else {
-                self.parse_array_from_header_stream(&header, stream, array_base_level)
-                    .map_err(|err| {
-                        self.attach_location_for_slice(line_meta, line_idx, item_content, err)
-                    })?
-            };
             let mut map = Map::new();
             self.insert_key_value(&mut map, key, parsed.value)
                 .map_err(|err| {
                     self.attach_location_for_slice(line_meta, line_idx, item_content, err)
                 })?;
             let extra = self
-                .parse_object_block_stream(stream, item_level + 1)
+                .parse_object_block_stream(stream, item_level + 1, true)
                 .map_err(|err| {
                     self.attach_location_for_slice(line_meta, line_idx, item_content, err)
                 })?;
@@ -2516,17 +1903,137 @@ impl Decoder {
             level: base_level,
             content: Cow::Owned(item_content.to_string()),
             is_blank: false,
+            is_comment: false,
         };
         stream.push_back(StreamLine {
             idx: line_idx,
             line: synthetic,
         });
-        let map = self.parse_object_block_stream(stream, base_level)?;
+        let map = self.parse_object_block_stream(stream, base_level, true)?;
         Ok(Value::Object(map))
     }
 }
 
+fn count_field_leaves(fields: &[FieldEntry]) -> usize {
+    fields
+        .iter()
+        .map(|field| {
+            if field.children.is_empty() {
+                1
+            } else {
+                count_field_leaves(&field.children)
+            }
+        })
+        .sum()
+}
+
+fn first_unquoted(input: &str, needle: u8) -> Option<usize> {
+    let mut quoted = false;
+    let mut escaped = false;
+    for (idx, &byte) in input.as_bytes().iter().enumerate() {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        if quoted && byte == b'\\' {
+            escaped = true;
+            continue;
+        }
+        if byte == b'"' {
+            quoted = !quoted;
+            continue;
+        }
+        if !quoted && byte == needle {
+            return Some(idx);
+        }
+    }
+    None
+}
+
+fn matching_brace(input: &str) -> Option<usize> {
+    let mut depth = 0usize;
+    let mut quoted = false;
+    let mut escaped = false;
+    for (idx, &byte) in input.as_bytes().iter().enumerate() {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        if quoted && byte == b'\\' {
+            escaped = true;
+            continue;
+        }
+        if byte == b'"' {
+            quoted = !quoted;
+            continue;
+        }
+        if quoted {
+            continue;
+        }
+        match byte {
+            b'{' => depth += 1,
+            b'}' => {
+                depth = depth.checked_sub(1)?;
+                if depth == 0 {
+                    return Some(idx);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn split_top_level(input: &str, delimiter: char) -> Result<Vec<&str>> {
+    let mut result = Vec::new();
+    let mut start = 0;
+    let mut depth = 0usize;
+    let mut quoted = false;
+    let mut escaped = false;
+    for (idx, ch) in input.char_indices() {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        if quoted && ch == '\\' {
+            escaped = true;
+            continue;
+        }
+        if ch == '"' {
+            quoted = !quoted;
+            continue;
+        }
+        if quoted {
+            continue;
+        }
+        match ch {
+            '{' => depth += 1,
+            '}' => {
+                depth = depth
+                    .checked_sub(1)
+                    .ok_or_else(|| Error::decode("unmatched field brace"))?
+            }
+            _ if ch == delimiter && depth == 0 => {
+                result.push(&input[start..idx]);
+                start = idx + ch.len_utf8();
+            }
+            _ => {}
+        }
+    }
+    if quoted {
+        return Err(Error::decode("unterminated string"));
+    }
+    if depth != 0 {
+        return Err(Error::decode("unterminated field list"));
+    }
+    result.push(&input[start..]);
+    Ok(result)
+}
+
 pub(super) fn parse_number_token(token: &str) -> Option<serde_json::Number> {
+    if !matches_number_grammar(token) {
+        return None;
+    }
     if is_int_with_leading_zero(token) {
         return None;
     }
@@ -2544,12 +2051,53 @@ pub(super) fn parse_number_token(token: &str) -> Option<serde_json::Number> {
         if let Ok(value) = token.parse::<u64>() {
             return Some(serde_json::Number::from(value));
         }
-        return None;
     }
-    let value: Value = serde_json::from_str(token).ok()?;
-    let number = value.as_number()?;
-    let float = number.as_f64()?;
-    serde_json::Number::from_f64(float)
+    token
+        .parse::<f64>()
+        .ok()
+        .and_then(serde_json::Number::from_f64)
+}
+
+fn matches_number_grammar(token: &str) -> bool {
+    let bytes = token.as_bytes();
+    let mut index = usize::from(bytes.first() == Some(&b'-'));
+    let integer_start = index;
+    while bytes.get(index).is_some_and(u8::is_ascii_digit) {
+        index += 1;
+    }
+    if index == integer_start {
+        return false;
+    }
+    if bytes.get(index) == Some(&b'.') {
+        index += 1;
+        let fraction_start = index;
+        while bytes.get(index).is_some_and(u8::is_ascii_digit) {
+            index += 1;
+        }
+        if index == fraction_start {
+            return false;
+        }
+    }
+    if bytes
+        .get(index)
+        .is_some_and(|byte| matches!(byte, b'e' | b'E'))
+    {
+        index += 1;
+        if bytes
+            .get(index)
+            .is_some_and(|byte| matches!(byte, b'+' | b'-'))
+        {
+            index += 1;
+        }
+        let exponent_start = index;
+        while bytes.get(index).is_some_and(u8::is_ascii_digit) {
+            index += 1;
+        }
+        if index == exponent_start {
+            return false;
+        }
+    }
+    index == bytes.len()
 }
 
 pub(super) fn is_int_with_leading_zero(token: &str) -> bool {
@@ -2566,67 +2114,21 @@ pub(super) fn is_int_with_leading_zero(token: &str) -> bool {
     rest.len() > 1 && rest.starts_with('0')
 }
 
-pub(super) fn is_numeric_like(token: &str) -> bool {
-    let bytes = token.as_bytes();
-    if bytes.is_empty() {
-        return false;
-    }
-    let mut i = 0;
-    if bytes[i] == b'-' {
-        i += 1;
-    }
-    if i >= bytes.len() || !bytes[i].is_ascii_digit() {
-        return false;
-    }
-    for &byte in &bytes[i..] {
-        if !byte.is_ascii_digit()
-            && byte != b'.'
-            && byte != b'e'
-            && byte != b'E'
-            && byte != b'+'
-            && byte != b'-'
-        {
-            return false;
-        }
-    }
-    true
-}
-
-pub(super) fn contains_whitespace(token: &str) -> bool {
-    let bytes = token.as_bytes();
-    for &byte in bytes {
-        if byte.is_ascii_whitespace() {
-            return true;
-        }
-        if byte >= 0x80 {
-            return token.chars().any(|ch| ch.is_whitespace());
-        }
-    }
-    false
-}
-
 pub(super) fn trim_ascii(input: &str) -> &str {
-    if !input.is_ascii() {
-        return input.trim();
-    }
     let bytes = input.as_bytes();
     let mut start = 0;
     let mut end = bytes.len();
-    while start < end && bytes[start].is_ascii_whitespace() {
+    while start < end && bytes[start] == b' ' {
         start += 1;
     }
-    while end > start && bytes[end - 1].is_ascii_whitespace() {
+    while end > start && bytes[end - 1] == b' ' {
         end -= 1;
     }
     &input[start..end]
 }
 
 pub(super) fn is_blank_line(line: &str) -> bool {
-    if line.is_ascii() {
-        return line
-            .as_bytes()
-            .iter()
-            .all(|byte| byte.is_ascii_whitespace());
-    }
-    line.trim().is_empty()
+    line.as_bytes()
+        .iter()
+        .all(|byte| matches!(byte, b' ' | b'\t'))
 }

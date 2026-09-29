@@ -5,10 +5,10 @@ resolver = "2"
 
 [package]
 name = "serde_toon_format"
-version = "0.1.2"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
-description = "Serde-compatible TOON v3.0 encoder/decoder"
+description = "Serde-compatible TOON v4.1 encoder/decoder"
 categories = ["encoding", "parser-implementations", "text-processing"]
 keywords = ["toon", "token", "encoding", "serde", "json"]
 autobenches = false
@@ -23,7 +23,7 @@ path = "src/lib.rs"
 
 [dependencies]
 serde = { version = "1.0.228", features = ["derive"] }
-serde_json = { version = "1.0.149", features = ["preserve_order"] }
+serde_json = { version = "1.0.149", features = ["preserve_order", "float_roundtrip"] }
 thiserror = "2.0.18"
 itoa = "1.0.17"
 ryu = "1.0.22"
